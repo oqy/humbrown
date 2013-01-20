@@ -15,7 +15,7 @@ public final class EnumDescriptionHelper {
 	/**
 	 * 枚举描述信息资源
 	 */
-	private static RegexResourceBundleMessageSource enumDescriptionMessageSource=new RegexResourceBundleMessageSource(new String[]{"**/enumField/enumDescription.properties"});
+	private static RegexResourceBundleMessageSource enumDescriptionMessageSource=new RegexResourceBundleMessageSource(new String[]{"classpath*:**/enumField/enumDescription.properties"});
 	
 	/**
 	 * 获取描述信息
