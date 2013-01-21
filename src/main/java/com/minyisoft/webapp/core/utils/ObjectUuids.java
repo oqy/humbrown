@@ -33,7 +33,7 @@ public final class ObjectUuids {
 	
 	static{	
 		try{
-			Resource[] resources=new PathMatchingResourcePatternResolver().getResources("**/modelKey.properties");
+			Resource[] resources=new PathMatchingResourcePatternResolver().getResources("classpath*:**/modelKey.properties");
 			if(!ArrayUtils.isEmpty(resources)){
 				for (Resource rsc : resources) {
 					properties.load(rsc.getInputStream());
