@@ -6,8 +6,10 @@ import java.lang.reflect.Method;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
-import com.minyisoft.webapp.core.model.CoreBaseInfo;
-import com.minyisoft.webapp.core.service.utils.Services;
+import org.apache.commons.lang.StringUtils;
+
+import com.minyisoft.webapp.core.model.IModelObject;
+import com.minyisoft.webapp.core.service.utils.ServiceUtils;
 
 /**
  * @author qingong_ou
@@ -18,21 +20,25 @@ public class ModelLazyLoadMethodInterceptor implements MethodInterceptor,Seriali
 	/**
 	 * 源业务对象
 	 */
-	private CoreBaseInfo bizModel;
+	private IModelObject bizModel;
 	/**
 	 * 是否已加载
 	 */
 	private boolean lazyLoaded=false;
+	/**
+	 * 加载排除方法
+	 */
+	private String[] excludeMethods={"notify","wait","finalize","getClass","getId","isIdPresented"};
 	
-	public ModelLazyLoadMethodInterceptor(CoreBaseInfo model){
+	public ModelLazyLoadMethodInterceptor(IModelObject model){
 		super();
 		bizModel=model;
 	}
 
 	@Override
 	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-		if (!lazyLoaded && method.getName().indexOf("getId") < 0) {
-			bizModel=Services.getModel(bizModel);
+		if (!lazyLoaded && !StringUtils.startsWithAny(method.getName(), excludeMethods)) {
+			bizModel=ServiceUtils.getModel(bizModel);
 			lazyLoaded=true;
         }
 		if(bizModel==null){

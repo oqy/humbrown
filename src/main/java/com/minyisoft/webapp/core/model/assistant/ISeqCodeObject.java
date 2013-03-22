@@ -1,16 +1,11 @@
 package com.minyisoft.webapp.core.model.assistant;
 
+import com.minyisoft.webapp.core.model.IModelObject;
+
 /**
  * @author qingyong_ou 需要实现顺序编码的对象接口
  */
-public interface ISeqCodeObject {
-	/**
-	 * 获取类简码
-	 * 
-	 * @return
-	 */
-	public String getClassLabel();
-
+public interface ISeqCodeObject extends IModelObject {
 	/**
 	 * 自动编码开关
 	 * 

@@ -10,7 +10,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 
-import com.minyisoft.webapp.core.model.CoreBaseInfo;
+import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.criteria.SortDirection;
 import com.minyisoft.webapp.core.model.criteria.SortDirectionEnum;
 import com.minyisoft.webapp.core.model.enumField.CoreEnumInterface;
@@ -71,8 +71,8 @@ public class SelectModuleUnitInfo {
 		if (obj == null) {
 			return null;
 		}
-		if (obj instanceof CoreBaseInfo) {
-			return ((CoreBaseInfo) obj).getId();
+		if (obj instanceof IModelObject) {
+			return ((IModelObject) obj).getId();
 		} else if (obj instanceof CoreEnumInterface<?>) {
 			return String.valueOf(((CoreEnumInterface<?>) obj).getValue());
 		} else if (obj instanceof Date) {
@@ -93,12 +93,12 @@ public class SelectModuleUnitInfo {
 		if (obj == null) {
 			return "";
 		}
-		if (obj instanceof CoreBaseInfo) {
+		if (obj instanceof IModelObject) {
 			try {
 				return (String) PropertyUtils.getProperty(obj,
 						displayPropertyName);
 			} catch (Exception e) {
-				return ((CoreBaseInfo) obj).getId();
+				return ((IModelObject) obj).getId();
 			}
 		} else if (obj instanceof CoreEnumInterface<?>) {
 			return String.valueOf(((CoreEnumInterface<?>) obj).getDescription());

@@ -13,7 +13,7 @@ import org.apache.commons.lang.reflect.FieldUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import com.minyisoft.webapp.core.annotation.Label;
-import com.minyisoft.webapp.core.model.CoreBaseInfo;
+import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.assistant.IAutoCompleteObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
 import com.minyisoft.webapp.core.model.enumField.CoreEnumInterface;
@@ -59,7 +59,7 @@ public class SelectModuleFilter{
 	 * Integer:TEXT;
 	 * Enum:HIDDEN;
 	 * Boolean:CHECKBOX;
-	 * CoreBaseInfo:HIDDEN;
+	 * IModelObject:HIDDEN;
 	 * 组件文字说明从指定对象的注解中获取
 	 * @param name 过滤对象字段名，对应页面html组件id和name的名字
 	 * @throws Exception
@@ -94,7 +94,7 @@ public class SelectModuleFilter{
 	 * Integer:TEXT;
 	 * Enum:HIDDEN;
 	 * Boolean:CHECKBOX;
-	 * CoreBaseInfo:HIDDEN;
+	 * IModelObject:HIDDEN;
 	 * @param name 过滤对象字段名，对应页面html组件id和name的名字
 	 * @param labelVal 组件中的文字说明
 	 * @throws Exception
@@ -108,13 +108,13 @@ public class SelectModuleFilter{
 	 * @param name 过滤对象字段名，对应页面html组件id和name的名字
 	 * @param labelVal 组件中的文字说明
 	 * @param displayType 组件展示方式
-	 * @param displayPropertyName 过滤对象字段对应为CoreBaseInfo对象时作为显示值的属性字段名
+	 * @param displayPropertyName 过滤对象字段对应为IModelObject对象时作为显示值的属性字段名
 	 * @throws Exception
 	 */
 	public void addField(String name,String labelVal,DisplayTypeEnum displayType,String displayPropertyName,String autoCompleteRequestUrl) throws Exception{
 		Class<?> propertyType=PropertyUtils.getPropertyType(criteria, name);
 
-		if(CoreBaseInfo.class.isAssignableFrom(propertyType)) {
+		if(IModelObject.class.isAssignableFrom(propertyType)) {
 			if(IAutoCompleteObject.class.isAssignableFrom(propertyType)&&!StringUtils.isBlank(autoCompleteRequestUrl)){
 				SelectModuleUnitInfo selectUnit=new SelectModuleUnitInfo(labelVal,name,displayType,PropertyUtils.getProperty(criteria, name),"label");
 				selectUnit.setAutoCompleteRequestUrl(autoCompleteRequestUrl);
@@ -165,7 +165,7 @@ public class SelectModuleFilter{
 		Class<?> propertyType=PropertyUtils.getPropertyType(criteria, name);
 
 		//设置搜索组件的元素
-		if(CoreBaseInfo.class.isAssignableFrom(propertyType)) {
+		if(IModelObject.class.isAssignableFrom(propertyType)) {
 			unitContentList.add(new SelectModuleUnitInfo(label,name+".id", DisplayTypeEnum.SELECT,PropertyUtils.getProperty(criteria, name),optionList,
 					StringUtils.isBlank(displayPropertyName)?"name":displayPropertyName));
 		} else if(Boolean.class.isAssignableFrom(propertyType)) {
@@ -243,14 +243,14 @@ public class SelectModuleFilter{
 	 * Integer:TEXT;
 	 * Enum:HIDDEN;
 	 * Boolean:CHECKBOX;
-	 * CoreBaseInfo:HIDDEN;
+	 * IModelObject:HIDDEN;
 	 * @param clazz
 	 * @return
 	 */
 	private DisplayTypeEnum getDefaultDisplayType(Class<?> clazz){
 		if(Date.class.isAssignableFrom(clazz)){
 			return DisplayTypeEnum.DATE;
-		}else if(CoreBaseInfo.class.isAssignableFrom(clazz)
+		}else if(IModelObject.class.isAssignableFrom(clazz)
 				||CoreEnumInterface.class.isAssignableFrom(clazz)){
 			return DisplayTypeEnum.HIDDEN;
 		}else if(Boolean.class.isAssignableFrom(clazz)){

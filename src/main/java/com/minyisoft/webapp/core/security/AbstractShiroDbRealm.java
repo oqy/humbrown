@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -17,10 +18,11 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
 
+import com.minyisoft.webapp.core.model.AbstractRoleInfo;
 import com.minyisoft.webapp.core.model.AbstractUserInfo;
 import com.minyisoft.webapp.core.model.PermissionInfo;
-import com.minyisoft.webapp.core.model.RoleInfo;
-import com.minyisoft.webapp.core.security.utils.Encodes;
+import com.minyisoft.webapp.core.security.utils.EncodeUtils;
+import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
 /**
  * @author qingyong_ou shiro登录对象
@@ -35,9 +37,12 @@ public abstract class AbstractShiroDbRealm extends AuthorizingRealm {
 		UsernamePasswordToken token = (UsernamePasswordToken) authcToken;
 		AbstractUserInfo user = getUserByLoginName(token.getUsername());
 		if (user != null) {
-			byte[] salt = Encodes.decodeHex(user.getUserPasswordSalt());
-			return new SimpleAuthenticationInfo(user, user.getUserPassword(),
-					ByteSource.Util.bytes(salt), getName());
+			if(StringUtils.isBlank(user.getUserPasswordSalt())){
+				return new SimpleAuthenticationInfo(user.getId(), user.getUserPassword(),null, getName());
+			}else{
+				byte[] salt = EncodeUtils.decodeHex(user.getUserPasswordSalt());
+				return new SimpleAuthenticationInfo(user.getId(), user.getUserPassword(),ByteSource.Util.bytes(salt), getName());
+			}
 		} else {
 			return null;
 		}
@@ -49,11 +54,11 @@ public abstract class AbstractShiroDbRealm extends AuthorizingRealm {
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(
 			PrincipalCollection principals) {
-		AbstractUserInfo user = (AbstractUserInfo) principals.getPrimaryPrincipal();
+		AbstractUserInfo user = (AbstractUserInfo) ObjectUuidUtils.getEnhancedObjectById((String)principals.getPrimaryPrincipal());
 		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
-		List<RoleInfo> userRoles = getUserRoles(user);
+		List<? extends AbstractRoleInfo> userRoles = getUserRoles(user);
 		if (CollectionUtils.isNotEmpty(userRoles)) {
-			for (RoleInfo role : userRoles) {
+			for (AbstractRoleInfo role : userRoles) {
 				info.addRole(role.getValue());
 			}
 		}
@@ -105,7 +110,7 @@ public abstract class AbstractShiroDbRealm extends AuthorizingRealm {
 	 * @param user
 	 * @return
 	 */
-	public abstract List<RoleInfo> getUserRoles(AbstractUserInfo user);
+	public abstract List<? extends AbstractRoleInfo> getUserRoles(AbstractUserInfo user);
 
 	/**
 	 * 获取授予指定用户的权限列表

@@ -13,11 +13,6 @@ public final class EnumDescriptionHelper {
 	}
 	
 	/**
-	 * 枚举描述信息资源
-	 */
-	private static RegexResourceBundleMessageSource enumDescriptionMessageSource=new RegexResourceBundleMessageSource(new String[]{"classpath*:**/enumField/enumDescription.properties"});
-	
-	/**
 	 * 获取描述信息
 	 * @param target
 	 * @return
@@ -26,7 +21,7 @@ public final class EnumDescriptionHelper {
 		if(target==null){
 			return "";
 		}else{
-			return enumDescriptionMessageSource.getMessage(target.getClass().getName()+"_"+target.name(), null, Locale.getDefault());
+			return RegexResourceBundleMessageSource.getSystemDefaultMessageSource().getMessage(target.getClass().getName()+"_"+target.name(), null, Locale.getDefault());
 		}
 	}
 }

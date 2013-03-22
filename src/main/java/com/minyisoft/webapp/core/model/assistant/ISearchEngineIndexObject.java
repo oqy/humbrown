@@ -1,16 +1,11 @@
 package com.minyisoft.webapp.core.model.assistant;
 
+import com.minyisoft.webapp.core.model.IModelObject;
+
 /**
  * @author qingyong_ou 搜索引擎索引对象接口
  */
-public interface ISearchEngineIndexObject {
-	/**
-	 * 获取索引主键
-	 * 
-	 * @return
-	 */
-	public String getId();
-
+public interface ISearchEngineIndexObject extends IModelObject {
 	/**
 	 * 获取需索引属性集合
 	 * 

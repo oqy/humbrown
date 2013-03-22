@@ -9,22 +9,13 @@ import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.minyisoft.webapp.core.utils.ObjectUuids;
-
 @Getter 
 @Setter
-public abstract class CoreBaseInfo implements Serializable, Cloneable {
+public abstract class CoreBaseInfo implements IModelObject,Serializable, Cloneable {
 	private static final long serialVersionUID = -790025641619656774L;
+	
 	// 记录id，主键
 	private String id;
-	
-	/**
-	 * 获取类简码
-	 * @return
-	 */
-	public String getClassLabel(){
-		return ObjectUuids.getShortKeyByClassFullName(getClass());
-	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -45,10 +36,15 @@ public abstract class CoreBaseInfo implements Serializable, Cloneable {
 	
 	@Override
 	public int hashCode() {
-		if (StringUtils.isBlank(this.getId())) {
+		if (!isIdPresented()) {
 			return super.hashCode();
 		}else{
 			return this.getId().hashCode();
 		}
+	}
+	
+	@Override
+	public boolean isIdPresented() {
+		return StringUtils.isNotBlank(getId());
 	}
 }

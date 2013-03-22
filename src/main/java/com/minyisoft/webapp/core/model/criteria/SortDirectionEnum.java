@@ -13,6 +13,10 @@ public enum SortDirectionEnum {
 		return sortDirection;
 	}
 
+	public String getValue() {
+		return sortDirection;
+	}
+
 	public static SortDirectionEnum getEnum(String value) {
 		for (SortDirectionEnum stringEnum : SortDirectionEnum.values()) {
 			if (stringEnum.toString().equals(value)) {

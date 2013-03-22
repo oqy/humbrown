@@ -14,48 +14,60 @@ import lombok.Getter;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ClassUtils;
 
 import com.minyisoft.webapp.core.annotation.Label;
 import com.minyisoft.webapp.core.exception.ServiceException;
+import com.minyisoft.webapp.core.model.AbstractUserInfo;
 import com.minyisoft.webapp.core.model.BaseInfo;
-import com.minyisoft.webapp.core.model.CoreBaseInfo;
+import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.assistant.ISeqCodeObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
 import com.minyisoft.webapp.core.persistence.IBaseDao;
-import com.minyisoft.webapp.core.security.utils.Permissions;
-import com.minyisoft.webapp.core.security.utils.Securities;
+import com.minyisoft.webapp.core.security.utils.PermissionUtils;
 import com.minyisoft.webapp.core.service.IBaseService;
-import com.minyisoft.webapp.core.utils.ObjectUuids;
+import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
-public abstract class BaseServiceImpl<T extends CoreBaseInfo,C extends BaseCriteria, D extends IBaseDao<T, C>> implements IBaseService <T,C>{
-	@Autowired
-	private D baseDao;
+public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCriteria, D extends IBaseDao<T, C>> implements IBaseService <T,C>{
+	protected final Logger logger=LoggerFactory.getLogger(getClass());
+	private @Getter D baseDao;
 	@Autowired
 	protected @Getter Validator validator;
+	
+	/**
+	 * 根据当前业务操作实例（以***Impl形式命名）获取model对象对应的对象别名
+	 */
+	protected final String MODEL_CLASS_ALIAS=StringUtils.stripEnd(this.getClass().getSimpleName(), "Impl");
+	
+	@Autowired
+	public void setDao(D dao){
+		this.baseDao=dao;
+	}
 	
 	@Override
 	public void addNew(T info) {
 		if(info==null){
 			return;
 		}
-		checkAuthentication(getClassAlias(),Securities.PERMISSION_CREATE);
+		checkAuthentication(MODEL_CLASS_ALIAS,PermissionUtils.PERMISSION_CREATE);
 		
 		if(validateBeforeSubmit()){
 			validateData(info);
 		}
 		
 		if(StringUtils.isBlank(info.getId())){
-			info.setId(ObjectUuids.createObjectID(info));
+			info.setId(ObjectUuidUtils.createObjectID(info));
 		}
 		if(info instanceof BaseInfo){
 			if(((BaseInfo)info).getCreateDate()==null){
 				((BaseInfo)info).setCreateDate(new Date());
 			}
 			if(((BaseInfo)info).getCreateUser()==null){
-				((BaseInfo)info).setCreateUser(Securities.getCurrentUser());
+				((BaseInfo)info).setCreateUser(getCurrentUser());
 			}
 			if(((BaseInfo)info).getLastUpdateDate()==null){
 				((BaseInfo)info).setLastUpdateDate(((BaseInfo)info).getCreateDate());
@@ -77,7 +89,7 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo,C extends BaseCrite
 		if(StringUtils.isBlank(id)){
 			return 0;
 		}
-		checkAuthentication(getClassAlias(),Securities.PERMISSION_DELETE);
+		checkAuthentication(MODEL_CLASS_ALIAS,PermissionUtils.PERMISSION_DELETE);
 		return baseDao.batchDelete(Arrays.asList(id));
 	}
 
@@ -86,7 +98,7 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo,C extends BaseCrite
 		if(info==null||StringUtils.isBlank(info.getId())){
 			return 0;
 		}
-		checkAuthentication(getClassAlias(),Securities.PERMISSION_UPDATE);
+		checkAuthentication(MODEL_CLASS_ALIAS,PermissionUtils.PERMISSION_UPDATE);
 		
 		if(validateBeforeSubmit()){
 			validateData(info);
@@ -94,7 +106,7 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo,C extends BaseCrite
 		
 		if(info instanceof BaseInfo){
 			((BaseInfo)info).setLastUpdateDate(new Date());
-			((BaseInfo)info).setLastUpdateUser(Securities.getCurrentUser());
+			((BaseInfo)info).setLastUpdateUser(getCurrentUser());
 		}
 		return baseDao.updateEntity(info);
 	}
@@ -110,7 +122,7 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo,C extends BaseCrite
 	@Override
 	public int batchDelete(String[] ids) {
 		if(!ArrayUtils.isEmpty(ids)){
-			checkAuthentication(getClassAlias(),Securities.PERMISSION_DELETE);
+			checkAuthentication(MODEL_CLASS_ALIAS,PermissionUtils.PERMISSION_DELETE);
 			return baseDao.batchDelete(Arrays.asList(ids));
 		}
 		return 0;
@@ -161,14 +173,6 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo,C extends BaseCrite
 	public int count(C criteria) {
 		return baseDao.countEntity(criteria);
 	}
-
-	/**
-	 * 根据当前业务操作实例（以***Impl形式命名）获取model对象对应的对象别名
-	 * @return
-	 */
-	private String getClassAlias(){
-		return StringUtils.stripEnd(this.getClass().getSimpleName(), "Impl");
-	}
 	
 	/**
 	 * 用户授权检查
@@ -180,8 +184,8 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo,C extends BaseCrite
 			return;
 		
 		String permissionString = pojoAlias + ":" + action;
-		if (Permissions.isPermissionDefined(permissionString)) {
-			Permissions.checkHasPermission(permissionString);
+		if (PermissionUtils.isPermissionDefined(permissionString)) {
+			PermissionUtils.checkHasPermission(permissionString);
 		}
 	}
 	
@@ -222,9 +226,18 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo,C extends BaseCrite
 						sb.append(++count).append(".").append(AnnotationUtils.getValue(field.getAnnotation(Label.class), "value")).append(violation.getMessage()).append("\t");
 					}
 				}catch (Exception e) {
+					logger.error(e.getMessage(),e);
 				}
 			}
 			throw new ServiceException(sb.toString());
+		}
+	}
+	
+	protected AbstractUserInfo getCurrentUser(){
+		try{
+			return (AbstractUserInfo)ObjectUuidUtils.getEnhancedObjectById((String)org.apache.shiro.SecurityUtils.getSubject().getPrincipal());
+		}catch(Exception e){
+			return null;
 		}
 	}
 }

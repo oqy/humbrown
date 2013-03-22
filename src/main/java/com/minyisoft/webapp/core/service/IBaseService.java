@@ -2,10 +2,10 @@ package com.minyisoft.webapp.core.service;
 
 import java.util.List;
 
-import com.minyisoft.webapp.core.model.CoreBaseInfo;
+import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
 
-public interface IBaseService<T extends CoreBaseInfo, C extends BaseCriteria> {
+public interface IBaseService<T extends IModelObject, C extends BaseCriteria> {
 	/**
 	 * 新增记录
 	 * @param info

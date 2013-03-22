@@ -33,4 +33,14 @@ public abstract class BillBaseInfo extends BaseInfo implements ISeqCodeObject {
 	public int getDigitLength() {
 		return 4;
 	}
+	
+	@Override
+	public void setSeqCode(String seqCode) {
+		setBillNumber(getSeqCodeGenStrategy().genSeqCode(this));
+	}
+
+	@Override
+	public String getSeqCode() {
+		return getBillNumber();
+	}
 }
