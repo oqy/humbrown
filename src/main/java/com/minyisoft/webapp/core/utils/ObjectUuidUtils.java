@@ -36,7 +36,7 @@ public final class ObjectUuidUtils {
 	
 	static{	
 		try{
-			Resource[] resources=new PathMatchingResourcePatternResolver().getResources("classpath*:com/fusung/webapp/**/modelKey.properties");
+			Resource[] resources=new PathMatchingResourcePatternResolver().getResources("classpath*:com/minyisoft/webapp/**/modelKey.properties");
 			if(!ArrayUtils.isEmpty(resources)){
 				for (Resource rsc : resources) {
 					keyClassProperties.load(rsc.getInputStream());
@@ -105,8 +105,8 @@ public final class ObjectUuidUtils {
         }
 	}
 	
-	public static String getClassShortKey(IModelObject clazz){
-		return (String)classKeyProperties.get(clazz.getClass().getName());
+	public static String getClassShortKey(Class<? extends IModelObject> clazz){
+		return (String)classKeyProperties.get(clazz.getName());
 	}
 	
 	public static String getClassNameByObjectKey(String key){
