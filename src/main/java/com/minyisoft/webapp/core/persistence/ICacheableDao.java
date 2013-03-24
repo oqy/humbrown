@@ -4,8 +4,6 @@ import org.springframework.cache.annotation.Cacheable;
 
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
-
-
 public interface ICacheableDao<T extends IModelObject, C extends BaseCriteria> extends IBaseDao<T, C> {
 	public final String CACCHE_NAME_PREFIX="Model:";
 	

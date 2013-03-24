@@ -19,6 +19,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.ClassUtils;
 
 import com.minyisoft.webapp.core.exception.EntityException;
 import com.minyisoft.webapp.core.model.IModelObject;
@@ -105,8 +106,8 @@ public final class ObjectUuidUtils {
         }
 	}
 	
-	public static String getClassShortKey(IModelObject clazz){
-		return (String)classKeyProperties.get(clazz.getClass().getName());
+	public static String getClassShortKey(Class<? extends IModelObject> clazz){
+		return (String)classKeyProperties.get(ClassUtils.getUserClass(clazz).getName());
 	}
 	
 	public static String getClassNameByObjectKey(String key){
@@ -120,6 +121,6 @@ public final class ObjectUuidUtils {
 	 * @return
 	 */
 	public static boolean isLegalId(Class<? extends IModelObject> modelClazz,String id){
-		return modelClazz!=null&&StringUtils.isNotBlank(id)&&(id.length()==32||id.length()==24)&&(modelClazz==getObejctClass(id));
+		return modelClazz!=null&&StringUtils.isNotBlank(id)&&(id.length()==32||id.length()==24)&&(ClassUtils.getUserClass(modelClazz)==getObejctClass(id));
 	}
 }
