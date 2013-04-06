@@ -37,7 +37,7 @@ public final class ObjectUuidUtils {
 	
 	static{	
 		try{
-			Resource[] resources=new PathMatchingResourcePatternResolver().getResources("classpath*:com/fusung/webapp/**/modelKey.properties");
+			Resource[] resources=new PathMatchingResourcePatternResolver().getResources("classpath*:com/minyisoft/webapp/**/modelKey.properties");
 			if(!ArrayUtils.isEmpty(resources)){
 				for (Resource rsc : resources) {
 					keyClassProperties.load(rsc.getInputStream());
