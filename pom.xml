@@ -29,6 +29,7 @@
 
 		<!-- Plugin的属性定义 -->
 		<jdk.version>1.6</jdk.version>
+		<encoding>UTF-8</encoding>
 	</properties>
 
 	<!-- 依赖项定义 -->
@@ -297,6 +298,7 @@
 				<configuration>
 					<source>${jdk.version}</source>
 					<target>${jdk.version}</target>
+					<encoding>${encoding}</encoding>
 				</configuration>
 			</plugin>
 		</plugins>
