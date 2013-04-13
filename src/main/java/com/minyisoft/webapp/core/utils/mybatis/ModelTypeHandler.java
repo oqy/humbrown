@@ -11,8 +11,7 @@ import org.apache.ibatis.type.JdbcType;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
-public class ModelTypeHandler extends BaseTypeHandler<IModelObject> {
-	
+public class ModelTypeHandler<E extends IModelObject> extends BaseTypeHandler<E> {
 	@Override
 	public void setNonNullParameter(PreparedStatement ps, int i,
 			IModelObject parameter, JdbcType jdbcType) throws SQLException {
@@ -20,20 +19,25 @@ public class ModelTypeHandler extends BaseTypeHandler<IModelObject> {
 	}
 
 	@Override
-	public IModelObject getNullableResult(ResultSet rs, String columnName)
+	public E getNullableResult(ResultSet rs, String columnName)
 			throws SQLException {
-		return ObjectUuidUtils.getEnhancedObjectById(rs.getString(columnName));
+		return getModel(rs.getString(columnName));
 	}
 
 	@Override
-	public IModelObject getNullableResult(ResultSet rs, int columnIndex)
+	public E getNullableResult(ResultSet rs, int columnIndex)
 			throws SQLException {
-		return ObjectUuidUtils.getEnhancedObjectById(rs.getString(columnIndex));
+		return getModel(rs.getString(columnIndex));
 	}
 
 	@Override
-	public IModelObject getNullableResult(CallableStatement cs, int columnIndex)
+	public E getNullableResult(CallableStatement cs, int columnIndex)
 			throws SQLException {
-		return ObjectUuidUtils.getEnhancedObjectById(cs.getString(columnIndex));
+		return getModel(cs.getString(columnIndex));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public E getModel(String id){
+		return (E) ObjectUuidUtils.getEnhancedObjectById(id);
 	}
 }
