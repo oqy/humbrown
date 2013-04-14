@@ -17,7 +17,7 @@ public final class EnumDescriptionHelper {
 	 * @param target
 	 * @return
 	 */
-	public static String getDescription(CoreEnumInterface<?> target){
+	public static String getDescription(ICoreEnum<?> target){
 		if(target==null){
 			return "";
 		}else{

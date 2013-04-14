@@ -3,7 +3,7 @@ package com.minyisoft.webapp.core.model.enumField;
 /**
  * @author qingyong_ou 枚举对象接口
  */
-public interface CoreEnumInterface<T> {
+public interface ICoreEnum<T> {
 	/**
 	 * 获取枚举值
 	 * 

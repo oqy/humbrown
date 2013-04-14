@@ -16,7 +16,7 @@ import com.minyisoft.webapp.core.annotation.Label;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.assistant.IAutoCompleteObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
-import com.minyisoft.webapp.core.model.enumField.CoreEnumInterface;
+import com.minyisoft.webapp.core.model.enumField.ICoreEnum;
 
 /**
  * @author yongan_cui
@@ -251,7 +251,7 @@ public class SelectModuleFilter{
 		if(Date.class.isAssignableFrom(clazz)){
 			return DisplayTypeEnum.DATE;
 		}else if(IModelObject.class.isAssignableFrom(clazz)
-				||CoreEnumInterface.class.isAssignableFrom(clazz)){
+				||ICoreEnum.class.isAssignableFrom(clazz)){
 			return DisplayTypeEnum.HIDDEN;
 		}else if(Boolean.class.isAssignableFrom(clazz)){
 			return DisplayTypeEnum.CHECK_BOX;

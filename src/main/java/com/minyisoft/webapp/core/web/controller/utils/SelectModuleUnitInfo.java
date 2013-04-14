@@ -13,7 +13,7 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.criteria.SortDirection;
 import com.minyisoft.webapp.core.model.criteria.SortDirectionEnum;
-import com.minyisoft.webapp.core.model.enumField.CoreEnumInterface;
+import com.minyisoft.webapp.core.model.enumField.ICoreEnum;
 
 @Getter
 @Setter
@@ -73,12 +73,12 @@ public class SelectModuleUnitInfo {
 		}
 		if (obj instanceof IModelObject) {
 			return ((IModelObject) obj).getId();
-		} else if (obj instanceof CoreEnumInterface<?>) {
-			return String.valueOf(((CoreEnumInterface<?>) obj).getValue());
+		} else if (obj instanceof ICoreEnum<?>) {
+			return String.valueOf(((ICoreEnum<?>) obj).getValue());
 		} else if (obj instanceof Date) {
 			return DateFormatUtils.format((Date) obj, "yyyy-MM-dd");
-		} else if (obj instanceof CoreEnumInterface<?>[]) {
-			return StringUtils.join((CoreEnumInterface<?>[]) obj, "_");
+		} else if (obj instanceof ICoreEnum<?>[]) {
+			return StringUtils.join((ICoreEnum<?>[]) obj, "_");
 		} else if (obj instanceof String[]) {
 			return StringUtils.join((String[]) obj, "_");
 		} else if (obj instanceof SortDirection) {
@@ -100,8 +100,8 @@ public class SelectModuleUnitInfo {
 			} catch (Exception e) {
 				return ((IModelObject) obj).getId();
 			}
-		} else if (obj instanceof CoreEnumInterface<?>) {
-			return String.valueOf(((CoreEnumInterface<?>) obj).getDescription());
+		} else if (obj instanceof ICoreEnum<?>) {
+			return String.valueOf(((ICoreEnum<?>) obj).getDescription());
 		}else if (obj instanceof Date) {
 			return DateFormatUtils.format((Date) obj, "yyyy-MM-dd");
 		} else if (obj instanceof Boolean) {

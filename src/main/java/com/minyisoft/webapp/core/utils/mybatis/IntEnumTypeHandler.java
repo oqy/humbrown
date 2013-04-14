@@ -9,39 +9,39 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
-import com.minyisoft.webapp.core.model.enumField.CoreEnumInterface;
+import com.minyisoft.webapp.core.model.enumField.ICoreEnum;
 
-public abstract class IntEnumTypeHandler extends BaseTypeHandler<CoreEnumInterface<Integer>> {
-	public abstract CoreEnumInterface<Integer>[] getEnums();
+public abstract class IntEnumTypeHandler extends BaseTypeHandler<ICoreEnum<Integer>> {
+	public abstract ICoreEnum<Integer>[] getEnums();
 
 	@Override
 	public void setNonNullParameter(PreparedStatement ps, int i,
-			CoreEnumInterface<Integer> parameter, JdbcType jdbcType)
+			ICoreEnum<Integer> parameter, JdbcType jdbcType)
 			throws SQLException {
 		ps.setInt(i, parameter.getValue());
 	}
 
 	@Override
-	public CoreEnumInterface<Integer> getNullableResult(ResultSet rs,
+	public ICoreEnum<Integer> getNullableResult(ResultSet rs,
 			String columnName) throws SQLException {
 		return getEnum(rs.getInt(columnName));
 	}
 
 	@Override
-	public CoreEnumInterface<Integer> getNullableResult(ResultSet rs,
+	public ICoreEnum<Integer> getNullableResult(ResultSet rs,
 			int columnIndex) throws SQLException {
 		return getEnum(rs.getInt(columnIndex));
 	}
 
 	@Override
-	public CoreEnumInterface<Integer> getNullableResult(CallableStatement cs,
+	public ICoreEnum<Integer> getNullableResult(CallableStatement cs,
 			int columnIndex) throws SQLException {
 		return getEnum(cs.getInt(columnIndex));
 	}
 	
-	private CoreEnumInterface<Integer> getEnum(int value){
+	private ICoreEnum<Integer> getEnum(int value){
 		if(ArrayUtils.isNotEmpty(getEnums())){
-			for(CoreEnumInterface<Integer> e:getEnums()){
+			for(ICoreEnum<Integer> e:getEnums()){
 				if(e.getValue()==value){
 					return e;
 				}

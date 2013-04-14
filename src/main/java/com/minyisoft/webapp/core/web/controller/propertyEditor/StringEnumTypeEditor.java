@@ -4,7 +4,7 @@ import java.beans.PropertyEditorSupport;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.minyisoft.webapp.core.model.enumField.CoreEnumInterface;
+import com.minyisoft.webapp.core.model.enumField.ICoreEnum;
 
 /**
  * 系统整形枚举转换器
@@ -12,9 +12,9 @@ import com.minyisoft.webapp.core.model.enumField.CoreEnumInterface;
  *
  */
 public class StringEnumTypeEditor extends PropertyEditorSupport {
-	private CoreEnumInterface<String>[] stringEnums;
+	private ICoreEnum<String>[] stringEnums;
 
-	public StringEnumTypeEditor(CoreEnumInterface<String>[] stringEnums) {
+	public StringEnumTypeEditor(ICoreEnum<String>[] stringEnums) {
 		this.stringEnums = stringEnums;
 	}
 
@@ -23,7 +23,7 @@ public class StringEnumTypeEditor extends PropertyEditorSupport {
 		if (StringUtils.isBlank(text)) {
 			setValue(null);
 		}
-		for (CoreEnumInterface<String> intEnum : this.stringEnums) {
+		for (ICoreEnum<String> intEnum : this.stringEnums) {
 			if (intEnum.getValue().equals(text)) {
 				setValue(intEnum);
 				return;
