@@ -13,7 +13,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.cache.DefaultRedisCachePrefix;
 import org.springframework.data.redis.cache.RedisCachePrefix;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
@@ -28,7 +28,7 @@ public class RedisModelCacheManager implements CacheManager{
 	// fast lookup by name map
 	private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
 	private final Collection<String> names = Collections.unmodifiableSet(caches.keySet());
-	private final RedisTemplate<String,String> template;
+	private final StringRedisTemplate template;
 
 	private boolean usePrefix = false;
 	private RedisCachePrefix cachePrefix = new DefaultRedisCachePrefix();
@@ -37,7 +37,7 @@ public class RedisModelCacheManager implements CacheManager{
 	private long defaultExpiration = 0;
 	private Map<String, Long> expires = null;
 
-	public RedisModelCacheManager(RedisTemplate<String,String> template) {
+	public RedisModelCacheManager(StringRedisTemplate template) {
 		this.template = template;
 	}
 

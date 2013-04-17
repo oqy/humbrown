@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -54,6 +55,22 @@ public class JsonMapper {
 	 */
 	public static JsonMapper nonDefaultMapper() {
 		return new JsonMapper(Include.NON_DEFAULT);
+	}
+	
+	/**
+	 * 创建只转换field的Mapper
+	 * @return
+	 */
+	public static JsonMapper fieldMapper(){
+		JsonMapper mapper=nonDefaultMapper();
+		ObjectMapper objectMapper=mapper.getMapper();
+		// 转换json时只检查变量
+		objectMapper.setVisibilityChecker(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
+																				.withFieldVisibility(Visibility.ANY)
+																				.withGetterVisibility(Visibility.NONE)
+																				.withIsGetterVisibility(Visibility.NONE)
+																				.withSetterVisibility(Visibility.NONE));
+		return mapper;
 	}
 
 	/**

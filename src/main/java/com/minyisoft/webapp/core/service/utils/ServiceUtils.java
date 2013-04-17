@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.ClassUtils;
 
 import com.minyisoft.webapp.core.exception.ServiceException;
 import com.minyisoft.webapp.core.model.IModelObject;
@@ -39,7 +40,7 @@ public final class ServiceUtils {
 	 */
 	@SuppressWarnings("unchecked")
 	public static IBaseService<IModelObject, BaseCriteria> getServiceByObject(IModelObject info){
-		String className = info.getClass().getSimpleName();
+		String className = ClassUtils.getUserClass(info.getClass()).getSimpleName();
 		if (StringUtils.endsWithIgnoreCase(className, "info")) {
 			className = StringUtils.substring(className, 0,
 					StringUtils.lastIndexOf(className, "Info"));
@@ -74,7 +75,7 @@ public final class ServiceUtils {
 	 */
 	public static IModelObject getModel(IModelObject object)
 			throws Exception {
-		if (object == null || StringUtils.isBlank(object.getId())) {
+		if (object == null || !object.isIdPresented()) {
 			return null;
 		}
 		return getServiceByObject(object).getValue(object.getId());

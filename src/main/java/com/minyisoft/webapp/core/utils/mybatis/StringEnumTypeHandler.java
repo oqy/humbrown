@@ -5,49 +5,47 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
+import com.minyisoft.webapp.core.model.enumField.CoreEnumHelper;
 import com.minyisoft.webapp.core.model.enumField.ICoreEnum;
 
-public abstract class StringEnumTypeHandler extends BaseTypeHandler<ICoreEnum<String>> {
-	public abstract ICoreEnum<String>[] getEnums();
+public class StringEnumTypeHandler<E extends ICoreEnum<String>> extends
+		BaseTypeHandler<E> {
+	private Class<E> type;
+
+	public StringEnumTypeHandler(Class<E> type) {
+		if (type == null)
+			throw new IllegalArgumentException("Type argument cannot be null");
+		this.type = type;
+	}
 
 	@Override
-	public void setNonNullParameter(PreparedStatement ps, int i,
-			ICoreEnum<String> parameter, JdbcType jdbcType)
-			throws SQLException {
+	public void setNonNullParameter(PreparedStatement ps, int i, E parameter,
+			JdbcType jdbcType) throws SQLException {
 		ps.setString(i, parameter.getValue());
 	}
 
 	@Override
-	public ICoreEnum<String> getNullableResult(ResultSet rs,
-			String columnName) throws SQLException {
+	public E getNullableResult(ResultSet rs, String columnName)
+			throws SQLException {
 		return getEnum(rs.getString(columnName));
 	}
 
 	@Override
-	public ICoreEnum<String> getNullableResult(ResultSet rs,
-			int columnIndex) throws SQLException {
+	public E getNullableResult(ResultSet rs, int columnIndex)
+			throws SQLException {
 		return getEnum(rs.getString(columnIndex));
 	}
 
 	@Override
-	public ICoreEnum<String> getNullableResult(CallableStatement cs,
-			int columnIndex) throws SQLException {
+	public E getNullableResult(CallableStatement cs, int columnIndex)
+			throws SQLException {
 		return getEnum(cs.getString(columnIndex));
 	}
-	
-	private ICoreEnum<String> getEnum(String value){
-		if(ArrayUtils.isNotEmpty(getEnums())){
-			for(ICoreEnum<String> e:getEnums()){
-				if(StringUtils.equals(e.getValue(), value)){
-					return e;
-				}
-			}
-		}
-		return null;
+
+	private E getEnum(String value) {
+		return CoreEnumHelper.getEnum(type, value);
 	}
 }

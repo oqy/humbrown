@@ -14,28 +14,25 @@ import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minyisoft.webapp.core.exception.ServiceException;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
-import com.minyisoft.webapp.core.utils.mapper.json.JsonMapper;
+import com.minyisoft.webapp.core.utils.mapper.json.ModelJsonMapper;
 import com.minyisoft.webapp.core.utils.mapper.json.jackson.ModelObjectJavaType;
-import com.minyisoft.webapp.core.utils.mapper.json.jackson.ModelObjectModule;
 
 class RedisModelCache implements Cache {
 	private final Class<? extends IModelObject> modelClass;
 
 	private static final int PAGE_SIZE = 128;
 	private final String name;
-	private final RedisTemplate<String, String> template;
+	private final StringRedisTemplate template;
 	private final byte[] prefix;
 	private final byte[] setName;
 	private final byte[] hashName;
@@ -44,7 +41,6 @@ class RedisModelCache implements Cache {
 	private final long expiration;
 	
 	private final Logger logger=LoggerFactory.getLogger(getClass());
-	private final ObjectMapper objectMapper;
 	private final RedisSerializer<Object> keySerializer=new JdkSerializationRedisSerializer();
 
 	/**
@@ -57,7 +53,7 @@ class RedisModelCache implements Cache {
 	 * @param template
 	 * @param expiration
 	 */
-	RedisModelCache(String name, Class<? extends IModelObject> modelClass, byte[] prefix, RedisTemplate<String, String> template, long expiration) {
+	RedisModelCache(String name, Class<? extends IModelObject> modelClass, byte[] prefix, StringRedisTemplate template, long expiration) {
 
 		Assert.hasText(name, "non-empty cache name is required");
 		this.name = name;
@@ -66,10 +62,6 @@ class RedisModelCache implements Cache {
 		this.prefix = prefix;
 		this.expiration = expiration;
 		
-		this.objectMapper=JsonMapper.nonDefaultMapper().getMapper();
-		this.objectMapper.registerModule(new ModelObjectModule());
-		this.objectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-
 		StringRedisSerializer stringSerializer = new StringRedisSerializer();
 		
 		// name of the set holding the keys
@@ -105,7 +97,7 @@ class RedisModelCache implements Cache {
 						bs=connection.get(keyInByte);
 					}
 					try {
-						return (bs == null ? null : new SimpleValueWrapper(objectMapper.readValue(bs, ModelObjectJavaType.construct(modelClass))));
+						return (bs == null ? null : new SimpleValueWrapper(ModelJsonMapper.getInstance().getMapper().readValue(bs, ModelObjectJavaType.construct(modelClass))));
 					} catch (Exception e) {
 						logger.error(e.getMessage(),e);
 						return null;
@@ -130,8 +122,8 @@ class RedisModelCache implements Cache {
 						k = computeKey(model.getId());
 					}
 					try {
-						connection.set(k, objectMapper.writeValueAsBytes(value));
-						logger.debug("写入redis缓存["+modelClass.getName()+"]:"+objectMapper.writeValueAsString(value));
+						connection.set(k, ModelJsonMapper.getInstance().getMapper().writeValueAsBytes(value));
+						logger.debug("写入redis缓存["+modelClass.getName()+"]:"+ModelJsonMapper.getInstance().getMapper().writeValueAsString(value));
 					} catch (JsonProcessingException e) {
 						logger.error(e.getMessage(),e);
 						throw new ServiceException(e);
@@ -163,6 +155,7 @@ class RedisModelCache implements Cache {
 	}
 	
 	private void evictSingle(Object key){
+		logger.debug("擦除redis缓存["+modelClass.getName()+"]:"+key);
 		final byte[] k = computeKey(key);
 		
 		template.execute(new RedisCallback<Object>() {
@@ -176,6 +169,7 @@ class RedisModelCache implements Cache {
 	}
 
 	public void clear() {
+		logger.debug("清空redis缓存["+modelClass.getName()+"]");
 		// need to del each key individually
 		template.execute(new RedisCallback<Object>() {
 			public Object doInRedis(RedisConnection connection) throws DataAccessException {

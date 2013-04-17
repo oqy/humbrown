@@ -17,6 +17,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ClassUtils;
 
@@ -28,6 +29,7 @@ import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.assistant.ISeqCodeObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
 import com.minyisoft.webapp.core.persistence.IBaseDao;
+import com.minyisoft.webapp.core.persistence.ICacheableDao;
 import com.minyisoft.webapp.core.security.utils.PermissionUtils;
 import com.minyisoft.webapp.core.service.IBaseService;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
@@ -37,6 +39,8 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	private @Getter D baseDao;
 	@Autowired
 	protected @Getter Validator validator;
+	@Autowired
+	protected @Getter CacheManager cacheManager;
 	
 	/**
 	 * 根据当前业务操作实例（以***Impl形式命名）获取model对象对应的对象别名
@@ -95,7 +99,7 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 
 	@Override
 	public int save(T info) {
-		if(info==null||StringUtils.isBlank(info.getId())){
+		if(info==null||!info.isIdPresented()){
 			return 0;
 		}
 		checkAuthentication(MODEL_CLASS_ALIAS,PermissionUtils.PERMISSION_UPDATE);
@@ -107,6 +111,11 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 		if(info instanceof BaseInfo){
 			((BaseInfo)info).setLastUpdateDate(new Date());
 			((BaseInfo)info).setLastUpdateUser(getCurrentUser());
+		}
+		
+		// 暂时手工清理缓存
+		if(cacheManager!=null&&baseDao instanceof ICacheableDao<?, ?>){
+			cacheManager.getCache("Model:"+ObjectUuidUtils.getClassShortKey(info.getClass())).evict(info.getId());
 		}
 		return baseDao.updateEntity(info);
 	}
