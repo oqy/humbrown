@@ -14,7 +14,6 @@ import com.minyisoft.webapp.core.annotation.Label;
 @Getter
 @Setter
 public abstract class AbstractUserInfo extends DataBaseInfo {
-	private static final long serialVersionUID = -4677717777416812185L;
 	@NotBlank @Label("用户登录账号")
 	private String userLoginName;
 	@NotBlank @Label("用户登录密码")

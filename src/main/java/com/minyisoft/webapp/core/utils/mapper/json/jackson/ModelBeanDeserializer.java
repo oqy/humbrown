@@ -11,10 +11,10 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
-public class ModelObjectDeserializer extends StdDeserializer<IModelObject> {
+public class ModelBeanDeserializer extends StdDeserializer<IModelObject> {
 	private static final long serialVersionUID = -7882247910895109366L;
 
-	protected ModelObjectDeserializer(Class<IModelObject> vc) {
+	protected ModelBeanDeserializer(Class<IModelObject> vc) {
 		super(vc);
 	}
 

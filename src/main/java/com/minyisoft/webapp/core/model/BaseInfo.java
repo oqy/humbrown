@@ -8,7 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class BaseInfo extends CoreBaseInfo {
-	private static final long serialVersionUID = -2521008980701080825L;
 	// 创建人
 	public AbstractUserInfo createUser;
 	// 创建日期

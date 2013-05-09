@@ -13,7 +13,6 @@ import lombok.Setter;
 @Getter 
 @Setter
 public class RoleInfo extends DataBaseInfo {
-	private static final long serialVersionUID = -2974386838068962547L;
 	// 角色标记值
 	private String value;
 	// 权限列表

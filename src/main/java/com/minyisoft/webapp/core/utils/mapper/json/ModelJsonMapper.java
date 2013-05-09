@@ -1,23 +1,36 @@
 package com.minyisoft.webapp.core.utils.mapper.json;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minyisoft.webapp.core.model.IModelObject;
+import com.minyisoft.webapp.core.utils.mapper.json.jackson.ModelBeanJavaType;
 import com.minyisoft.webapp.core.utils.mapper.json.jackson.ModelObjectModule;
+
 
 /**
  * @author qingyong_ou
  * 针对IModelObject对象作转换的JsonMapper
  */
-public class ModelJsonMapper {
-	//private static Logger logger = LoggerFactory.getLogger(ModelJsonMapper.class);
-	
-	private static ModelJsonMapper mapper=new ModelJsonMapper();
+public enum ModelJsonMapper {
+	INSTANCE;
 	
 	private ObjectMapper objectMapper;
 	
+	private final ConcurrentMap<Class<? extends IModelObject>,ModelBeanJavaType> typeMap = new ConcurrentHashMap<Class<? extends IModelObject>,ModelBeanJavaType>();
+	
 	private ModelJsonMapper(){
 		objectMapper=JsonMapper.nonDefaultMapper().getMapper();
-		objectMapper.registerModule(new ModelObjectModule());
+		ModelObjectModule module=new ModelObjectModule();
+		objectMapper.registerModule(module);
 		// 转换json时只检查变量
 		objectMapper.setVisibilityChecker(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
 																				.withFieldVisibility(Visibility.ANY)
@@ -26,52 +39,99 @@ public class ModelJsonMapper {
 																				.withSetterVisibility(Visibility.NONE));
 	}
 	
-	public static ModelJsonMapper getInstance(){
-		return mapper;
-	}
-	
 	public ObjectMapper getMapper(){
 		return objectMapper;
 	}
 	
-	/*public String toJson(Object object){
-		try {
-			return objectMapper.writeValueAsString(object);
-		}catch (Exception e) {
-			logger.warn("write to json string error:" + object, e);
-			return null;
-		}
+	/**
+	 * 将指定对象转换为json格式字符串
+	 * @param object
+	 * @return
+	 * @throws JsonProcessingException
+	 */
+	public <T extends IModelObject> String toJsonString(T object) throws JsonProcessingException{
+		return objectMapper.writerWithType(getType(object.getClass())).writeValueAsString(object);
 	}
 	
-	@SuppressWarnings("unchecked")
-	public <T> T fromJson(String jsonString, Class<T> clazz) {
-		if (StringUtils.isBlank(jsonString)) {
-			return null;
-		}
-
-		try {
-			if(IModelObject.class.isAssignableFrom(clazz)){
-				return (T)objectMapper.readValue(jsonString, ModelObjectJavaType.construct(ClassUtils.getUserClass(clazz)));
-			}else{
-				return (T)objectMapper.readValue(jsonString, clazz);
-			}
-		} catch (IOException e) {
-			logger.error("parse json string error:" + jsonString, e);
-			return null;
-		}
+	/**
+	 * 将指定对象转换为json格式字节数组
+	 * @param object
+	 * @return
+	 * @throws JsonProcessingException
+	 */
+	public <T extends IModelObject> byte[] toJsonByte(T object) throws JsonProcessingException{
+		return objectMapper.writerWithType(getType(object.getClass())).writeValueAsBytes(object);
 	}
 	
+	/**
+	 * 将指定json字符串转换为指定类型对象
+	 * @param s
+	 * @param clazz
+	 * @return
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */
 	@SuppressWarnings("unchecked")
-	public <T> T fromJson(String jsonString, TypeReference<T> reference) {
-		if (StringUtils.isBlank(jsonString)) {
-			return null;
+	public <T extends IModelObject> T fromJsonString(String s,Class<T> clazz) throws JsonParseException, JsonMappingException, IOException{
+		return (T)objectMapper.readValue(s, getType(clazz));
+	}
+	
+	/**
+	 * 将指定json字节数组转换为指定类型对象
+	 * @param bytes
+	 * @param clazz
+	 * @return
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends IModelObject> T fromJsonByte(byte[] bytes,Class<T> clazz) throws JsonParseException, JsonMappingException, IOException{
+		return (T)objectMapper.readValue(bytes, getType(clazz));
+	}
+	
+	/**
+	 * 将指定对象集合转换为json格式字符串
+	 * @param col
+	 * @return
+	 * @throws JsonProcessingException
+	 */
+	public <T extends IModelObject> String toJsonString(Collection<T> col) throws JsonProcessingException{
+		return objectMapper.writeValueAsString(col);
+	}
+	
+	/**
+	 * 将指定对象集合转换为json格式字节数组
+	 * @param col
+	 * @return
+	 * @throws JsonProcessingException
+	 */
+	public <T extends IModelObject> byte[] toJsonByte(Collection<T> col) throws JsonProcessingException{
+		return objectMapper.writeValueAsBytes(col);
+	}
+	
+	public <T extends IModelObject> Collection<T> fromJsonCollectionString(String s,Class<T> clazz) throws JsonParseException, JsonMappingException, IOException{
+		JavaType modelCollectionRootType=objectMapper.getTypeFactory().constructCollectionType(Collection.class, clazz);
+		return objectMapper.readValue(s, modelCollectionRootType);
+	}
+	
+	public <T extends IModelObject> Collection<T> fromJsonCollectionByte(byte[] s,Class<T> clazz) throws JsonParseException, JsonMappingException, IOException{
+		JavaType modelCollectionRootType=objectMapper.getTypeFactory().constructCollectionType(Collection.class, clazz);
+		return objectMapper.readValue(s, modelCollectionRootType);
+	}
+	
+	/**
+	 * 缓存IModelObject class对应的ModelBeanJavaType
+	 * @param clazz
+	 * @return
+	 */
+	private ModelBeanJavaType getType(Class<? extends IModelObject> clazz){
+		ModelBeanJavaType type=typeMap.get(clazz);
+		if(type==null){
+			type=ModelBeanJavaType.construct(clazz);
+			typeMap.put(clazz, type);
 		}
-
-		try {
-			return (T)objectMapper.readValue(jsonString, reference);
-		} catch (IOException e) {
-			logger.error("parse json string error:" + jsonString, e);
-			return null;
-		}
-	}*/
+		return type;
+	}
 }

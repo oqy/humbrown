@@ -24,14 +24,15 @@ public class RedisModelCacheManager implements CacheManager{
 	private final ConcurrentMap<String, Class<? extends IModelObject>> modelClassCaches = new ConcurrentHashMap<String, Class<? extends IModelObject>>();
 	// model对象缓存名称前缀
 	private final String modelCacehNamePrefix="Model:";
+	// model集合缓存名称前缀
+	private final String modelQueryCacehNamePrefix="ModelCollection:";
 
 	// fast lookup by name map
 	private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
 	private final Collection<String> names = Collections.unmodifiableSet(caches.keySet());
 	private final StringRedisTemplate template;
 
-	private boolean usePrefix = false;
-	private RedisCachePrefix cachePrefix = new DefaultRedisCachePrefix();
+	private RedisCachePrefix cachePrefix = new DefaultRedisCachePrefix(":");
 
 	// 0 - never expire
 	private long defaultExpiration = 0;
@@ -46,7 +47,7 @@ public class RedisModelCacheManager implements CacheManager{
 		Cache c = caches.get(name);
 		if (c == null) {
 			long expiration = computeExpiration(name);
-			// 
+			// 实例缓存
 			if(StringUtils.startsWithIgnoreCase(name, modelCacehNamePrefix)){
 				String modelKey=StringUtils.stripStart(name, modelCacehNamePrefix);
 				Class<? extends IModelObject> modelClass=modelClassCaches.get(modelKey);
@@ -59,7 +60,23 @@ public class RedisModelCacheManager implements CacheManager{
 					}
 				}
 				if(modelClass!=null){
-					c = new RedisModelCache(name, modelClass, (usePrefix ? cachePrefix.prefix(name): null), template, expiration);
+					c = new RedisModelCache(name, modelClass, cachePrefix.prefix(name), template, expiration);
+				}
+			}
+			// 查询 缓存
+			else if(StringUtils.startsWithIgnoreCase(name, modelQueryCacehNamePrefix)){
+				String modelKey=StringUtils.stripStart(name, modelQueryCacehNamePrefix);
+				Class<? extends IModelObject> modelClass=modelClassCaches.get(modelKey);
+				if(modelClass==null){
+					try {
+						modelClass=(Class<? extends IModelObject>)Class.forName(ObjectUuidUtils.getClassNameByObjectKey(modelKey));
+						modelClassCaches.put(modelKey, modelClass);
+					} catch (ClassNotFoundException e) {
+						logger.error(e.getMessage(),e);
+					}
+				}
+				if(modelClass!=null){
+					c = new RedisModelQueryCache(name, modelClass, cachePrefix.prefix(name), template, expiration);
 				}
 			}
 			caches.put(name, c);
@@ -78,10 +95,6 @@ public class RedisModelCacheManager implements CacheManager{
 
 	public Collection<String> getCacheNames() {
 		return names;
-	}
-
-	public void setUsePrefix(boolean usePrefix) {
-		this.usePrefix = usePrefix;
 	}
 
 	/**

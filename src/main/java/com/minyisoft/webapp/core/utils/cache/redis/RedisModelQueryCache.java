@@ -2,12 +2,9 @@ package com.minyisoft.webapp.core.utils.cache.redis;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
@@ -22,10 +19,9 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.util.Assert;
 
 import com.minyisoft.webapp.core.model.IModelObject;
-import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 import com.minyisoft.webapp.core.utils.mapper.json.ModelJsonMapper;
 
-class RedisModelCache implements Cache {
+class RedisModelQueryCache implements Cache {
 	private final Class<? extends IModelObject> modelClass;
 
 	private static final int PAGE_SIZE = 128;
@@ -33,7 +29,6 @@ class RedisModelCache implements Cache {
 	private final StringRedisTemplate template;
 	private final byte[] prefix;
 	private final byte[] setName;
-	private final byte[] hashName;
 	private final byte[] cacheLockName;
 	private long WAIT_FOR_LOCK = 300;
 	private final long expiration;
@@ -51,7 +46,7 @@ class RedisModelCache implements Cache {
 	 * @param template
 	 * @param expiration
 	 */
-	RedisModelCache(String name, Class<? extends IModelObject> modelClass, byte[] prefix, StringRedisTemplate template, long expiration) {
+	RedisModelQueryCache(String name, Class<? extends IModelObject> modelClass, byte[] prefix, StringRedisTemplate template, long expiration) {
 
 		Assert.hasText(name, "non-empty cache name is required");
 		this.name = name;
@@ -64,7 +59,6 @@ class RedisModelCache implements Cache {
 		
 		// name of the set holding the keys
 		this.setName = stringSerializer.serialize(name + "~keys");
-		this.hashName = stringSerializer.serialize(name + "~hashkeys");
 		this.cacheLockName = stringSerializer.serialize(name + "~lock");
 	}
 
@@ -83,19 +77,11 @@ class RedisModelCache implements Cache {
 			return (ValueWrapper) template.execute(new RedisCallback<ValueWrapper>() {
 				public ValueWrapper doInRedis(RedisConnection connection) throws DataAccessException {
 					waitForLock(connection);
-					byte[] bs = null;
-					byte[] keyInByte = computeKey(key);
-					if (!ObjectUuidUtils.isLegalId(modelClass,(String)key)) {
-						byte[] hashKey = connection.hGet(hashName, keyInByte);
-						if (hashKey!=null&&ArrayUtils.isNotEmpty(hashKey)) {
-							bs=connection.get(hashKey);
-						}
-					} else {
-						bs=connection.get(keyInByte);
-					}
+					byte[] keyBytes=computeKey(key);
+					byte[] bs = connection.get(keyBytes);
 					try {
-						logger.debug("读取redis缓存["+modelClass.getName()+"]:"+keyInByte);
-						return (bs == null ? null : new SimpleValueWrapper(ModelJsonMapper.INSTANCE.fromJsonByte(bs, modelClass)));
+						logger.debug("读取redis集合缓存["+modelClass.getName()+"]:"+new String(keyBytes,"utf-8"));
+						return (bs == null ? null : new SimpleValueWrapper(ModelJsonMapper.INSTANCE.fromJsonCollectionByte(bs,modelClass)));
 					} catch (Exception e) {
 						logger.error(e.getMessage(),e);
 						return null;
@@ -107,22 +93,20 @@ class RedisModelCache implements Cache {
 	}
 
 	public void put(final Object key, final Object value) {
-		if(key instanceof String&&value instanceof IModelObject) {
+		if (key instanceof String
+				&& value instanceof Collection) {
 			template.execute(new RedisCallback<Object>() {
 				public Object doInRedis(RedisConnection connection) throws DataAccessException {
-					final IModelObject model = (IModelObject) value;
+					@SuppressWarnings("unchecked")
+					final Collection<? extends IModelObject> col = (Collection<? extends IModelObject>) value;
 					byte[] k = computeKey(key);
 					
 					waitForLock(connection);
 					connection.multi();
-					if (!StringUtils.equals((String) key, model.getId())) {
-						connection.hSet(hashName, k, computeKey(model.getId()));
-						k = computeKey(model.getId());
-					}
 					try {
-						byte[] cacheByte=ModelJsonMapper.INSTANCE.toJsonByte(model);
+						byte[] cacheByte=ModelJsonMapper.INSTANCE.toJsonByte(col);
 						connection.set(k, cacheByte);
-						logger.debug("写入redis缓存["+modelClass.getName()+"]:"+new String(cacheByte,"utf-8"));
+						logger.debug("写入redis集合缓存["+modelClass.getName()+"]:"+new String(cacheByte,"utf-8"));
 					} catch (Exception e) {
 						logger.error(e.getMessage(),e);
 					}
@@ -132,7 +116,6 @@ class RedisModelCache implements Cache {
 						connection.expire(k, expiration);
 						// update the expiration of the set of keys as well
 						connection.expire(setName, expiration);
-						connection.expire(hashName, expiration);
 					}
 					connection.exec();
 	
@@ -143,21 +126,12 @@ class RedisModelCache implements Cache {
 	}
 
 	public void evict(Object key) {
-		if(key instanceof List<?>&&CollectionUtils.isNotEmpty((List<?>)key)){
-			for(Object k:(List<?>)key){
-				evictSingle(k);
-			}
-		}else{
-			evictSingle(key);
-		}
-	}
-	
-	private void evictSingle(Object key){
 		final byte[] k = computeKey(key);
 		try {
-			logger.debug("擦除redis缓存["+modelClass.getName()+"]:"+new String(k,"utf-8"));
+			logger.debug("擦除redis查询缓存["+modelClass.getName()+"]:"+new String(k,"utf-8"));
 		} catch (UnsupportedEncodingException e) {
 		}
+		
 		template.execute(new RedisCallback<Object>() {
 			public Object doInRedis(RedisConnection connection) throws DataAccessException {
 				connection.del(k);
@@ -169,7 +143,7 @@ class RedisModelCache implements Cache {
 	}
 
 	public void clear() {
-		logger.debug("清空redis缓存["+modelClass.getName()+"]");
+		logger.debug("清空redis查询缓存["+modelClass.getName()+"]");
 		// need to del each key individually
 		template.execute(new RedisCallback<Object>() {
 			public Object doInRedis(RedisConnection connection) throws DataAccessException {
@@ -195,7 +169,6 @@ class RedisModelCache implements Cache {
 					} while (!finished);
 
 					connection.del(setName);
-					connection.del(hashName);
 					return null;
 
 				} finally {

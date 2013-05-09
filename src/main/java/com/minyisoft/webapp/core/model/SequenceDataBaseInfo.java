@@ -10,7 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class SequenceDataBaseInfo extends DataBaseInfo {
-	private static final long serialVersionUID = -5757214154505335332L;
 	// 序号
 	private int seq=99;
 }

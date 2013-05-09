@@ -1,24 +1,15 @@
 package com.minyisoft.webapp.core.utils.mapper.json.jackson;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
-public class ModelObjectModule extends Module {
-
-	@Override
-	public String getModuleName() {
-		return "jackson-datatype-webapp-modelobject";
-	}
-
-	@Override
-	public Version version() {
-		return Version.unknownVersion();
-	}
+public class ModelObjectModule extends SimpleModule {
+	private static final long serialVersionUID = 5309608946736458160L;
 
 	@Override
 	public void setupModule(SetupContext context) {
-		context.addBeanSerializerModifier(new ModelObjectSerializerModifier());
-		context.addBeanDeserializerModifier(new ModelObjectDeserializerModifier());
+		super.setupModule(context);
+		context.addBeanSerializerModifier(new ModelBeanSerializerModifier());
+		context.addBeanDeserializerModifier(new ModelBeanDeserializerModifier());
 	}
 
 }
