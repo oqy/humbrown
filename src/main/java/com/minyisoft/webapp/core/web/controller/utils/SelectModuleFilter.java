@@ -2,12 +2,15 @@ package com.minyisoft.webapp.core.web.controller.utils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import lombok.Getter;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.reflect.FieldUtils;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -16,6 +19,7 @@ import com.minyisoft.webapp.core.annotation.Label;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.assistant.IAutoCompleteObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
+import com.minyisoft.webapp.core.model.criteria.SortDirection;
 import com.minyisoft.webapp.core.model.enumField.ICoreEnum;
 
 /**
@@ -49,7 +53,7 @@ public class SelectModuleFilter{
 	public SelectModuleFilter(BaseCriteria criteria,boolean sortFlag) {
 		this.criteria = criteria;
 		this.sortFlag = sortFlag;
-		//buildSort();
+		buildSort();
 	}
 
 	/**
@@ -61,32 +65,13 @@ public class SelectModuleFilter{
 	 * Boolean:CHECKBOX;
 	 * IModelObject:HIDDEN;
 	 * 组件文字说明从指定对象的注解中获取
-	 * @param name 过滤对象字段名，对应页面html组件id和name的名字
+	 * @param propertyName 过滤对象字段名，对应页面html组件id和name的名字
 	 * @throws Exception
 	 */
-	public void addField(String name) throws Exception{
-		addField(name, getFieldLable(name), getDefaultDisplayType(PropertyUtils.getPropertyType(criteria, name)), null, null);
+	public void addField(String propertyName) throws Exception{
+		_addField(propertyName, getFieldLable(propertyName), null, null);
 	}
 	
-	/**
-	 * 将过滤对象指定字段作为隐藏组件加入过滤元素列表
-	 * @param name
-	 * @throws Exception
-	 */
-	public void addHiddenField(String name) throws Exception{
-		addField(name, null,DisplayTypeEnum.HIDDEN, null, null);
-	}
-	
-	/**
-	 * 将过滤对象指定字段作为autoComplete组件加入过滤元素列表
-	 * @param name
-	 * @param autoCompleteRequestUrl
-	 * @throws Exception
-	 */
-	public void addAutoCompleteField(String name,String autoCompleteRequestUrl) throws Exception{
-		addField(name, getFieldLable(name),DisplayTypeEnum.AUTO_COMPLETE, null,autoCompleteRequestUrl);
-	}
-
 	/**
 	 * 将过滤对象指定字段加入过滤元素列表，按对象默认展示方式进行展示
 	 * Date:TEXT;
@@ -95,36 +80,98 @@ public class SelectModuleFilter{
 	 * Enum:HIDDEN;
 	 * Boolean:CHECKBOX;
 	 * IModelObject:HIDDEN;
-	 * @param name 过滤对象字段名，对应页面html组件id和name的名字
-	 * @param labelVal 组件中的文字说明
+	 * @param propertyName 过滤对象字段名，对应页面html组件id和name的名字
+	 * @param label 组件中的文字说明
 	 * @throws Exception
 	 */
-	public void addField(String name,String labelVal) throws Exception{
-		addField(name, labelVal, getDefaultDisplayType(PropertyUtils.getPropertyType(criteria, name)), null, null);
+	public void addField(String propertyName,String label) throws Exception{
+		_addField(propertyName, label, null, null);
+	}
+	
+	/**
+	 * 将过滤对象指定字段作为隐藏组件加入过滤元素列表
+	 * @param propertyName
+	 * @throws Exception
+	 */
+	public void addHiddenField(String propertyName) throws Exception{
+		_addField(propertyName, null, DisplayTypeEnum.HIDDEN, null);
+	}
+	
+	/**
+	 * 将过滤对象指定字段作为autoComplete组件加入过滤元素列表
+	 * @param propertyName
+	 * @param autoCompleteRequestUrl
+	 * @throws Exception
+	 */
+	public void addAutoCompleteField(String propertyName,String autoCompleteRequestUrl) throws Exception{
+		_addField(propertyName, getFieldLable(propertyName), DisplayTypeEnum.AUTO_COMPLETE,autoCompleteRequestUrl);
 	}
 	
 	/**
 	 * 将过滤对象指定字段加入过滤元素列表
-	 * @param name 过滤对象字段名，对应页面html组件id和name的名字
-	 * @param labelVal 组件中的文字说明
+	 * @param propertyName 过滤对象字段名，对应页面html组件id和name的名字
+	 * @param label 组件中的文字说明
 	 * @param displayType 组件展示方式
 	 * @param displayPropertyName 过滤对象字段对应为IModelObject对象时作为显示值的属性字段名
 	 * @throws Exception
 	 */
-	public void addField(String name,String labelVal,DisplayTypeEnum displayType,String displayPropertyName,String autoCompleteRequestUrl) throws Exception{
-		Class<?> propertyType=PropertyUtils.getPropertyType(criteria, name);
-
-		if(IModelObject.class.isAssignableFrom(propertyType)) {
-			if(IAutoCompleteObject.class.isAssignableFrom(propertyType)&&!StringUtils.isBlank(autoCompleteRequestUrl)){
-				SelectModuleUnitInfo selectUnit=new SelectModuleUnitInfo(labelVal,name,displayType,PropertyUtils.getProperty(criteria, name),"label");
-				selectUnit.setAutoCompleteRequestUrl(autoCompleteRequestUrl);
-				unitContentList.add(selectUnit);
+	private void _addField(String propertyName, String label, DisplayTypeEnum displayType, String autoCompleteRequestUrl) throws Exception{
+		Class<?> propertyType=PropertyUtils.getPropertyType(criteria, propertyName);
+		displayType=(displayType==null)?getDefaultDisplayType(PropertyUtils.getPropertyType(criteria, propertyName)):displayType;
+		
+		if(propertyType.isArray()){
+			Object[] objs=(Object[])PropertyUtils.getProperty(criteria, propertyName);
+			if(ArrayUtils.isEmpty(objs)){
+				_addToUnitContentList(propertyName,null,label,propertyType,null,displayType,autoCompleteRequestUrl);
 			}else{
-				unitContentList.add(new SelectModuleUnitInfo(labelVal,name+".id",displayType,PropertyUtils.getProperty(criteria, name),StringUtils.isBlank(displayPropertyName)?"name":displayPropertyName));
+				int count=0;
+				for(Object obj:objs){
+					_addToUnitContentList(propertyName,propertyName+"_"+count,label,propertyType,obj,displayType,autoCompleteRequestUrl);
+					count++;
+				}
+			}
+		}else if(Collection.class.isAssignableFrom(propertyType)){
+			Collection<?> objs=(Collection<?>)PropertyUtils.getProperty(criteria, propertyName);
+			if(CollectionUtils.isEmpty(objs)){
+				_addToUnitContentList(propertyName,null,label,propertyType,null,displayType,autoCompleteRequestUrl);
+			}else{
+				int count=0;
+				for(Object obj:objs){
+					_addToUnitContentList(propertyName,propertyName+"_"+count,label,propertyType,obj,displayType,autoCompleteRequestUrl);
+					count++;
+				}
 			}
 		}else{
-			unitContentList.add(new SelectModuleUnitInfo(labelVal,name,displayType,PropertyUtils.getProperty(criteria, name),null));
+			_addToUnitContentList(propertyName,null,label,propertyType,PropertyUtils.getProperty(criteria, propertyName),displayType,autoCompleteRequestUrl);
 		}
+	}
+	
+	/**
+	 * @param propertyName
+	 * @param id
+	 * @param label
+	 * @param propertyType
+	 * @param propertyValue
+	 * @param displayType
+	 * @param autoCompleteRequestUrl
+	 */
+	private void _addToUnitContentList(String propertyName, String id, String label, Class<?> propertyType, Object propertyValue, DisplayTypeEnum displayType, String autoCompleteRequestUrl) {
+		SelectModuleUnitInfo selectUnit=null;
+		if(displayType==DisplayTypeEnum.AUTO_COMPLETE
+				&&IAutoCompleteObject.class.isAssignableFrom(propertyType)
+				&&!StringUtils.isBlank(autoCompleteRequestUrl)){
+			selectUnit=new SelectModuleUnitInfo(label,propertyName,displayType,propertyValue);
+			selectUnit.setAutoCompleteRequestUrl(autoCompleteRequestUrl);
+		}else{
+			if(IAutoCompleteObject.class.isAssignableFrom(propertyType)){
+				displayType=getDefaultDisplayType(IModelObject.class);
+			}
+			selectUnit=new SelectModuleUnitInfo(label,propertyName,displayType,propertyValue);
+		}
+		if(StringUtils.isNotBlank(id)){
+			selectUnit.setId(id);
+		}
+		unitContentList.add(selectUnit);
 	}
 
 	/**
@@ -133,49 +180,26 @@ public class SelectModuleFilter{
 	 * @throws Exception
 	 */
 	public void addField(String name,List<?> optionList) throws Exception{
-		addField(name,getFieldLable(name),optionList,null);
-	}
-	/**
-	 * @param name 组件id和name的名字
-	 * @param propertyName 组件为对象时，所取的属性名
-	 * @param optionList 组件的候选值
-	 * @throws Exception
-	 */
-	public void addField(String name,List<?> optionList,String displayPropertyName) throws Exception{
-		addField(name,getFieldLable(name),optionList,displayPropertyName);
-	}
-	/**
-	 * @param name 组件id和name的名字
-	 * @param optionList 组件的候选值
-	 * @param labelVal 组件中的文字说明
-	 * @throws Exception
-	 */
-	public void addField(String name,String labelVal,List<?> optionList) throws Exception{
-		addField(name,labelVal,optionList,null);
+		addField(name,getFieldLable(name),optionList);
 	}
 
 	/**
 	 * @param name 组件id和name的名字
 	 * @param optionList 组件的候选值
 	 * @param label 组件中的文字说明
-	 * @param propertyName 组件为对象时，所取的属性名
 	 * @throws Exception
 	 */
-	public void addField(String name,String label,List<?> optionList,String displayPropertyName) throws Exception{
+	public void addField(String name,String label,List<?> optionList) throws Exception{
 		Class<?> propertyType=PropertyUtils.getPropertyType(criteria, name);
 
 		//设置搜索组件的元素
-		if(IModelObject.class.isAssignableFrom(propertyType)) {
-			unitContentList.add(new SelectModuleUnitInfo(label,name+".id", DisplayTypeEnum.SELECT,PropertyUtils.getProperty(criteria, name),optionList,
-					StringUtils.isBlank(displayPropertyName)?"name":displayPropertyName));
-		} else if(Boolean.class.isAssignableFrom(propertyType)) {
+		if(Boolean.class.isAssignableFrom(propertyType)&&CollectionUtils.isEmpty(optionList)) {
 			List<Boolean> bList = new ArrayList<Boolean>();
 			bList.add(true);
 			bList.add(false);
-			unitContentList.add(new SelectModuleUnitInfo(label,name, DisplayTypeEnum.SELECT,PropertyUtils.getProperty(criteria, name),bList,
-					StringUtils.isBlank(displayPropertyName)?"name":displayPropertyName));
+			unitContentList.add(new SelectModuleUnitInfo(label,name, DisplayTypeEnum.SELECT,PropertyUtils.getProperty(criteria, name),bList));
 		} else {
-			unitContentList.add(new SelectModuleUnitInfo(label,name, DisplayTypeEnum.SELECT,PropertyUtils.getProperty(criteria, name),optionList,null));
+			unitContentList.add(new SelectModuleUnitInfo(label,name, DisplayTypeEnum.SELECT,PropertyUtils.getProperty(criteria, name),optionList));
 		}
 	}
 
@@ -183,7 +207,7 @@ public class SelectModuleFilter{
 	 * 根据排序名获取该排序字段的排序方式
 	 * @param name 排序名
 	 * @return
-	 
+	 */
 	public String getSortDirection(String name) {
 		String result = "";
 		if(this.criteria.getSortDirections() != null && this.criteria.getSortDirections().length != 0) {
@@ -195,11 +219,27 @@ public class SelectModuleFilter{
 			}
 		}
 		return result;
-	}*/
+	}
 
 	/**
+	 * 是否隐藏
+	 * @return
+	 * @throws Exception
+	 */
+	public boolean isHideSelectForm() throws Exception{
+		if(unitContentList != null && unitContentList.size() > 0) {
+			for(SelectModuleUnitInfo info : unitContentList) {
+				if(!info.getType().equalsIgnoreCase("hidden")) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	/**
 	 * 对排序进行处理
-	 
+	 */
 	private void buildSort() {
 		if(!StringUtils.isBlank(criteria.getSortDirectionString())) {
 			try {
@@ -209,7 +249,7 @@ public class SelectModuleFilter{
 				e.printStackTrace();
 			}
 		}
-	}*/
+	}
 	/**
 	 * 获取过滤对象指定属性的@Label注解值
 	 * @param criteria

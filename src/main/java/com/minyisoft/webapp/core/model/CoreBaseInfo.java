@@ -10,6 +10,8 @@ import org.apache.commons.lang.StringUtils;
 public abstract class CoreBaseInfo implements IModelObject{
 	// 记录id，主键
 	private String id;
+	// 对象版本号，乐观锁应用
+	private int version=1;
 
 	@Override
 	public boolean equals(Object obj) {

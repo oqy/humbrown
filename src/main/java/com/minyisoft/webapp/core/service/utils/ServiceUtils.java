@@ -27,8 +27,8 @@ public final class ServiceUtils {
 	 * @param id
 	 * @return
 	 */
-	public static IBaseService<IModelObject, BaseCriteria> getServiceById(String id){
-		return getServiceByObject(ObjectUuidUtils.getObjectById(id));
+	public static IBaseService<IModelObject, BaseCriteria> getService(String id){
+		return getService(ObjectUuidUtils.getObejctClass(id));
 	}
 
 	/**
@@ -39,8 +39,8 @@ public final class ServiceUtils {
 	 * @throws ServiceException
 	 */
 	@SuppressWarnings("unchecked")
-	public static IBaseService<IModelObject, BaseCriteria> getServiceByObject(IModelObject info){
-		String className = ClassUtils.getUserClass(info.getClass()).getSimpleName();
+	public static IBaseService<IModelObject, BaseCriteria> getService(Class<? extends IModelObject> clazz){
+		String className = ClassUtils.getUserClass(clazz).getSimpleName();
 		if (StringUtils.endsWithIgnoreCase(className, "info")) {
 			className = StringUtils.substring(className, 0,
 					StringUtils.lastIndexOf(className, "Info"));
@@ -63,7 +63,7 @@ public final class ServiceUtils {
 		if (StringUtils.isBlank(id)) {
 			return null;
 		}
-		return getServiceById(id).getValue(id);
+		return getService(id).getValue(id);
 	}
 
 	/**
@@ -78,7 +78,7 @@ public final class ServiceUtils {
 		if (object == null || !object.isIdPresented()) {
 			return null;
 		}
-		return getServiceByObject(object).getValue(object.getId());
+		return getService(object.getClass()).getValue(object.getId());
 	}
 
 	/**
@@ -101,7 +101,7 @@ public final class ServiceUtils {
 		try{
 			BaseCriteria criteria = (BaseCriteria) Class.forName(className + "Criteria").newInstance();
 			criteria.setIds(ids);
-			return getServiceById(ids[0]).getCollection(criteria);
+			return getService(ids[0]).getCollection(criteria);
 		}catch(Exception e){
 			throw new ServiceException(e);
 		}
@@ -115,6 +115,6 @@ public final class ServiceUtils {
 	 * @throws Exception
 	 */
 	public static int deleteModel(String id){
-		return getServiceById(id).delete(id);
+		return getService(id).delete(id);
 	}
 }

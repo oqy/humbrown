@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import com.minyisoft.webapp.core.annotation.Label;
 
@@ -20,8 +21,10 @@ public abstract class BaseCriteria {
 	// 需排除主键集合
 	private String[] excludeIds;
 	@Label(value = "查询时间起")
+	@DateTimeFormat(pattern="yyyy-MM-dd")
 	private Date queryBeginDate;
 	@Label(value="查询时间止")
+	@DateTimeFormat(pattern="yyyy-MM-dd")
 	private Date queryEndDate;
 	@Label(value="按创建时间排序")
 	private SortDirection createDateOrder;

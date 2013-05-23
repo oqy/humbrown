@@ -1,5 +1,7 @@
 package com.minyisoft.webapp.core.web.controller.utils;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -7,7 +9,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 
 import com.minyisoft.webapp.core.model.IModelObject;
@@ -25,45 +28,55 @@ public class SelectModuleUnitInfo {
 	private String type;
 	// 组件name属性值
 	private String name;
+	// 组件id属性值
+	private String id;
 	// 组件的对象值
 	private Object value;
 	// 候选项列表
 	private List<?> optionList;
-	// 对象值和候选项显示属性
-	private String displayPropertyName;
 	// autoComplete组件异步请求路径
 	private String autoCompleteRequestUrl;
 
-	public SelectModuleUnitInfo(String label, String name,
-			DisplayTypeEnum type, Object value, List<?> optionList,
-			String displayPropertyName) {
+	public SelectModuleUnitInfo(String label, String name, DisplayTypeEnum type, Object value, List<?> optionList) {
 		this.label = label;
 		this.type = type.getDescription();
 		this.name = name;
+		this.id = name;
 		this.value = value;
 		this.optionList = optionList;
-		this.displayPropertyName = displayPropertyName;
 	}
 
-	public SelectModuleUnitInfo(String label, String name,
-			DisplayTypeEnum type, Object value, String displayPropertyName) {
+	public SelectModuleUnitInfo(String label, String name, DisplayTypeEnum type, Object value) {
 		this.label = label;
 		this.type = type.getDescription();
 		this.name = name;
+		this.id = name;
 		this.value = value;
-		this.displayPropertyName = displayPropertyName;
 	}
-
+	
 	/**
-	 * 获取html组件id属性值
-	 * 
+	 * 指定对象是否与组件对象值相匹配
+	 * @param obj
 	 * @return
 	 */
-	public String getComponentId() {
-		if (StringUtils.endsWithIgnoreCase(name, ".id")) {
-			return StringUtils.substringBefore(name, ".id");
-		} else {
-			return name;
+	public boolean isValueMatched(Object obj){
+		if(value==null){
+			return false;
+		}
+		if(value.getClass().isArray()){
+			if(obj instanceof Object[]){
+				return Arrays.equals((Object[])value, (Object[])obj);
+			}else{
+				return ArrayUtils.contains((Object[])value, obj);
+			}
+		}else if(Collection.class.isAssignableFrom(value.getClass())){
+			if(obj instanceof Collection){
+				return CollectionUtils.isEqualCollection((Collection<?>)value, (Collection<?>)obj);
+			}else{
+				return ((Collection<?>)value).contains(obj);
+			}
+		}else{
+			return value.equals(obj);
 		}
 	}
 
@@ -77,16 +90,11 @@ public class SelectModuleUnitInfo {
 			return String.valueOf(((ICoreEnum<?>) obj).getValue());
 		} else if (obj instanceof Date) {
 			return DateFormatUtils.format((Date) obj, "yyyy-MM-dd");
-		} else if (obj instanceof ICoreEnum<?>[]) {
-			return StringUtils.join((ICoreEnum<?>[]) obj, "_");
-		} else if (obj instanceof String[]) {
-			return StringUtils.join((String[]) obj, "_");
 		} else if (obj instanceof SortDirection) {
 			return ((SortDirection) obj).getSortDirection().toString();
 		} else {
 			return String.valueOf(obj);
 		}
-
 	}
 
 	public String getDisplayLabel(Object obj) {
@@ -95,13 +103,12 @@ public class SelectModuleUnitInfo {
 		}
 		if (obj instanceof IModelObject) {
 			try {
-				return (String) PropertyUtils.getProperty(obj,
-						displayPropertyName);
+				return String.valueOf(PropertyUtils.getProperty(obj,"name"));
 			} catch (Exception e) {
 				return ((IModelObject) obj).getId();
 			}
 		} else if (obj instanceof ICoreEnum<?>) {
-			return String.valueOf(((ICoreEnum<?>) obj).getDescription());
+			return ((ICoreEnum<?>) obj).getDescription();
 		}else if (obj instanceof Date) {
 			return DateFormatUtils.format((Date) obj, "yyyy-MM-dd");
 		} else if (obj instanceof Boolean) {
