@@ -37,7 +37,7 @@ public final class ObjectUuidUtils {
 	
 	static{	
 		try{
-			Resource[] resources=new PathMatchingResourcePatternResolver().getResources("classpath*:com/minyisoft/webapp/**/modelKey.properties");
+			Resource[] resources=new PathMatchingResourcePatternResolver().getResources("classpath*:com/fusung/webapp/**/modelKey.properties");
 			if(!ArrayUtils.isEmpty(resources)){
 				for (Resource rsc : resources) {
 					keyClassProperties.load(rsc.getInputStream());
@@ -50,20 +50,20 @@ public final class ObjectUuidUtils {
 				classKeyProperties.put(entry.getValue(), entry.getKey());
 			}
 		}catch (Exception e) {
-			// TODO: handle exception
+			throw new EntityException(e);
 		}
 	}
 
-	public static String createObjectID(IModelObject info) {
+	public static String createObjectID(Class<? extends IModelObject> clazz) {
 		UUID uuid = UUID.randomUUID();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutput out = new DataOutputStream(baos);
 		try {
-			out.writeLong(Long.parseLong((String)classKeyProperties.get(info.getClass().getName()),16));
+			out.writeLong(Long.parseLong((String)classKeyProperties.get(ClassUtils.getUserClass(clazz).getName()),16));
 			out.writeLong(uuid.getMostSignificantBits());
 			out.writeLong(uuid.getLeastSignificantBits());
 		} catch (IOException ioe) {
-			throw new EntityException(EntityException.ENTITY_OBJECT_ID_GENERATE_ERROR,new Object[]{info.getClass().getName()});
+			throw new EntityException(EntityException.ENTITY_OBJECT_ID_GENERATE_ERROR,new Object[]{ClassUtils.getUserClass(clazz).getName()});
 		}
 		return EncodeUtils.encodeUrlSafeBase64(baos.toByteArray());
 	}
@@ -77,10 +77,15 @@ public final class ObjectUuidUtils {
 
 			return (Class<? extends IModelObject>)Class.forName(keyClassProperties.get(Long.toHexString(key).toUpperCase()).toString());
 		} catch (Exception ioe) {
-			throw new EntityException(EntityException.ENTITY_ID_NOT_EXIST,new Object[]{id});
+			return null;
 		}
 	}
 	
+	/**
+	 * 根据id获取对象，相关属性后加载处理
+	 * @param id
+	 * @return
+	 */
 	public static IModelObject getObjectById(String id){
 		if(StringUtils.isBlank(id)){
 			return null;
@@ -88,22 +93,14 @@ public final class ObjectUuidUtils {
 		try{
 			IModelObject info= (IModelObject)getObejctClass(id).newInstance();
 			info.setId(id);
-			return info;
-		}catch(Exception ioe){
-			throw new EntityException(EntityException.ENTITY_ID_NOT_EXIST,new Object[]{id});
-		}
-	}
-	
-	public static IModelObject getEnhancedObjectById(String id){
-		IModelObject bizModel=ObjectUuidUtils.getObjectById(id);
-		if(bizModel!=null){
+			
 			Enhancer enhancer=new Enhancer();  
-	        enhancer.setSuperclass(bizModel.getClass());  
-	        enhancer.setCallback(new ModelLazyLoadMethodInterceptor(bizModel));
-	        return (IModelObject)enhancer.create();
-        }else{
-        	return null;
-        }
+		    enhancer.setSuperclass(info.getClass());
+		    enhancer.setCallback(new ModelLazyLoadMethodInterceptor(info));
+		    return (IModelObject)enhancer.create();
+		}catch (Exception e) {
+			return null;
+		}
 	}
 	
 	public static String getClassShortKey(Class<? extends IModelObject> clazz){

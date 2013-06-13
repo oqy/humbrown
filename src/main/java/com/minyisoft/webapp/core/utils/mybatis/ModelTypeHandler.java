@@ -24,18 +24,18 @@ public class ModelTypeHandler extends BaseTypeHandler<IModelObject> {
 	@Override
 	public IModelObject getNullableResult(ResultSet rs, String columnName)
 			throws SQLException {
-		return ObjectUuidUtils.getEnhancedObjectById(rs.getString(columnName));
+		return ObjectUuidUtils.getObjectById(rs.getString(columnName));
 	}
 
 	@Override
 	public IModelObject getNullableResult(ResultSet rs, int columnIndex)
 			throws SQLException {
-		return ObjectUuidUtils.getEnhancedObjectById(rs.getString(columnIndex));
+		return ObjectUuidUtils.getObjectById(rs.getString(columnIndex));
 	}
 
 	@Override
 	public IModelObject getNullableResult(CallableStatement cs, int columnIndex)
 			throws SQLException {
-		return ObjectUuidUtils.getEnhancedObjectById(cs.getString(columnIndex));
+		return ObjectUuidUtils.getObjectById(cs.getString(columnIndex));
 	}
 }

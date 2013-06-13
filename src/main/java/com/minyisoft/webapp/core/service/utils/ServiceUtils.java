@@ -1,6 +1,8 @@
 package com.minyisoft.webapp.core.service.utils;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -17,18 +19,11 @@ import com.minyisoft.webapp.core.utils.SpringUtils;
  * @author qingyong_ou 业务接口工具类
  */
 public final class ServiceUtils {
+	// 缓存IModelObject类对应IBaseService接口
+	private static final ConcurrentMap<Class<? extends IModelObject>,IBaseService<IModelObject, BaseCriteria>> modelServiceCaches = new ConcurrentHashMap<Class<? extends IModelObject>,IBaseService<IModelObject, BaseCriteria>>();
+	
 	private ServiceUtils() {
 
-	}
-
-	/**
-	 * 根据id返回业务service，不存在对应的service则抛出异常
-	 * 
-	 * @param id
-	 * @return
-	 */
-	public static IBaseService<IModelObject, BaseCriteria> getService(String id){
-		return getService(ObjectUuidUtils.getObejctClass(id));
 	}
 
 	/**
@@ -40,14 +35,20 @@ public final class ServiceUtils {
 	 */
 	@SuppressWarnings("unchecked")
 	public static IBaseService<IModelObject, BaseCriteria> getService(Class<? extends IModelObject> clazz){
-		String className = ClassUtils.getUserClass(clazz).getSimpleName();
-		if (StringUtils.endsWithIgnoreCase(className, "info")) {
-			className = StringUtils.substring(className, 0,
-					StringUtils.lastIndexOf(className, "Info"));
-		}
-		IBaseService<IModelObject, BaseCriteria> bizInterface = (IBaseService<IModelObject, BaseCriteria>) SpringUtils.getBean(StringUtils.uncapitalize(className) + "Service");
-		if (bizInterface == null) {
+		if(clazz==null){
 			throw new ServiceException("你所请求的业务接口不存在");
+		}
+		IBaseService<IModelObject,BaseCriteria> bizInterface=modelServiceCaches.get(clazz);
+		if(bizInterface==null){
+			String className = ClassUtils.getUserClass(clazz).getSimpleName();
+			if (StringUtils.endsWithIgnoreCase(className, "info")) {
+				className = StringUtils.removeEndIgnoreCase(className, "Info");
+			}
+			bizInterface = (IBaseService<IModelObject, BaseCriteria>) SpringUtils.getBean(StringUtils.uncapitalize(className) + "Service");
+			if (bizInterface == null) {
+				throw new ServiceException("你所请求的业务接口不存在");
+			}
+			modelServiceCaches.put(clazz, bizInterface);
 		}
 		return bizInterface;
 	}
@@ -63,7 +64,7 @@ public final class ServiceUtils {
 		if (StringUtils.isBlank(id)) {
 			return null;
 		}
-		return getService(id).getValue(id);
+		return getService(ObjectUuidUtils.getObejctClass(id)).getValue(id);
 	}
 
 	/**
@@ -88,7 +89,7 @@ public final class ServiceUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static List<IModelObject> getModelCollection(String[] ids){
+	public static List<? extends IModelObject> getModelCollection(String[] ids){
 		if (ArrayUtils.isEmpty(ids)) {
 			return null;
 		}
@@ -101,7 +102,7 @@ public final class ServiceUtils {
 		try{
 			BaseCriteria criteria = (BaseCriteria) Class.forName(className + "Criteria").newInstance();
 			criteria.setIds(ids);
-			return getService(ids[0]).getCollection(criteria);
+			return getService(ObjectUuidUtils.getObejctClass(ids[0])).getCollection(criteria);
 		}catch(Exception e){
 			throw new ServiceException(e);
 		}
@@ -110,11 +111,11 @@ public final class ServiceUtils {
 	/**
 	 * 根据id删除对象
 	 * 
-	 * @param id
+	 * @param object
 	 * @return
 	 * @throws Exception
 	 */
-	public static int deleteModel(String id){
-		return getService(id).delete(id);
+	public static <T extends IModelObject> void deleteModel(T object){
+		getService(object.getClass()).delete(object);
 	}
 }

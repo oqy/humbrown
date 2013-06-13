@@ -21,7 +21,7 @@ public class ModelBeanDeserializer extends StdDeserializer<IModelObject> {
 	@Override
 	public IModelObject deserialize(JsonParser jp,DeserializationContext ctxt) throws IOException,JsonProcessingException {
 		if (StringUtils.isNotBlank(jp.getValueAsString())) {
-			return ObjectUuidUtils.getEnhancedObjectById(jp.getValueAsString());
+			return ObjectUuidUtils.getObjectById(jp.getValueAsString());
 		}
 		return null;
 	}

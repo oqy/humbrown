@@ -7,7 +7,7 @@ import org.apache.commons.lang.StringUtils;
 
 @Getter 
 @Setter
-public abstract class CoreBaseInfo implements IModelObject{
+public abstract class CoreBaseInfo implements IModelObject {
 	// 记录id，主键
 	private String id;
 	// 对象版本号，乐观锁应用

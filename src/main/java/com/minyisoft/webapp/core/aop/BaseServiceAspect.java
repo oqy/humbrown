@@ -10,7 +10,7 @@ public class BaseServiceAspect extends BaseAspect{
 	/**
 	 * 删除Pointcut
 	 */
-	@Pointcut("execution(* com.minyisoft.webapp.*.service.impl.*.delete(java.lang.String))")
+	@Pointcut("execution(* com.minyisoft.webapp.*.service.impl.*.delete(com.minyisoft.webapp.core.model.IModelObject))")
 	public void deletePointcut() {}
 	
 	/**

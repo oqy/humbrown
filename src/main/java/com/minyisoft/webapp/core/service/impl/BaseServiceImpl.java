@@ -23,9 +23,10 @@ import org.springframework.util.ClassUtils;
 
 import com.minyisoft.webapp.core.annotation.Label;
 import com.minyisoft.webapp.core.exception.ServiceException;
-import com.minyisoft.webapp.core.model.AbstractUserInfo;
 import com.minyisoft.webapp.core.model.BaseInfo;
+import com.minyisoft.webapp.core.model.CoreBaseInfo;
 import com.minyisoft.webapp.core.model.IModelObject;
+import com.minyisoft.webapp.core.model.ISystemUserObject;
 import com.minyisoft.webapp.core.model.assistant.ISeqCodeObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
 import com.minyisoft.webapp.core.persistence.IBaseDao;
@@ -55,7 +56,7 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	@Override
 	public void addNew(T info) {
 		if(info==null){
-			return;
+			throw new ServiceException("新增业务对象不能为空");
 		}
 		checkAuthentication(MODEL_CLASS_ALIAS,PermissionUtils.PERMISSION_CREATE);
 		
@@ -64,7 +65,7 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 		}
 		
 		if(StringUtils.isBlank(info.getId())){
-			info.setId(ObjectUuidUtils.createObjectID(info));
+			info.setId(ObjectUuidUtils.createObjectID(info.getClass()));
 		}
 		if(info instanceof BaseInfo){
 			if(((BaseInfo)info).getCreateDate()==null){
@@ -89,18 +90,18 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	}
 
 	@Override
-	public int delete(String id) {
-		if(StringUtils.isBlank(id)){
-			return 0;
-		}
+	public void delete(T info) {
 		checkAuthentication(MODEL_CLASS_ALIAS,PermissionUtils.PERMISSION_DELETE);
-		return baseDao.batchDelete(Arrays.asList(id));
+		validateDataBeforeDelete(info);
+		if(baseDao.batchDelete(Arrays.asList(info.getId()))<=0){
+			throw new ServiceException("无法删除业务对象，请稍后再试");
+		}
 	}
 
 	@Override
-	public int save(T info) {
+	public void save(T info) {
 		if(info==null||!info.isIdPresented()){
-			return 0;
+			throw new ServiceException("待更新业务对象不能为空");
 		}
 		checkAuthentication(MODEL_CLASS_ALIAS,PermissionUtils.PERMISSION_UPDATE);
 		
@@ -117,7 +118,13 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 		if(cacheManager!=null&&baseDao instanceof ICacheableDao<?, ?>){
 			cacheManager.getCache("Model:"+ObjectUuidUtils.getClassShortKey(info.getClass())).evict(info.getId());
 		}
-		return baseDao.updateEntity(info);
+		if(baseDao.updateEntity(info)<=0){
+			throw new ServiceException("无法更新业务对象，请稍后再试");
+		}
+		// 累计当前版本号
+		if(info instanceof CoreBaseInfo){
+			((CoreBaseInfo)info).setVersion(((CoreBaseInfo)info).getVersion()+1);
+		}
 	}
 
 	@Override
@@ -129,23 +136,30 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	}
 
 	@Override
-	public int batchDelete(String[] ids) {
+	public void batchDelete(String[] ids) {
 		if(!ArrayUtils.isEmpty(ids)){
-			checkAuthentication(MODEL_CLASS_ALIAS,PermissionUtils.PERMISSION_DELETE);
-			return baseDao.batchDelete(Arrays.asList(ids));
+			T info=null;
+			for(String id:ids){
+				info=getValue(id);
+				if(info!=null){
+					delete(getValue(id));
+				}
+			}
 		}
-		return 0;
 	}
 
 	@Override
 	public void submit(T info) {
 		if(info==null){
-			return;
+			throw new ServiceException("待操作业务对象不存在");
 		}
 		if(StringUtils.isBlank(info.getId())){
 			addNew(info);
 		}else{
 			if(getValue(info.getId())==null){
+				if(!ObjectUuidUtils.isLegalId(info.getClass(), info.getId())){
+					info.setId(null);
+				}
 				addNew(info);
 			}else{
 				save(info);
@@ -242,9 +256,19 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 		}
 	}
 	
-	protected AbstractUserInfo getCurrentUser(){
+	/**
+	 * 提交信息时对对象数据进行检查
+	 * @return
+	 */
+	protected void validateDataBeforeDelete(T info){
+		if(info==null||!info.isIdPresented()){
+			throw new ServiceException("待删除业务对象不能为空");
+		}
+	}
+	
+	protected ISystemUserObject getCurrentUser(){
 		try{
-			return (AbstractUserInfo)ObjectUuidUtils.getEnhancedObjectById((String)org.apache.shiro.SecurityUtils.getSubject().getPrincipal());
+			return (ISystemUserObject)ObjectUuidUtils.getObjectById((String)org.apache.shiro.SecurityUtils.getSubject().getPrincipal());
 		}catch(Exception e){
 			return null;
 		}

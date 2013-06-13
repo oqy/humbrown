@@ -5,6 +5,12 @@ import java.util.List;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
 
+/**
+ * @author qingyong_ou
+ * 业务处理接口基类
+ * @param <T>
+ * @param <C>
+ */
 public interface IBaseService<T extends IModelObject, C extends BaseCriteria> {
 	/**
 	 * 新增记录
@@ -17,14 +23,14 @@ public interface IBaseService<T extends IModelObject, C extends BaseCriteria> {
 	 * @param id
 	 * @return
 	 */
-	public int delete(String id);
+	public void delete(T info);
 
 	/**
 	 * 更新（保存）记录
 	 * @param info
 	 * @return
 	 */
-	public int save(T info);
+	public void save(T info);
 
 	/**
 	 * 根据id查找数据库记录并转换为对应对象
@@ -36,9 +42,8 @@ public interface IBaseService<T extends IModelObject, C extends BaseCriteria> {
 	/**
 	 * 根据id集合批量删除记录
 	 * @param ids
-	 * @return
 	 */
-	public int batchDelete(String[] ids);
+	public void batchDelete(String[] ids);
 	
 	/**
 	 * 提交记录，若记录id为空，则执行新增操作，否则执行更新操作
