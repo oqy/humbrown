@@ -1,6 +1,5 @@
 package com.minyisoft.webapp.core.utils;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import net.sf.cglib.proxy.MethodInterceptor;
@@ -15,8 +14,7 @@ import com.minyisoft.webapp.core.service.utils.ServiceUtils;
  * @author qingong_ou
  * 业务对象后加载拦截器
  */
-public class ModelLazyLoadMethodInterceptor implements MethodInterceptor,Serializable {
-	private static final long serialVersionUID = -8191145475189976338L;
+public class ModelLazyLoadMethodInterceptor implements MethodInterceptor {
 	/**
 	 * 源业务对象
 	 */
@@ -38,7 +36,7 @@ public class ModelLazyLoadMethodInterceptor implements MethodInterceptor,Seriali
 	@Override
 	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
 		if (!lazyLoaded && !StringUtils.startsWithAny(method.getName(), excludeMethods)) {
-			bizModel=ServiceUtils.getModel(bizModel);
+			bizModel=ServiceUtils.getModel(bizModel.getId());
 			lazyLoaded=true;
         }
 		if(bizModel==null){

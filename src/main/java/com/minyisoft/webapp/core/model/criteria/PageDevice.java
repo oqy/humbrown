@@ -2,6 +2,8 @@ package com.minyisoft.webapp.core.model.criteria;
 
 import java.util.ArrayList;
 
+import org.apache.commons.lang.ArrayUtils;
+
 import com.minyisoft.webapp.core.annotation.Label;
 
 /**
@@ -135,5 +137,15 @@ public class PageDevice {
 			pageList.add(currentPageListSize+1,totalPage);
 		}
 		return pageList.toArray(new Integer[pageList.size()]);
+	}
+	
+	/**
+	 * 按反序获取当前页码和总页码
+	 * @return
+	 */
+	public Integer[] getReverseVisiblePageNumbers(){
+		Integer[] numbers=getVisiblePageNumbers();
+		ArrayUtils.reverse(numbers);
+		return numbers;
 	}
 }

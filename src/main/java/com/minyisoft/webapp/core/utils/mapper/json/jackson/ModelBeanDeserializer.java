@@ -14,8 +14,8 @@ import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 public class ModelBeanDeserializer extends StdDeserializer<IModelObject> {
 	private static final long serialVersionUID = -7882247910895109366L;
 
-	protected ModelBeanDeserializer(Class<IModelObject> vc) {
-		super(vc);
+	protected ModelBeanDeserializer() {
+		super(IModelObject.class);
 	}
 
 	@Override

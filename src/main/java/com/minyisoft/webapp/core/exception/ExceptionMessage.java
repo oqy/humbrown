@@ -2,7 +2,7 @@ package com.minyisoft.webapp.core.exception;
 
 import java.util.Locale;
 
-import com.minyisoft.webapp.core.utils.RegexResourceBundleMessageSource;
+import com.minyisoft.webapp.core.utils.spring.RegexResourceBundleMessageSource;
 
 public class ExceptionMessage{
 	private String exceptionMsg;

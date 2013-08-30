@@ -13,10 +13,9 @@ import com.minyisoft.webapp.core.model.IBillObject.NotifyAction;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
 import com.minyisoft.webapp.core.persistence.IAbstractBillRelationDao;
 import com.minyisoft.webapp.core.persistence.IBaseDao;
-import com.minyisoft.webapp.core.service.IBaseService;
 import com.minyisoft.webapp.core.service.IBillRelationProcessor;
 
-public abstract class BillBaseImpl<T extends IBillObject, C extends BaseCriteria, D extends IBaseDao<T,C>> extends BaseServiceImpl<T,C,D> implements IBaseService<T, C>,IBillRelationProcessor<T> {
+public abstract class BillBaseImpl<T extends IBillObject, C extends BaseCriteria, D extends IBaseDao<T,C>> extends BaseServiceImpl<T,C,D> implements IBillRelationProcessor<T> {
 	@Autowired
 	private @Getter IAbstractBillRelationDao billReationDao;
 	

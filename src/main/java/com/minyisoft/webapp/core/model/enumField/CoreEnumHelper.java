@@ -5,7 +5,7 @@ import java.util.Locale;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.minyisoft.webapp.core.utils.RegexResourceBundleMessageSource;
+import com.minyisoft.webapp.core.utils.spring.RegexResourceBundleMessageSource;
 
 /**
  * @author qingyong_ou 枚举帮助类

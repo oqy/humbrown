@@ -9,11 +9,12 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.util.ClassUtils;
 
 import com.minyisoft.webapp.core.exception.ServiceException;
+import com.minyisoft.webapp.core.model.CoreBaseInfo;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
 import com.minyisoft.webapp.core.service.IBaseService;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
-import com.minyisoft.webapp.core.utils.SpringUtils;
+import com.minyisoft.webapp.core.utils.spring.SpringUtils;
 
 /**
  * @author qingyong_ou 业务接口工具类
@@ -35,7 +36,7 @@ public final class ServiceUtils {
 	 */
 	@SuppressWarnings("unchecked")
 	public static IBaseService<IModelObject, BaseCriteria> getService(Class<? extends IModelObject> clazz){
-		if(clazz==null){
+		if(clazz==null||!CoreBaseInfo.class.isAssignableFrom(clazz)){
 			throw new ServiceException("你所请求的业务接口不存在");
 		}
 		IBaseService<IModelObject,BaseCriteria> bizInterface=modelServiceCaches.get(clazz);
@@ -64,22 +65,21 @@ public final class ServiceUtils {
 		if (StringUtils.isBlank(id)) {
 			return null;
 		}
-		return getService(ObjectUuidUtils.getObejctClass(id)).getValue(id);
-	}
-
-	/**
-	 * 根据对象获取对象
-	 * 
-	 * @param id
-	 * @return
-	 * @throws Exception
-	 */
-	public static IModelObject getModel(IModelObject object)
-			throws Exception {
-		if (object == null || !object.isIdPresented()) {
-			return null;
+		Class<? extends IModelObject> clazz=ObjectUuidUtils.getObejctClass(id);
+		if(clazz!=null){
+			// 目标对象为枚举类型
+			if(clazz.isEnum()){
+				for(IModelObject e:clazz.getEnumConstants()){
+					if(e.getId().equals(id)){
+						return e;
+					}
+				}
+				return null;
+			}
+			// 目标对象为CoreBaseInfo对象类型
+			return getService(clazz).getValue(id);
 		}
-		return getService(object.getClass()).getValue(object.getId());
+		return null;
 	}
 
 	/**
@@ -93,7 +93,8 @@ public final class ServiceUtils {
 		if (ArrayUtils.isEmpty(ids)) {
 			return null;
 		}
-		Class<?> clazz = ObjectUuidUtils.getObjectById(ids[0]).getClass();
+		Class<?> clazz = ClassUtils.getUserClass(ObjectUuidUtils.getObjectById(ids[0]).getClass());
+		
 		String className = StringUtils.substring(clazz.getName(), 0, clazz.getName().lastIndexOf("."))+ ".criteria.";
 		if (StringUtils.endsWithIgnoreCase(clazz.getSimpleName(), "info")) {
 			className += StringUtils.substring(clazz.getSimpleName(), 0,
@@ -116,6 +117,8 @@ public final class ServiceUtils {
 	 * @throws Exception
 	 */
 	public static <T extends IModelObject> void deleteModel(T object){
-		getService(object.getClass()).delete(object);
+		if(!object.getClass().isEnum()){
+			getService(object.getClass()).delete(object);
+		}
 	}
 }

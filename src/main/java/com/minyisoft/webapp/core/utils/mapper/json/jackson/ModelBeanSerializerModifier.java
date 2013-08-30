@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.minyisoft.webapp.core.model.IModelObject;
 
 public class ModelBeanSerializerModifier extends BeanSerializerModifier {
-	private ModelBeanSerializer _modelBeanSerializer=new ModelBeanSerializer(IModelObject.class);
+	private ModelBeanSerializer _modelBeanSerializer=new ModelBeanSerializer();
 	
 	@Override
 	public JsonSerializer<?> modifySerializer(SerializationConfig config,

@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import net.sf.cglib.proxy.Enhancer;
 
@@ -30,6 +32,8 @@ public final class ObjectUuidUtils {
 	private static final Properties keyClassProperties=new Properties();
 	// 根据model key检索类全名
 	private static final Properties classKeyProperties=new Properties();
+	// 缓存model简码对应的类
+	private static final ConcurrentMap<String, Class<? extends IModelObject>> modelClassCaches = new ConcurrentHashMap<String, Class<? extends IModelObject>>();
 	
 	private ObjectUuidUtils(){
 		
@@ -91,13 +95,26 @@ public final class ObjectUuidUtils {
 			return null;
 		}
 		try{
-			IModelObject info= (IModelObject)getObejctClass(id).newInstance();
-			info.setId(id);
-			
-			Enhancer enhancer=new Enhancer();  
-		    enhancer.setSuperclass(info.getClass());
-		    enhancer.setCallback(new ModelLazyLoadMethodInterceptor(info));
-		    return (IModelObject)enhancer.create();
+			Class<? extends IModelObject> clazz=getObejctClass(id);
+			// 目标对象为枚举类型
+			if(clazz.isEnum()){
+				for(IModelObject e:clazz.getEnumConstants()){
+					if(e.getId().equals(id)){
+						return e;
+					}
+				}
+				return null;
+			}
+			// 目标对象为CoreBaseInfo对象类型
+			else{
+				IModelObject info= (IModelObject)clazz.newInstance();
+				info.setId(id);
+				
+				Enhancer enhancer=new Enhancer();  
+			    enhancer.setSuperclass(info.getClass());
+			    enhancer.setCallback(new ModelLazyLoadMethodInterceptor(info));
+			    return (IModelObject)enhancer.create();
+			}
 		}catch (Exception e) {
 			return null;
 		}
@@ -107,8 +124,17 @@ public final class ObjectUuidUtils {
 		return (String)classKeyProperties.get(ClassUtils.getUserClass(clazz).getName());
 	}
 	
-	public static String getClassNameByObjectKey(String key){
-		return keyClassProperties.getProperty(key);
+	@SuppressWarnings("unchecked")
+	public static Class<? extends IModelObject> getClassByObjectKey(String key){
+		Class<? extends IModelObject> modelClass=modelClassCaches.get(key);
+		if(modelClass==null){
+			try {
+				modelClass=(Class<? extends IModelObject>)Class.forName(keyClassProperties.getProperty(key));
+				modelClassCaches.put(key, modelClass);
+			} catch (ClassNotFoundException e) {
+			}
+		}
+		return modelClass;
 	}
 	
 	/**

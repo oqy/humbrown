@@ -1,6 +1,8 @@
 package com.minyisoft.webapp.core.web.controller.utils;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -238,6 +240,61 @@ public class SelectModuleFilter{
 	}
 	
 	/**
+	 * 获取过滤组件对应http request的查询字符串
+	 * @return
+	 */
+	public String getRequestQueryString(){
+		if(CollectionUtils.isNotEmpty(unitContentList)){
+			StringBuffer sb=new StringBuffer();
+			for(SelectModuleUnitInfo  unit : unitContentList){
+				if(unit.getValue()!=null){
+					if(unit.getValue().getClass().isArray()){
+						for(Object o :(Object[])unit.getValue()){
+							try {
+								sb.append(unit.getName()).append("=").append(URLEncoder.encode(unit.getObjectValue(o), "utf-8")).append("&");
+							} catch (UnsupportedEncodingException e) {
+							}
+						}
+					}else if(Collection.class.isAssignableFrom(unit.getValue().getClass())){
+						for(Object o :(Collection<?>)unit.getValue()){
+							try {
+								sb.append(unit.getName()).append("=").append(URLEncoder.encode(unit.getObjectValue(o), "utf-8")).append("&");
+							} catch (UnsupportedEncodingException e) {
+							}
+						}
+					}else{
+						try {
+							sb.append(unit.getName()).append("=").append(URLEncoder.encode(unit.getObjectValue(unit.getValue()), "utf-8")).append("&");
+						} catch (UnsupportedEncodingException e) {
+						}
+					}
+				}
+			}
+			return sb.length()>1?sb.deleteCharAt(sb.length()-1).toString():null;
+		}
+		return null;
+	}
+	
+	/**
+	 * 根据指定url构建完整的查询路径
+	 * @param url
+	 * @return
+	 */
+	public String getRequestUrl(String url){
+		if(StringUtils.isBlank(url)){
+			return null;
+		}
+		String queryString=getRequestQueryString();
+		if(StringUtils.isBlank(queryString)){
+			return url;
+		}else if(url.indexOf('?')<0){
+			return url+"?"+queryString;
+		}else{
+			return url+"&"+queryString;
+		}
+	}
+	
+	/**
 	 * 对排序进行处理
 	 */
 	private void buildSort() {
@@ -298,5 +355,5 @@ public class SelectModuleFilter{
 		}else{
 			return DisplayTypeEnum.TEXT;
 		}
-	}
+	} 
 }

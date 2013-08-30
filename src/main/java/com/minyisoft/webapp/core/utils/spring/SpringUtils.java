@@ -1,4 +1,4 @@
-package com.minyisoft.webapp.core.utils;
+package com.minyisoft.webapp.core.utils.spring;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

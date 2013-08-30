@@ -1,4 +1,4 @@
-package com.minyisoft.webapp.core.utils;
+package com.minyisoft.webapp.core.utils.spring;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 public class RegexResourceBundleMessageSource extends ResourceBundleMessageSource {
 	private static final Logger logger=LoggerFactory.getLogger(RegexResourceBundleMessageSource.class);
 	private final String PROPERTY_POSTFIX = ".properties";
-	final String PACKAGE_PREFIX="com.minyisoft.webapp.";
+	private final String PACKAGE_PREFIX="com.fusung.webapp.";
 	
 	public RegexResourceBundleMessageSource(String[] regexBaseNames){
 		List<String> baseNameList = new ArrayList<String>();
@@ -48,7 +48,7 @@ public class RegexResourceBundleMessageSource extends ResourceBundleMessageSourc
 	/**
 	 * 系统默认资源文件
 	 */
-	private static final RegexResourceBundleMessageSource systemDefaultMessageSource=new RegexResourceBundleMessageSource(new String[]{"classpath*:com/minyisoft/webapp/**/exceptionMessage.properties","classpath*:com/minyisoft/webapp/**/enumField/enumDescription.properties"});
+	private static final RegexResourceBundleMessageSource systemDefaultMessageSource=new RegexResourceBundleMessageSource(new String[]{"classpath*:com/fusung/webapp/**/exceptionMessage.properties","classpath*:com/fusung/webapp/**/enumField/enumDescription.properties"});
 	
 	/**
 	 * 获取系统默认资源文件

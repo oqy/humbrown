@@ -9,9 +9,9 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.minyisoft.webapp.core.model.IModelObject;
 
 public class ModelBeanSerializer extends StdSerializer<IModelObject> {
-
-	protected ModelBeanSerializer(Class<IModelObject> t) {
-		super(t);
+	
+	protected ModelBeanSerializer(){
+		super(IModelObject.class);
 	}
 
 	@Override

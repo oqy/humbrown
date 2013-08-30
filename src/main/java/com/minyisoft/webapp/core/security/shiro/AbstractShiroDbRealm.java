@@ -1,4 +1,4 @@
-package com.minyisoft.webapp.core.security;
+package com.minyisoft.webapp.core.security.shiro;
 
 import java.util.List;
 
@@ -18,11 +18,10 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
 
+import com.minyisoft.webapp.core.model.ISystemOrgObject;
 import com.minyisoft.webapp.core.model.ISystemRoleObject;
 import com.minyisoft.webapp.core.model.ISystemUserObject;
 import com.minyisoft.webapp.core.model.PermissionInfo;
-import com.minyisoft.webapp.core.security.utils.EncodeUtils;
-import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
 /**
  * @author qingyong_ou shiro登录对象
@@ -38,10 +37,9 @@ public abstract class AbstractShiroDbRealm<U extends ISystemUserObject,R extends
 		ISystemUserObject user = getUserByLoginName(token.getUsername());
 		if (user != null) {
 			if(StringUtils.isBlank(user.getUserPasswordSalt())){
-				return new SimpleAuthenticationInfo(user.getId(), user.getUserPassword(),null, getName());
+				return new SimpleAuthenticationInfo(createPrincipal(user), user.getUserPassword(),null, getName());
 			}else{
-				byte[] salt = EncodeUtils.decodeHex(user.getUserPasswordSalt());
-				return new SimpleAuthenticationInfo(user.getId(), user.getUserPassword(),ByteSource.Util.bytes(salt), getName());
+				return new SimpleAuthenticationInfo(createPrincipal(user), user.getUserPassword(),ByteSource.Util.bytes(user.getUserPasswordSalt()), getName());
 			}
 		} else {
 			return null;
@@ -55,15 +53,16 @@ public abstract class AbstractShiroDbRealm<U extends ISystemUserObject,R extends
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(
 			PrincipalCollection principals) {
-		U user = (U) ObjectUuidUtils.getObjectById((String)principals.getPrimaryPrincipal());
+		U user = (U) ((BasePrincipal)principals.getPrimaryPrincipal()).getSystemUser();
+		ISystemOrgObject org=getSystemOrg((BasePrincipal)principals.getPrimaryPrincipal());
 		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
-		List<R> userRoles = getUserRoles(user);
+		List<R> userRoles = getUserRoles(user,org);
 		if (CollectionUtils.isNotEmpty(userRoles)) {
 			for (R role : userRoles) {
 				info.addRole(role.getValue());
 			}
 		}
-		List<PermissionInfo> userPermissions = getUserPermissions(user);
+		List<PermissionInfo> userPermissions = getUserPermissions(user,org);
 		if (CollectionUtils.isNotEmpty(userPermissions)) {
 			for (PermissionInfo permission : userPermissions) {
 				info.addStringPermission(permission.getValue());
@@ -82,6 +81,13 @@ public abstract class AbstractShiroDbRealm<U extends ISystemUserObject,R extends
 
 		setCredentialsMatcher(matcher);
 	}
+	
+	/**
+	 * 创建Principal，业务系统可根据实际需求返回继承BasePrincipal的Principal
+	 * @param user
+	 * @return
+	 */
+	public abstract BasePrincipal createPrincipal(ISystemUserObject user);
 
 	/**
 	 * 获取哈希算法
@@ -96,6 +102,13 @@ public abstract class AbstractShiroDbRealm<U extends ISystemUserObject,R extends
 	 * @return
 	 */
 	public abstract int getHashInterations();
+	
+	/**
+	 * 获取登录用户所在组织架构
+	 * @param basePrincipal
+	 * @return
+	 */
+	public abstract ISystemOrgObject getSystemOrg(BasePrincipal basePrincipal);
 
 	/**
 	 * 根据登录名获取用户信息
@@ -106,18 +119,18 @@ public abstract class AbstractShiroDbRealm<U extends ISystemUserObject,R extends
 	public abstract U getUserByLoginName(String userLoginName);
 
 	/**
-	 * 获取授予指定用户的角色列表
-	 * 
+	 * 获取授予指定用户于指定组织结构的角色列表
 	 * @param user
+	 * @param systemOrg 可为空
 	 * @return
 	 */
-	public abstract List<R> getUserRoles(U user);
+	public abstract List<R> getUserRoles(U user,ISystemOrgObject systemOrg);
 
 	/**
-	 * 获取授予指定用户的权限列表
-	 * 
+	 * 获取授予指定用户于指定组织结构的权限列表
 	 * @param user
+	 * @param systemOrg 可为空
 	 * @return
 	 */
-	public abstract List<PermissionInfo> getUserPermissions(U user);
+	public abstract List<PermissionInfo> getUserPermissions(U user,ISystemOrgObject systemOrg);
 }

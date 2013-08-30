@@ -38,6 +38,14 @@ public abstract class BaseCriteria {
 	// 排序数组字符串--页面信息传递用
 	private String sortDirectionString;
 	
+	public void setExcludeIds(String... ids){
+		this.excludeIds=ids;
+	}
+	
+	public void setIds(String... ids){
+		this.ids=ids;
+	}
+	
 	public void setSortDirectionStringByArray() {
 		StringBuffer result = new StringBuffer();
 		for(SortDirection s : sortDirections) {

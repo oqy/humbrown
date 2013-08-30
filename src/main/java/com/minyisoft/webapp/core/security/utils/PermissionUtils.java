@@ -24,7 +24,7 @@ public final class PermissionUtils {
 
 	private static Map<String, PermissionInfo> permissionMap = new HashMap<String, PermissionInfo>();
 
-	private static final String permissionFilePattern="classpath*:com/minyisoft/webapp/**/permission/*.permission";
+	private static final String permissionFilePattern="classpath*:com/fusung/webapp/**/permission/*.permission";
 	
 	private static ThreadLocal<Boolean> suspendPermissionCheck = new ThreadLocal<Boolean>();
 	
@@ -70,7 +70,7 @@ public final class PermissionUtils {
 		try {
 			Resource[] permissionFiles=new PathMatchingResourcePatternResolver().getResources(permissionFilePattern);
 			for(Resource rs : permissionFiles){
-				BufferedReader br=new BufferedReader(new InputStreamReader(rs.getInputStream()));
+				BufferedReader br=new BufferedReader(new InputStreamReader(rs.getInputStream(),"UTF-8"));
 				String line="";
 				String[] permissionSet = null;
 				String[] permissionPropertySet = null;
@@ -88,7 +88,7 @@ public final class PermissionUtils {
 							permissionInfo.setGroupLabel(permissionPropertySet[2]);
 							permissionInfo.setValue(permissionPropertySet[0]);
 							permissionInfo.setModuleCode(StringUtils.substringAfterLast(
-									StringUtils.substringBefore(ObjectUuidUtils.getClassNameByObjectKey(permissionInfo.getGroupLabel()), ".model"), 
+									StringUtils.substringBefore(ObjectUuidUtils.getClassByObjectKey(permissionInfo.getGroupLabel()).getName(), ".model"), 
 									"."));
 							permissionMap.put(permissionInfo.getValue(),permissionInfo);
 						}

@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import com.minyisoft.webapp.core.annotation.Label;
@@ -31,6 +32,7 @@ import com.minyisoft.webapp.core.model.assistant.ISeqCodeObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
 import com.minyisoft.webapp.core.persistence.IBaseDao;
 import com.minyisoft.webapp.core.persistence.ICacheableDao;
+import com.minyisoft.webapp.core.security.shiro.BasePrincipal;
 import com.minyisoft.webapp.core.security.utils.PermissionUtils;
 import com.minyisoft.webapp.core.service.IBaseService;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
@@ -46,7 +48,7 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	/**
 	 * 根据当前业务操作实例（以***Impl形式命名）获取model对象对应的对象别名
 	 */
-	protected final String MODEL_CLASS_ALIAS=StringUtils.stripEnd(this.getClass().getSimpleName(), "Impl");
+	protected final String MODEL_CLASS_ALIAS=StringUtils.removeEndIgnoreCase(this.getClass().getSimpleName(), "Impl");
 	
 	@Autowired
 	public void setDao(D dao){
@@ -55,14 +57,8 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	
 	@Override
 	public void addNew(T info) {
-		if(info==null){
-			throw new ServiceException("新增业务对象不能为空");
-		}
+		validateData(info,BaseOprtEnum.ADD);
 		checkAuthentication(MODEL_CLASS_ALIAS,PermissionUtils.PERMISSION_CREATE);
-		
-		if(validateBeforeSubmit()){
-			validateData(info);
-		}
 		
 		if(StringUtils.isBlank(info.getId())){
 			info.setId(ObjectUuidUtils.createObjectID(info.getClass()));
@@ -91,8 +87,8 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 
 	@Override
 	public void delete(T info) {
+		validateData(info, BaseOprtEnum.DELETE);
 		checkAuthentication(MODEL_CLASS_ALIAS,PermissionUtils.PERMISSION_DELETE);
-		validateDataBeforeDelete(info);
 		if(baseDao.batchDelete(Arrays.asList(info.getId()))<=0){
 			throw new ServiceException("无法删除业务对象，请稍后再试");
 		}
@@ -100,14 +96,8 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 
 	@Override
 	public void save(T info) {
-		if(info==null||!info.isIdPresented()){
-			throw new ServiceException("待更新业务对象不能为空");
-		}
+		validateData(info,BaseOprtEnum.UPDATE);
 		checkAuthentication(MODEL_CLASS_ALIAS,PermissionUtils.PERMISSION_UPDATE);
-		
-		if(validateBeforeSubmit()){
-			validateData(info);
-		}
 		
 		if(info instanceof BaseInfo){
 			((BaseInfo)info).setLastUpdateDate(new Date());
@@ -150,9 +140,8 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 
 	@Override
 	public void submit(T info) {
-		if(info==null){
-			throw new ServiceException("待操作业务对象不存在");
-		}
+		Assert.notNull(info,"待操作业务对象不存在");
+		
 		if(StringUtils.isBlank(info.getId())){
 			addNew(info);
 		}else{
@@ -221,54 +210,98 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	}
 	
 	/**
-	 * 提交信息时是否对对象数据进行检查
+	 * 编辑信息时是否对对象数据进行检查
 	 * @return
 	 */
-	protected boolean validateBeforeSubmit(){
+	protected boolean validateBeforeOprt(){
 		return true;
+	}
+	
+	private enum BaseOprtEnum{
+		ADD,UPDATE,DELETE;
 	}
 	
 	/**
 	 * 对象数据检查方法，供子类覆盖实现，检查不通过直接抛出异常
 	 */
-	protected void validateData(T info) throws ServiceException{
-		if(info.getClass().getName().indexOf(ClassUtils.CGLIB_CLASS_SEPARATOR)>=0){
+	private void validateData(T info,BaseOprtEnum oprtType){
+		if(!validateBeforeOprt()){
 			return;
 		}
 		
-		Set<ConstraintViolation<T>> constraintViolations= validator.validate(info);
-		if(!constraintViolations.isEmpty()){
-			Iterator<ConstraintViolation<T>> violations=constraintViolations.iterator();
-			StringBuffer sb=new StringBuffer();
-			int count=0;
-			while(violations.hasNext()){
-				ConstraintViolation<T> violation=violations.next();
-				try{
-					Field field=info.getClass().getDeclaredField(violation.getPropertyPath().iterator().next().getName());
-					if(field.isAnnotationPresent(Label.class)){
-						sb.append(++count).append(".").append(AnnotationUtils.getValue(field.getAnnotation(Label.class), "value")).append(violation.getMessage()).append("\t");
-					}
-				}catch (Exception e) {
-					logger.error(e.getMessage(),e);
-				}
+		if(oprtType==BaseOprtEnum.DELETE){
+			Assert.isTrue(info!=null&&info.isIdPresented(), "待删除业务对象不能为空");
+			_validateDataBeforeDelete(info);
+		}else{
+			if(oprtType==BaseOprtEnum.ADD){
+				Assert.notNull(info,"待新增业务对象不存在");		
+				_validateDataBeforeAdd(info);
+			}else{
+				Assert.isTrue(info!=null&&info.isIdPresented(), "待更新业务对象不能为空");
+				_validateDataBeforeSave(info);
 			}
-			throw new ServiceException(sb.toString());
+			_validateDataBeforeSubmit(info);
+			
+			if(info.getClass().getName().indexOf(ClassUtils.CGLIB_CLASS_SEPARATOR)>=0){
+				return;
+			}
+			
+			Set<ConstraintViolation<T>> constraintViolations= validator.validate(info);
+			if(!constraintViolations.isEmpty()){
+				Iterator<ConstraintViolation<T>> violations=constraintViolations.iterator();
+				StringBuffer sb=new StringBuffer();
+				int count=0;
+				while(violations.hasNext()){
+					ConstraintViolation<T> violation=violations.next();
+					try{
+						Field field=info.getClass().getDeclaredField(violation.getPropertyPath().iterator().next().getName());
+						if(field.isAnnotationPresent(Label.class)){
+							sb.append(++count).append(".").append(AnnotationUtils.getValue(field.getAnnotation(Label.class), "value")).append(violation.getMessage()).append("\t");
+						}
+					}catch (Exception e) {
+						logger.error(e.getMessage(),e);
+					}
+				}
+				throw new ServiceException(sb.toString());
+			}
 		}
 	}
 	
 	/**
-	 * 提交信息时对对象数据进行检查
-	 * @return
+	 * 删除检查方法，供子类继承实现
+	 * @param info
 	 */
-	protected void validateDataBeforeDelete(T info){
-		if(info==null||!info.isIdPresented()){
-			throw new ServiceException("待删除业务对象不能为空");
-		}
+	protected void _validateDataBeforeDelete(T info) {
+		
+	}
+	
+	/**
+	 * 新增检查方法，供子类继承实现
+	 * @param info
+	 */
+	protected void _validateDataBeforeAdd(T info) {
+			
+	}
+	
+	/**
+	 * 更新检查方法，供子类继承实现
+	 * @param info
+	 */
+	protected void _validateDataBeforeSave(T info) {
+		
+	}
+	
+	/**
+	 * 提交检查方法，供子类继承实现
+	 * @param info
+	 */
+	protected void _validateDataBeforeSubmit(T info) {
+		
 	}
 	
 	protected ISystemUserObject getCurrentUser(){
 		try{
-			return (ISystemUserObject)ObjectUuidUtils.getObjectById((String)org.apache.shiro.SecurityUtils.getSubject().getPrincipal());
+			return ((BasePrincipal)org.apache.shiro.SecurityUtils.getSubject().getPrincipal()).getSystemUser();
 		}catch(Exception e){
 			return null;
 		}
