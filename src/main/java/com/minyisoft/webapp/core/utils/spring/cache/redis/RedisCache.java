@@ -38,7 +38,7 @@ import com.minyisoft.webapp.core.utils.redis.JedisTemplate.JedisActionNoResult;
 
 /**
  * Cache implementation on top of Redis.
- * base on com.fusung.webapp.core.utils.spring.cache.redis.RedisModelCache
+ * base on com.minyisoft.webapp.core.utils.spring.cache.redis.RedisModelCache
  * @author qingyong_ou
  */
 class RedisCache implements Cache {

@@ -36,7 +36,7 @@ public class ShiroClusterCacheManager<K,V> implements CacheManager, Initializabl
 	/**
 	 * 本地缓存配置文件路径
 	 */
-	private final String cacheManagerConfigFile = "classpath:com/fusung/webapp/core/security/cache/ehcache.xml";
+	private final String cacheManagerConfigFile = "classpath:com/minyisoft/webapp/core/security/cache/ehcache.xml";
 	
 	// fast lookup by name map
 	private final ConcurrentMap<String, Cache<K,V>> caches = new ConcurrentHashMap<String, Cache<K,V>>();
