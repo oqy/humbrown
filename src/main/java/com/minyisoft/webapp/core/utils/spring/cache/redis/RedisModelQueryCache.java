@@ -11,6 +11,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
 import com.minyisoft.webapp.core.model.IModelObject;
+import com.minyisoft.webapp.core.persistence.ICacheableDao;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 import com.minyisoft.webapp.core.utils.mapper.json.ModelJsonMapper;
 import com.minyisoft.webapp.core.utils.redis.JedisTemplate;
@@ -29,7 +30,7 @@ class RedisModelQueryCache extends RedisCache {
 	 * @param expiration
 	 */
 	RedisModelQueryCache(Class<? extends IModelObject> modelClass, JedisTemplate template, int expiration) {
-		super(RedisCacheManager.MODEL_QUERY_CACHE_NAME_PREFIX+ObjectUuidUtils.getClassShortKey(modelClass),template,expiration);
+		super(ICacheableDao.MODEL_QUERY_CACHE+ObjectUuidUtils.getClassShortKey(modelClass),template,expiration);
 		Assert.notNull(modelClass,"缓存对应业务类不允许为空");
 		this.modelClass = modelClass;
 	}

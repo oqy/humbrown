@@ -43,7 +43,7 @@ public interface IBaseDao<T extends IModelObject, C extends BaseCriteria> {
 	 * @param info
 	 * @return
 	 */
-	public int updateEntity(T info);
+	public int updateEntity(IModelObject info);
 
 	/**
 	 * 根据id集合批量删除记录

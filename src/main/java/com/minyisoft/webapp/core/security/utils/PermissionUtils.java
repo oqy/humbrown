@@ -24,7 +24,7 @@ public final class PermissionUtils {
 
 	private static Map<String, PermissionInfo> permissionMap = new HashMap<String, PermissionInfo>();
 
-	private static final String permissionFilePattern="classpath*:com/minyisoft/webapp/**/permission/*.permission";
+	private static final String permissionFilePattern="classpath*:com/**/permission/*.permission";
 	
 	private static ThreadLocal<Boolean> suspendPermissionCheck = new ThreadLocal<Boolean>();
 	

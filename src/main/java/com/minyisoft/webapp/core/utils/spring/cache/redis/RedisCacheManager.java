@@ -11,6 +11,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
 import com.minyisoft.webapp.core.model.IModelObject;
+import com.minyisoft.webapp.core.persistence.ICacheableDao;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 import com.minyisoft.webapp.core.utils.redis.JedisTemplate;
 
@@ -30,11 +31,6 @@ public class RedisCacheManager implements CacheManager {
 	// 0 - never expire
 	private int defaultExpiration = 0;
 	private Map<String, Integer> expires = null;
-	
-	// model对象缓存名称前缀
-	public static final String MODEL_CACHE_NAME_PREFIX="Model:";
-	// model集合缓存名称前缀
-	public static final String MODEL_QUERY_CACHE_NAME_PREFIX="ModelCollection:";
 
 	public RedisCacheManager(JedisTemplate template) {
 		this.template = template;
@@ -44,13 +40,13 @@ public class RedisCacheManager implements CacheManager {
 		Cache c = caches.get(name);
 		if (c == null) {
 			int expiration = computeExpiration(name);
-			if(StringUtils.startsWithIgnoreCase(name, MODEL_CACHE_NAME_PREFIX)){
-				Class<? extends IModelObject> modelClass=ObjectUuidUtils.getClassByObjectKey(StringUtils.removeStartIgnoreCase(name,MODEL_CACHE_NAME_PREFIX));
+			if(StringUtils.startsWithIgnoreCase(name, ICacheableDao.MODEL_CACHE)){
+				Class<? extends IModelObject> modelClass=ObjectUuidUtils.getClassByObjectKey(StringUtils.removeStartIgnoreCase(name,ICacheableDao.MODEL_CACHE));
 				if(modelClass!=null){
 					c = new RedisModelCache(modelClass, template, expiration);
 				}
-			}else if(StringUtils.startsWithIgnoreCase(name, MODEL_QUERY_CACHE_NAME_PREFIX)){
-				Class<? extends IModelObject> modelClass=ObjectUuidUtils.getClassByObjectKey(StringUtils.removeStartIgnoreCase(name,MODEL_QUERY_CACHE_NAME_PREFIX));
+			}else if(StringUtils.startsWithIgnoreCase(name, ICacheableDao.MODEL_QUERY_CACHE)){
+				Class<? extends IModelObject> modelClass=ObjectUuidUtils.getClassByObjectKey(StringUtils.removeStartIgnoreCase(name,ICacheableDao.MODEL_QUERY_CACHE));
 				if(modelClass!=null){
 					c = new RedisModelQueryCache(modelClass, template, expiration);
 				}

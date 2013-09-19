@@ -1,6 +1,7 @@
 package com.minyisoft.webapp.core.service.impl;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -17,7 +18,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -31,7 +31,6 @@ import com.minyisoft.webapp.core.model.ISystemUserObject;
 import com.minyisoft.webapp.core.model.assistant.ISeqCodeObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
 import com.minyisoft.webapp.core.persistence.IBaseDao;
-import com.minyisoft.webapp.core.persistence.ICacheableDao;
 import com.minyisoft.webapp.core.security.shiro.BasePrincipal;
 import com.minyisoft.webapp.core.security.utils.PermissionUtils;
 import com.minyisoft.webapp.core.service.IBaseService;
@@ -39,20 +38,42 @@ import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
 public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCriteria, D extends IBaseDao<T, C>> implements IBaseService <T,C>{
 	protected final Logger logger=LoggerFactory.getLogger(getClass());
+	/**
+	 * DAO接口
+	 */
 	private @Getter D baseDao;
-	@Autowired
+	/**
+	 * 校验器实例
+	 */
 	protected @Getter Validator validator;
-	@Autowired
-	protected @Getter CacheManager cacheManager;
-	
+	/**
+	 * 当前服务类对应的Model对象类型
+	 */
+	private Class<T> modelClass;
 	/**
 	 * 根据当前业务操作实例（以***Impl形式命名）获取model对象对应的对象别名
 	 */
-	protected final String MODEL_CLASS_ALIAS=StringUtils.removeEndIgnoreCase(this.getClass().getSimpleName(), "Impl");
+	private String MODEL_CLASS_ALIAS;
+	
+	@SuppressWarnings("unchecked")
+	public BaseServiceImpl(){
+		modelClass=(Class<T>)((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+		MODEL_CLASS_ALIAS=StringUtils.removeEndIgnoreCase(modelClass.getSimpleName(),"info");
+		Class<?>[] interfaces=getClass().getInterfaces();
+		if(ArrayUtils.isNotEmpty(interfaces)){
+			for(Class<?> i:interfaces){
+				if(IBaseService.class.isAssignableFrom(i)){
+					IBaseService.MODEL_SERVICE_CACHE.put(modelClass, (Class<IBaseService<?,?>>)i);
+					break;
+				}
+			}
+		}
+	}
 	
 	@Autowired
-	public void setDao(D dao){
+	public void setDao(D dao,Validator validator){
 		this.baseDao=dao;
+		this.validator=validator;
 	}
 	
 	@Override
@@ -103,11 +124,6 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 			((BaseInfo)info).setLastUpdateDate(new Date());
 			((BaseInfo)info).setLastUpdateUser(getCurrentUser());
 		}
-		
-		// 暂时手工清理缓存
-		if(cacheManager!=null&&baseDao instanceof ICacheableDao<?, ?>){
-			cacheManager.getCache("Model:"+ObjectUuidUtils.getClassShortKey(info.getClass())).evict(info.getId());
-		}
 		if(baseDao.updateEntity(info)<=0){
 			throw new ServiceException("无法更新业务对象，请稍后再试");
 		}
@@ -130,9 +146,8 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 		if(!ArrayUtils.isEmpty(ids)){
 			T info=null;
 			for(String id:ids){
-				info=getValue(id);
-				if(info!=null){
-					delete(getValue(id));
+				if((info=getValue(id))!=null){
+					delete(info);
 				}
 			}
 		}
@@ -142,17 +157,14 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	public void submit(T info) {
 		Assert.notNull(info,"待操作业务对象不存在");
 		
-		if(StringUtils.isBlank(info.getId())){
+		if (!info.isIdPresented()
+				|| getValue(info.getId()) == null) {
+			if(!ObjectUuidUtils.isLegalId(info.getClass(), info.getId())){
+				info.setId(null);
+			}
 			addNew(info);
 		}else{
-			if(getValue(info.getId())==null){
-				if(!ObjectUuidUtils.isLegalId(info.getClass(), info.getId())){
-					info.setId(null);
-				}
-				addNew(info);
-			}else{
-				save(info);
-			}
+			save(info);
 		}
 	}
 
@@ -242,10 +254,10 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 			}
 			_validateDataBeforeSubmit(info);
 			
-			if(info.getClass().getName().indexOf(ClassUtils.CGLIB_CLASS_SEPARATOR)>=0){
+			if (validator == null
+					|| info.getClass().getName().indexOf(ClassUtils.CGLIB_CLASS_SEPARATOR) >= 0) {
 				return;
 			}
-			
 			Set<ConstraintViolation<T>> constraintViolations= validator.validate(info);
 			if(!constraintViolations.isEmpty()){
 				Iterator<ConstraintViolation<T>> violations=constraintViolations.iterator();

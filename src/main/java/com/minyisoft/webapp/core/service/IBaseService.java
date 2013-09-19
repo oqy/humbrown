@@ -1,6 +1,8 @@
 package com.minyisoft.webapp.core.service;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
@@ -83,4 +85,7 @@ public interface IBaseService<T extends IModelObject, C extends BaseCriteria> {
 	 * @return
 	 */
 	public int count(C criteria);
+	
+	// 缓存IModelObject类对应IBaseService接口
+	public ConcurrentMap<Class<? extends IModelObject>,Class<? extends IBaseService<? extends IModelObject, ? extends BaseCriteria>>> MODEL_SERVICE_CACHE = new ConcurrentHashMap<Class<? extends IModelObject>,Class<? extends IBaseService<? extends IModelObject, ? extends BaseCriteria>>>();
 }

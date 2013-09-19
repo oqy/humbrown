@@ -1,11 +1,10 @@
 package com.minyisoft.webapp.core.service.utils;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import com.minyisoft.webapp.core.exception.ServiceException;
@@ -20,9 +19,6 @@ import com.minyisoft.webapp.core.utils.spring.SpringUtils;
  * @author qingyong_ou 业务接口工具类
  */
 public final class ServiceUtils {
-	// 缓存IModelObject类对应IBaseService接口
-	private static final ConcurrentMap<Class<? extends IModelObject>,IBaseService<IModelObject, BaseCriteria>> modelServiceCaches = new ConcurrentHashMap<Class<? extends IModelObject>,IBaseService<IModelObject, BaseCriteria>>();
-	
 	private ServiceUtils() {
 
 	}
@@ -36,22 +32,12 @@ public final class ServiceUtils {
 	 */
 	@SuppressWarnings("unchecked")
 	public static IBaseService<IModelObject, BaseCriteria> getService(Class<? extends IModelObject> clazz){
-		if(clazz==null||!CoreBaseInfo.class.isAssignableFrom(clazz)){
+		Assert.isTrue(clazz!=null&&CoreBaseInfo.class.isAssignableFrom(clazz),"无效的业务实体类型，无法获取对应业务接口");
+		Class<? extends IBaseService<? extends IModelObject,? extends BaseCriteria>> serviceClass=IBaseService.MODEL_SERVICE_CACHE.get(clazz);
+		if(serviceClass==null){
 			throw new ServiceException("你所请求的业务接口不存在");
 		}
-		IBaseService<IModelObject,BaseCriteria> bizInterface=modelServiceCaches.get(clazz);
-		if(bizInterface==null){
-			String className = ClassUtils.getUserClass(clazz).getSimpleName();
-			if (StringUtils.endsWithIgnoreCase(className, "info")) {
-				className = StringUtils.removeEndIgnoreCase(className, "Info");
-			}
-			bizInterface = (IBaseService<IModelObject, BaseCriteria>) SpringUtils.getBean(StringUtils.uncapitalize(className) + "Service");
-			if (bizInterface == null) {
-				throw new ServiceException("你所请求的业务接口不存在");
-			}
-			modelServiceCaches.put(clazz, bizInterface);
-		}
-		return bizInterface;
+		return (IBaseService<IModelObject, BaseCriteria>)SpringUtils.getApplicationContext().getBean(serviceClass);
 	}
 
 	/**

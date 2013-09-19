@@ -41,7 +41,7 @@ public final class ObjectUuidUtils {
 	
 	static{	
 		try{
-			Resource[] resources=new PathMatchingResourcePatternResolver().getResources("classpath*:com/minyisoft/webapp/**/modelKey.properties");
+			Resource[] resources=new PathMatchingResourcePatternResolver().getResources("classpath*:com/**/modelKey.properties");
 			if(!ArrayUtils.isEmpty(resources)){
 				for (Resource rsc : resources) {
 					keyClassProperties.load(rsc.getInputStream());
@@ -144,6 +144,8 @@ public final class ObjectUuidUtils {
 	 * @return
 	 */
 	public static boolean isLegalId(Class<? extends IModelObject> modelClazz,String id){
-		return modelClazz!=null&&StringUtils.isNotBlank(id)&&(id.length()==32||id.length()==24)&&(ClassUtils.getUserClass(modelClazz)==getObejctClass(id));
+		return modelClazz != null && StringUtils.isNotBlank(id)
+				&& (id.length() == 32 || id.length() == 24)
+				&& (ClassUtils.getUserClass(modelClazz) == getObejctClass(id));
 	}
 }

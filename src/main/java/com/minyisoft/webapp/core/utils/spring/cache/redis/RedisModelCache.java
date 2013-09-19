@@ -14,6 +14,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
 import com.minyisoft.webapp.core.model.IModelObject;
+import com.minyisoft.webapp.core.persistence.ICacheableDao;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 import com.minyisoft.webapp.core.utils.mapper.json.ModelJsonMapper;
 import com.minyisoft.webapp.core.utils.redis.JedisTemplate;
@@ -33,7 +34,7 @@ class RedisModelCache extends RedisCache {
 	 * @param expiration
 	 */
 	RedisModelCache(Class<? extends IModelObject> modelClass, JedisTemplate template, int expiration) {
-		super(RedisCacheManager.MODEL_CACHE_NAME_PREFIX+ObjectUuidUtils.getClassShortKey(modelClass),template,expiration);
+		super(ICacheableDao.MODEL_CACHE+ObjectUuidUtils.getClassShortKey(modelClass),template,expiration);
 		Assert.notNull(modelClass,"缓存对应业务类不允许为空");
 		this.modelClass = modelClass;
 		this.hashName = (getName() + "~hashkeys").getBytes(defaultCharset);
@@ -55,7 +56,9 @@ class RedisModelCache extends RedisCache {
 			bs=jedis.get(keyInByte);
 		}
 		try {
-			logger.debug("读取redis缓存["+modelClass.getName()+"]:"+keyInByte);
+			if(logger.isDebugEnabled()){
+				logger.debug("读取redis缓存["+modelClass.getName()+"]:"+keyInByte);
+			}
 			return (bs == null ? null : new SimpleValueWrapper(ModelJsonMapper.INSTANCE.fromJsonByte(bs, modelClass)));
 		} catch (Exception e) {
 			logger.error(e.getMessage(),e);
@@ -82,7 +85,9 @@ class RedisModelCache extends RedisCache {
 		try {
 			byte[] cacheByte=ModelJsonMapper.INSTANCE.toJsonByte(model);
 			transaction.set(cacheKey, cacheByte);
-			logger.debug("写入redis缓存["+modelClass.getName()+"]:"+new String(cacheByte,"utf-8"));
+			if(logger.isDebugEnabled()){
+				logger.debug("写入redis缓存["+modelClass.getName()+"]:"+new String(cacheByte,"utf-8"));
+			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(),e);
 		}
@@ -90,6 +95,9 @@ class RedisModelCache extends RedisCache {
 	}
 
 	public void evict(Object key) {
+		if(logger.isDebugEnabled()){
+			logger.debug("删除redis缓存["+modelClass.getName()+"]:"+key);
+		}
 		if(key instanceof List<?>&&CollectionUtils.isNotEmpty((List<?>)key)){
 			for(Object k:(List<?>)key){
 				super.evict(k);

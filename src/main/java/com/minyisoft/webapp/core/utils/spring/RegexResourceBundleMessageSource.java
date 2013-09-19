@@ -48,7 +48,7 @@ public class RegexResourceBundleMessageSource extends ResourceBundleMessageSourc
 	/**
 	 * 系统默认资源文件
 	 */
-	private static final RegexResourceBundleMessageSource systemDefaultMessageSource=new RegexResourceBundleMessageSource(new String[]{"classpath*:com/minyisoft/webapp/**/exceptionMessage.properties","classpath*:com/minyisoft/webapp/**/enumField/enumDescription.properties"});
+	private static final RegexResourceBundleMessageSource systemDefaultMessageSource=new RegexResourceBundleMessageSource(new String[]{"classpath*:com/**/exceptionMessage.properties","classpath*:com/**/enumDescription.properties"});
 	
 	/**
 	 * 获取系统默认资源文件
