@@ -33,7 +33,7 @@ public final class ServiceUtils {
 	@SuppressWarnings("unchecked")
 	public static IBaseService<IModelObject, BaseCriteria> getService(Class<? extends IModelObject> clazz){
 		Assert.isTrue(clazz!=null&&CoreBaseInfo.class.isAssignableFrom(clazz),"无效的业务实体类型，无法获取对应业务接口");
-		Class<? extends IBaseService<? extends IModelObject,? extends BaseCriteria>> serviceClass=IBaseService.MODEL_SERVICE_CACHE.get(clazz);
+		Class<? extends IBaseService<? extends IModelObject,? extends BaseCriteria>> serviceClass=IBaseService.MODEL_SERVICE_CACHE.get(ClassUtils.getUserClass(clazz));
 		if(serviceClass==null){
 			throw new ServiceException("你所请求的业务接口不存在");
 		}
