@@ -2,16 +2,21 @@ package com.minyisoft.webapp.core.exception;
 
 import java.util.Locale;
 
-import com.minyisoft.webapp.core.utils.spring.RegexResourceBundleMessageSource;
+import org.springframework.context.support.ResourceBundleMessageSource;
 
-public class ExceptionMessage{
+public class ExceptionMessage {
+	private static ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+	static {
+		messageSource.setBasename("com.fusung.webapp.core.exception.exceptionMessage");
+	}
+
 	private String exceptionMsg;
 
 	protected ExceptionMessage(String msgKey) {
-		this.exceptionMsg = RegexResourceBundleMessageSource.getSystemDefaultMessageSource().getMessage(msgKey, null, Locale.getDefault());
+		this.exceptionMsg = messageSource.getMessage(msgKey, null, Locale.getDefault());
 	}
-	
-	public String getExceptionMessage(){
+
+	public String getExceptionMessage() {
 		return exceptionMsg;
 	}
 }

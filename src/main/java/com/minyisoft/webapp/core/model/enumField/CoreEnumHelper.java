@@ -4,8 +4,7 @@ import java.util.Locale;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-
-import com.minyisoft.webapp.core.utils.spring.RegexResourceBundleMessageSource;
+import org.springframework.context.support.ResourceBundleMessageSource;
 
 /**
  * @author qingyong_ou 枚举帮助类
@@ -13,6 +12,15 @@ import com.minyisoft.webapp.core.utils.spring.RegexResourceBundleMessageSource;
 public final class CoreEnumHelper {
 	private CoreEnumHelper(){
 		
+	}
+	
+	/**
+	 * 加载枚举对象中文描述的messageSource
+	 */
+	private static ResourceBundleMessageSource messageSource=new ResourceBundleMessageSource();
+	
+	public static void setDescriptionBaseNames(String...basenames){
+		messageSource.setBasenames(basenames);
 	}
 	
 	/**
@@ -24,7 +32,11 @@ public final class CoreEnumHelper {
 		if(target==null){
 			return "";
 		}else{
-			return RegexResourceBundleMessageSource.getSystemDefaultMessageSource().getMessage(target.getClass().getName()+"_"+target.name(), null, Locale.getDefault());
+			try{
+				return messageSource.getMessage(target.getClass().getName()+"_"+target.name(), null, Locale.getDefault());
+			}catch (Exception e) {
+				return "";
+			}
 		}
 	}
 	

@@ -68,6 +68,7 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 				}
 			}
 		}
+		ObjectUuidUtils.registerModelClass(modelClass);
 	}
 	
 	@Autowired

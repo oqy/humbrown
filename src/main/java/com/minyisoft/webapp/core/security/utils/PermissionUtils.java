@@ -1,31 +1,19 @@
 package com.minyisoft.webapp.core.security.utils;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import com.minyisoft.webapp.core.model.PermissionInfo;
-import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
 public final class PermissionUtils {
-	private static Logger logger = LoggerFactory.getLogger(PermissionUtils.class);
+	private static Map<String, PermissionInfo> permissionMap = new ConcurrentHashMap<String, PermissionInfo>();
 
-	private static Map<String, PermissionInfo> permissionMap = new HashMap<String, PermissionInfo>();
-
-	private static final String permissionFilePattern="classpath*:com/**/permission/*.permission";
-	
 	private static ThreadLocal<Boolean> suspendPermissionCheck = new ThreadLocal<Boolean>();
 	
 	/**
@@ -53,51 +41,16 @@ public final class PermissionUtils {
 	 */
 	public static final String ADMINISTRATOR_ROLE="ADMINISTRATOR";
 	
-	static {
-		loadPermissions();
-	}
-	
 	private PermissionUtils(){
 		
 	}
-
+	
 	/**
-	 * 从权限文件读入所有权限并存储到内存中，加快访问
+	 * 注册权限
+	 * @param permission
 	 */
-	private static void loadPermissions() {
-		permissionMap.clear();
-		
-		try {
-			Resource[] permissionFiles=new PathMatchingResourcePatternResolver().getResources(permissionFilePattern);
-			for(Resource rs : permissionFiles){
-				BufferedReader br=new BufferedReader(new InputStreamReader(rs.getInputStream(),"UTF-8"));
-				String line="";
-				String[] permissionSet = null;
-				String[] permissionPropertySet = null;
-				while(StringUtils.isNotBlank(line=br.readLine())){
-					if (line.startsWith("//")) {
-						continue;
-					}
-					permissionSet = StringUtils.split(line,'=');
-					if (permissionSet != null&& permissionSet.length == 2) {
-						permissionPropertySet = StringUtils.split(permissionSet[1], ',');
-						if (permissionPropertySet != null&& permissionPropertySet.length == 3) {
-							PermissionInfo permissionInfo = new PermissionInfo();
-							permissionInfo.setId(permissionSet[0]);
-							permissionInfo.setName(permissionPropertySet[1]);
-							permissionInfo.setGroupLabel(permissionPropertySet[2]);
-							permissionInfo.setValue(permissionPropertySet[0]);
-							permissionInfo.setModuleCode(StringUtils.substringAfterLast(
-									StringUtils.substringBefore(ObjectUuidUtils.getClassByObjectKey(permissionInfo.getGroupLabel()).getName(), ".model"), 
-									"."));
-							permissionMap.put(permissionInfo.getValue(),permissionInfo);
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			logger.error(e.getMessage(),e);
-		}
+	public static void registerPermission(PermissionInfo permission){
+		permissionMap.put(permission.getValue(), permission);
 	}
 
 	/**
@@ -108,7 +61,7 @@ public final class PermissionUtils {
 	 */
 	public static boolean isPermissionDefined(String permissionString) {
 		if (permissionMap.size() == 0) {
-			loadPermissions();
+			return false;
 		}
 		return permissionMap.containsKey(permissionString);
 	}
@@ -119,13 +72,12 @@ public final class PermissionUtils {
 	 * @return
 	 */
 	public static List<PermissionInfo> getSystemPermissionList() {
-		if (permissionMap.size() == 0) {
-			loadPermissions();
-		}
 		List<PermissionInfo> systemPermissionList = new ArrayList<PermissionInfo>();
-		Iterator<String> iterator = permissionMap.keySet().iterator();
-		while (iterator.hasNext()) {
-			systemPermissionList.add(permissionMap.get(iterator.next()));
+		if (permissionMap.size() >0) {
+			Iterator<String> iterator = permissionMap.keySet().iterator();
+			while (iterator.hasNext()) {
+				systemPermissionList.add(permissionMap.get(iterator.next()));
+			}
 		}
 		return systemPermissionList;
 	}

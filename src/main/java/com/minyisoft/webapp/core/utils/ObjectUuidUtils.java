@@ -7,54 +7,64 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import net.sf.cglib.proxy.Enhancer;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
+import com.minyisoft.webapp.core.annotation.ModelKey;
 import com.minyisoft.webapp.core.exception.EntityException;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.security.utils.EncodeUtils;
 
+/**
+ * ModelObject帮助类
+ * @author qingyong_ou
+ */
 public final class ObjectUuidUtils {
-	// 根据model key检索类全名
-	private static final Properties keyClassProperties=new Properties();
-	// 根据model key检索类全名
-	private static final Properties classKeyProperties=new Properties();
 	// 缓存model简码对应的类
-	private static final ConcurrentMap<String, Class<? extends IModelObject>> modelClassCaches = new ConcurrentHashMap<String, Class<? extends IModelObject>>();
+	private static final ConcurrentMap<String, Class<? extends IModelObject>> keyClassMap = new ConcurrentHashMap<String, Class<? extends IModelObject>>();
+	// 缓存model类对应简码
+	private static final ConcurrentMap<Class<? extends IModelObject>, String> classKeyMap = new ConcurrentHashMap<Class<? extends IModelObject>, String>();
 	
 	private ObjectUuidUtils(){
 		
 	}
 	
-	static{	
-		try{
-			Resource[] resources=new PathMatchingResourcePatternResolver().getResources("classpath*:com/**/modelKey.properties");
-			if(!ArrayUtils.isEmpty(resources)){
-				for (Resource rsc : resources) {
-					keyClassProperties.load(rsc.getInputStream());
-				}
-			}
-			
-			Iterator<Entry<Object,Object>> iterator=keyClassProperties.entrySet().iterator();
-			while(iterator.hasNext()){
-				Map.Entry<Object,Object> entry=iterator.next();
-				classKeyProperties.put(entry.getValue(), entry.getKey());
-			}
-		}catch (Exception e) {
-			throw new EntityException(e);
+	/**
+	 * 注册ModelClass
+	 * @param modelClass 类需标注@ModelKey注解
+	 */
+	@SuppressWarnings("unchecked")
+	public static void registerModelClass(Class<? extends IModelObject> modelClass){
+		Assert.notNull(modelClass,"待索引ModelClass不能为空");
+		Class<? extends IModelObject> userClass=(Class<? extends IModelObject>)ClassUtils.getUserClass(modelClass);
+		ModelKey key=userClass.getAnnotation(ModelKey.class);
+		Assert.notNull(key,userClass.getName()+"没有实现ModelKey注解");
+		registerModelClass(key.value(),userClass);
+	}
+	
+	/**
+	 * 注册ModelClass
+	 * @param modelClass
+	 */
+	@SuppressWarnings("unchecked")
+	public static void registerModelClass(String key,Class<? extends IModelObject> modelClass){
+		Assert.notNull(modelClass,"待索引ModelClass不能为空");
+		Assert.hasLength(key,"待索引Key值不能为空");
+		
+		// 统一转换为大写
+		String classKey=key.toUpperCase();
+		Class<? extends IModelObject> userClass=(Class<? extends IModelObject>)ClassUtils.getUserClass(modelClass);
+		if(!userClass.equals(keyClassMap.get(classKey))){
+			Assert.isTrue(!keyClassMap.containsKey(classKey),userClass.getName()+"的ModelKey值已被"+keyClassMap.get(classKey)+"注册使用");
+			keyClassMap.put(classKey, userClass);
+			classKeyMap.put(userClass, classKey);
 		}
 	}
 
@@ -63,7 +73,7 @@ public final class ObjectUuidUtils {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutput out = new DataOutputStream(baos);
 		try {
-			out.writeLong(Long.parseLong((String)classKeyProperties.get(ClassUtils.getUserClass(clazz).getName()),16));
+			out.writeLong(Long.parseLong(classKeyMap.get(ClassUtils.getUserClass(clazz)),16));
 			out.writeLong(uuid.getMostSignificantBits());
 			out.writeLong(uuid.getLeastSignificantBits());
 		} catch (IOException ioe) {
@@ -72,14 +82,13 @@ public final class ObjectUuidUtils {
 		return EncodeUtils.encodeUrlSafeBase64(baos.toByteArray());
 	}
 
-	@SuppressWarnings("unchecked")
 	public static Class<? extends IModelObject> getObejctClass(String id) {
 		try {
 			byte[] array = EncodeUtils.decodeBase64(id); 
 			DataInput in = new DataInputStream(new ByteArrayInputStream(array));
 			Long key = in.readLong();
 
-			return (Class<? extends IModelObject>)Class.forName(keyClassProperties.get(Long.toHexString(key).toUpperCase()).toString());
+			return keyClassMap.get(Long.toHexString(key).toUpperCase());
 		} catch (Exception ioe) {
 			return null;
 		}
@@ -121,20 +130,13 @@ public final class ObjectUuidUtils {
 	}
 	
 	public static String getClassShortKey(Class<? extends IModelObject> clazz){
-		return (String)classKeyProperties.get(ClassUtils.getUserClass(clazz).getName());
+		Assert.notNull(clazz,"待查询ModelClass不能为空");
+		return classKeyMap.get(ClassUtils.getUserClass(clazz));
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static Class<? extends IModelObject> getClassByObjectKey(String key){
-		Class<? extends IModelObject> modelClass=modelClassCaches.get(key);
-		if(modelClass==null){
-			try {
-				modelClass=(Class<? extends IModelObject>)Class.forName(keyClassProperties.getProperty(key));
-				modelClassCaches.put(key, modelClass);
-			} catch (ClassNotFoundException e) {
-			}
-		}
-		return modelClass;
+		Assert.hasLength(key,"待查询索引键值不能为空");
+		return keyClassMap.get(key.toUpperCase());
 	}
 	
 	/**
