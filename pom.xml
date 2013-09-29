@@ -42,10 +42,22 @@
 	
 	<!-- 若采用Nexus私服，可将中心仓库配置信息移至私服，无需在pom配置以下信息 -->
 	<repositories>
+	    <repository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>http://repo.maven.apache.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	    
 		<repository>
 			<id>sonatype-repository-public</id>
 			<name>Sonatype Repository Public</name>
 			<url>http://repository.sonatype.org/content/groups/public/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 	</repositories>
 
@@ -267,7 +279,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.0</version>
+				<version>3.1</version>
 				<configuration>
 					<source>${jdk.version}</source>
 					<target>${jdk.version}</target>
