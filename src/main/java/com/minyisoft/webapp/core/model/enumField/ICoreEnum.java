@@ -17,11 +17,4 @@ public interface ICoreEnum<T> {
 	 * @return
 	 */
 	public String getDescription();
-
-	/**
-	 * 枚举变量名
-	 * 
-	 * @return
-	 */
-	public String name();
 }

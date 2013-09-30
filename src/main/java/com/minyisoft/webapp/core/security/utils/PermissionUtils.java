@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 
+import com.minyisoft.webapp.core.exception.CoreExceptionType;
 import com.minyisoft.webapp.core.model.PermissionInfo;
 
 public final class PermissionUtils {
@@ -89,8 +90,7 @@ public final class PermissionUtils {
 	 */
 	public static void checkHasPermission(String permissionString) {
 		if (!hasPermission(permissionString)) {
-			throw new com.minyisoft.webapp.core.exception.SecurityException(
-					com.minyisoft.webapp.core.exception.SecurityException.SECURITY_NOT_HAS_PERMISSION);
+			throw new com.minyisoft.webapp.core.exception.SecurityException(CoreExceptionType.NOT_HAS_PERMISSION);
 		}
 	}
 	
@@ -116,8 +116,7 @@ public final class PermissionUtils {
 	 */
 	public static void checkHasRole(String RoleKey) {
 		if (!hasRole(RoleKey)) {
-			throw new com.minyisoft.webapp.core.exception.SecurityException(
-					com.minyisoft.webapp.core.exception.SecurityException.SECURITY_NOT_HAS_ROLE);
+			throw new com.minyisoft.webapp.core.exception.SecurityException(CoreExceptionType.NOT_HAS_ROLE);
 		}
 	}
 

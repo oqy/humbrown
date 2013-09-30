@@ -28,15 +28,11 @@ public final class CoreEnumHelper {
 	 * @param target
 	 * @return
 	 */
-	public static String getDescription(ICoreEnum<?> target){
+	public static String getDescription(Enum<? extends ICoreEnum<?>> target){
 		if(target==null){
 			return "";
 		}else{
-			try{
-				return messageSource.getMessage(target.getClass().getName()+"_"+target.name(), null, Locale.getDefault());
-			}catch (Exception e) {
-				return "";
-			}
+			return messageSource.getMessage(target.getClass().getName()+"_"+target.name(), null, "", Locale.getDefault());
 		}
 	}
 	

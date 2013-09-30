@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 
+import com.minyisoft.webapp.core.exception.BaseException;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.PermissionInfo;
 import com.minyisoft.webapp.core.model.enumField.CoreEnumHelper;
@@ -30,6 +31,10 @@ public class InfrastructureResourceLoader implements InitializingBean {
 	 * CoreEunm枚举描述文件
 	 */
 	private @Setter String[] coreEnumDescriptionBaseNames;
+	/**
+	 * 异常类型枚举描述文件
+	 */
+	private @Setter String[] exceptionDescriptionBaseNames;
 	/**
 	 * IModelObject接口实现类
 	 */
@@ -72,6 +77,11 @@ public class InfrastructureResourceLoader implements InitializingBean {
 		// 加载CoreEunm枚举描述文件
 		if(ArrayUtils.isNotEmpty(coreEnumDescriptionBaseNames)){
 			CoreEnumHelper.setDescriptionBaseNames(coreEnumDescriptionBaseNames);
+		}
+		
+		// 加载异常类型枚举描述文件
+		if(ArrayUtils.isNotEmpty(exceptionDescriptionBaseNames)){
+			BaseException.setBaseNames(exceptionDescriptionBaseNames);
 		}
 		
 		// 注册IModelObject接口实现类，以用于生成ModelClass实例id，及根据id获取ModelClass实例

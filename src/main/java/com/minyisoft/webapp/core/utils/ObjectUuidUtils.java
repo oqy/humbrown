@@ -18,6 +18,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import com.minyisoft.webapp.core.annotation.ModelKey;
+import com.minyisoft.webapp.core.exception.CoreExceptionType;
 import com.minyisoft.webapp.core.exception.EntityException;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.security.utils.EncodeUtils;
@@ -77,7 +78,7 @@ public final class ObjectUuidUtils {
 			out.writeLong(uuid.getMostSignificantBits());
 			out.writeLong(uuid.getLeastSignificantBits());
 		} catch (IOException ioe) {
-			throw new EntityException(EntityException.ENTITY_OBJECT_ID_GENERATE_ERROR,new Object[]{ClassUtils.getUserClass(clazz).getName()});
+			throw new EntityException(CoreExceptionType.ENTITY_ID_GENERATE_ERROR,ClassUtils.getUserClass(clazz).getName());
 		}
 		return EncodeUtils.encodeUrlSafeBase64(baos.toByteArray());
 	}

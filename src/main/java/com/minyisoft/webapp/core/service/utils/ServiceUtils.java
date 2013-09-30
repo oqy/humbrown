@@ -91,7 +91,7 @@ public final class ServiceUtils {
 			criteria.setIds(ids);
 			return getService(ObjectUuidUtils.getObejctClass(ids[0])).getCollection(criteria);
 		}catch(Exception e){
-			throw new ServiceException(e);
+			throw new ServiceException(e.getMessage(),e);
 		}
 	}
 
