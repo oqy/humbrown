@@ -1,8 +1,8 @@
 package com.minyisoft.webapp.core.web.controller.utils;
 
-import com.minyisoft.webapp.core.model.enumField.ICoreEnum;
+import com.minyisoft.webapp.core.model.enumField.DescribableEnum;
 
-public enum DisplayTypeEnum implements ICoreEnum<Integer> {
+public enum DisplayTypeEnum implements DescribableEnum<Integer> {
 			SELECT (0)  , //select
 			CHECK_BOX (1)  , //checkBox
 			TEXT (2)  , //text

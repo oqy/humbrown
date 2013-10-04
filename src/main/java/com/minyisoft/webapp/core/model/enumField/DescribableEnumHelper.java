@@ -9,8 +9,8 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 /**
  * @author qingyong_ou 枚举帮助类
  */
-public final class CoreEnumHelper {
-	private CoreEnumHelper(){
+public final class DescribableEnumHelper {
+	private DescribableEnumHelper(){
 		
 	}
 	
@@ -28,7 +28,7 @@ public final class CoreEnumHelper {
 	 * @param target
 	 * @return
 	 */
-	public static String getDescription(Enum<? extends ICoreEnum<?>> target){
+	public static String getDescription(Enum<? extends DescribableEnum<?>> target){
 		if(target==null){
 			return "";
 		}else{
@@ -42,10 +42,11 @@ public final class CoreEnumHelper {
 	 * @param value
 	 * @return
 	 */
-	public static <T extends ICoreEnum<Integer>> T getEnum(Class<T> coreEnumClazz,int value){
+	@SuppressWarnings("unchecked")
+	public static <T extends Enum<? extends DescribableEnum<Integer>>> T getEnum(Class<T> coreEnumClazz,int value){
 		if (coreEnumClazz != null && ArrayUtils.isNotEmpty(coreEnumClazz.getEnumConstants())) {
 			for (T e : coreEnumClazz.getEnumConstants()) {
-				if (e.getValue()==value) {
+				if (((DescribableEnum<Integer>)e).getValue()==value) {
 					return e;
 				}
 			}
@@ -59,10 +60,11 @@ public final class CoreEnumHelper {
 	 * @param value
 	 * @return
 	 */
-	public static <T extends ICoreEnum<String>> T getEnum(Class<T> coreEnumClazz,String value){
+	@SuppressWarnings("unchecked")
+	public static <T extends Enum<? extends DescribableEnum<String>>> T getEnum(Class<T> coreEnumClazz,String value){
 		if (coreEnumClazz != null && ArrayUtils.isNotEmpty(coreEnumClazz.getEnumConstants())) {
 			for (T e : coreEnumClazz.getEnumConstants()) {
-				if (StringUtils.equals(e.getValue(),value)) {
+				if (StringUtils.equals(((DescribableEnum<String>)e).getValue(),value)) {
 					return e;
 				}
 			}

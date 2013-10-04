@@ -30,7 +30,7 @@
 		<commons-codec.version>1.7</commons-codec.version>
 		
 		<elasticsearch.version>0.20.6</elasticsearch.version>
-		<jedis.version>2.1.0</jedis.version>
+		<jedis.version>2.2.0</jedis.version>
 		
 		<junit.version>4.11</junit.version>
 

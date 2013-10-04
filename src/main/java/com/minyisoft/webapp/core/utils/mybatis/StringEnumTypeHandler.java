@@ -8,10 +8,10 @@ import java.sql.SQLException;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
-import com.minyisoft.webapp.core.model.enumField.CoreEnumHelper;
-import com.minyisoft.webapp.core.model.enumField.ICoreEnum;
+import com.minyisoft.webapp.core.model.enumField.DescribableEnum;
+import com.minyisoft.webapp.core.model.enumField.DescribableEnumHelper;
 
-public class StringEnumTypeHandler<E extends ICoreEnum<String>> extends
+public class StringEnumTypeHandler<E extends Enum<? extends DescribableEnum<String>>> extends
 		BaseTypeHandler<E> {
 	private Class<E> type;
 
@@ -21,10 +21,11 @@ public class StringEnumTypeHandler<E extends ICoreEnum<String>> extends
 		this.type = type;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void setNonNullParameter(PreparedStatement ps, int i, E parameter,
 			JdbcType jdbcType) throws SQLException {
-		ps.setString(i, parameter.getValue());
+		ps.setString(i, ((DescribableEnum<String>)parameter).getValue());
 	}
 
 	@Override
@@ -46,6 +47,6 @@ public class StringEnumTypeHandler<E extends ICoreEnum<String>> extends
 	}
 
 	private E getEnum(String value) {
-		return CoreEnumHelper.getEnum(type, value);
+		return DescribableEnumHelper.getEnum(type, value);
 	}
 }

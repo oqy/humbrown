@@ -13,7 +13,7 @@ import org.springframework.core.io.Resource;
 import com.minyisoft.webapp.core.exception.BaseException;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.PermissionInfo;
-import com.minyisoft.webapp.core.model.enumField.CoreEnumHelper;
+import com.minyisoft.webapp.core.model.enumField.DescribableEnumHelper;
 import com.minyisoft.webapp.core.security.utils.PermissionUtils;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
@@ -28,9 +28,9 @@ public class InfrastructureResourceLoader implements InitializingBean {
 	 */
 	private @Setter Resource[] permissionDefinitions;
 	/**
-	 * CoreEunm枚举描述文件
+	 * DescribableEnum枚举描述文件
 	 */
-	private @Setter String[] coreEnumDescriptionBaseNames;
+	private @Setter String[] describableEnumDescriptionBaseNames;
 	/**
 	 * 异常类型枚举描述文件
 	 */
@@ -75,8 +75,8 @@ public class InfrastructureResourceLoader implements InitializingBean {
 		}
 		
 		// 加载CoreEunm枚举描述文件
-		if(ArrayUtils.isNotEmpty(coreEnumDescriptionBaseNames)){
-			CoreEnumHelper.setDescriptionBaseNames(coreEnumDescriptionBaseNames);
+		if(ArrayUtils.isNotEmpty(describableEnumDescriptionBaseNames)){
+			DescribableEnumHelper.setDescriptionBaseNames(describableEnumDescriptionBaseNames);
 		}
 		
 		// 加载异常类型枚举描述文件

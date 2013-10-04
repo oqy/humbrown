@@ -16,7 +16,7 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.criteria.SortDirection;
 import com.minyisoft.webapp.core.model.criteria.SortDirectionEnum;
-import com.minyisoft.webapp.core.model.enumField.ICoreEnum;
+import com.minyisoft.webapp.core.model.enumField.DescribableEnum;
 
 @Getter
 @Setter
@@ -86,8 +86,8 @@ public class SelectModuleUnitInfo {
 		}
 		if (obj instanceof IModelObject) {
 			return ((IModelObject) obj).getId();
-		} else if (obj instanceof ICoreEnum<?>) {
-			return String.valueOf(((ICoreEnum<?>) obj).getValue());
+		} else if (obj instanceof DescribableEnum<?>) {
+			return String.valueOf(((DescribableEnum<?>) obj).getValue());
 		} else if (obj instanceof Date) {
 			return DateFormatUtils.format((Date) obj, "yyyy-MM-dd");
 		} else if (obj instanceof SortDirection) {
@@ -107,8 +107,8 @@ public class SelectModuleUnitInfo {
 			} catch (Exception e) {
 				return ((IModelObject) obj).getId();
 			}
-		} else if (obj instanceof ICoreEnum<?>) {
-			return ((ICoreEnum<?>) obj).getDescription();
+		} else if (obj instanceof DescribableEnum<?>) {
+			return ((DescribableEnum<?>) obj).getDescription();
 		}else if (obj instanceof Date) {
 			return DateFormatUtils.format((Date) obj, "yyyy-MM-dd");
 		} else if (obj instanceof Boolean) {

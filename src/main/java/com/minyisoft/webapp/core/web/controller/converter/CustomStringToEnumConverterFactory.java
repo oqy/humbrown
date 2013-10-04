@@ -10,8 +10,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 
-import com.minyisoft.webapp.core.model.enumField.CoreEnumHelper;
-import com.minyisoft.webapp.core.model.enumField.ICoreEnum;
+import com.minyisoft.webapp.core.model.enumField.DescribableEnum;
+import com.minyisoft.webapp.core.model.enumField.DescribableEnumHelper;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class CustomStringToEnumConverterFactory implements
@@ -29,7 +29,7 @@ public class CustomStringToEnumConverterFactory implements
 			return (Converter<String, T>)converter;
 		}
 		
-		if(ICoreEnum.class.isAssignableFrom(targetType)
+		if(DescribableEnum.class.isAssignableFrom(targetType)
 				&& ArrayUtils.isNotEmpty(targetType.getGenericInterfaces())) {
 			Type type = targetType.getGenericInterfaces()[0];
 			// 如果该泛型类型是参数化类型
@@ -51,7 +51,7 @@ public class CustomStringToEnumConverterFactory implements
 		return (Converter<String, T>)converter;
 	}
 	
-	private static final class StringToStringCoreEnum<T extends ICoreEnum<String>> implements Converter<String, T> {
+	private static final class StringToStringCoreEnum<T extends Enum<? extends DescribableEnum<String>>> implements Converter<String, T> {
 
 		private final Class<T> targetType;
 
@@ -63,11 +63,11 @@ public class CustomStringToEnumConverterFactory implements
 			if (StringUtils.isBlank(source)) {
 				return null;
 			}
-			return CoreEnumHelper.getEnum(targetType, source);
+			return DescribableEnumHelper.getEnum(targetType, source);
 		}
 	}
 	
-	private static final class StringToIntCoreEnum<T extends ICoreEnum<Integer>> implements Converter<String, T> {
+	private static final class StringToIntCoreEnum<T extends Enum<? extends DescribableEnum<Integer>>> implements Converter<String, T> {
 
 		private final Class<T> targetType;
 
@@ -79,7 +79,7 @@ public class CustomStringToEnumConverterFactory implements
 			if (StringUtils.isBlank(source) || !StringUtils.isNumeric(source)) {
 				return null;
 			}
-			return CoreEnumHelper.getEnum(targetType, Integer.parseInt(source));
+			return DescribableEnumHelper.getEnum(targetType, Integer.parseInt(source));
 		}
 	}
 	

@@ -20,7 +20,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.InputStreamResource;
 
 import com.minyisoft.webapp.core.model.PermissionInfo;
-import com.minyisoft.webapp.core.model.enumField.ICoreEnum;
+import com.minyisoft.webapp.core.model.enumField.DescribableEnum;
 
 /**
  * 自定义SqlSessionFactoryBean，自动注册整形及字符型ICoreEnum枚举类的typeHandler，但会忽略已设定的config配置文件信息
@@ -28,21 +28,21 @@ import com.minyisoft.webapp.core.model.enumField.ICoreEnum;
  */
 public class CustomSqlSessionFactoryBean extends SqlSessionFactoryBean {
 	// ICoreEnum枚举类型所在包名
-	private @Setter String coreEnumPackage;
+	private @Setter String describableEnumPackage;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		// 注册整形及字符型ICoreEnum枚举类的typeHandler
-		if (hasLength(this.coreEnumPackage)) {
+		if (hasLength(this.describableEnumPackage)) {
 			StringBuffer sb=new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\" ?><!DOCTYPE configuration PUBLIC \"-//mybatis.org//DTD Config 3.0//EN\" \"http://mybatis.org/dtd/mybatis-3-config.dtd\"><configuration><typeHandlers>");
 			
-			String[] coreEnumPackageArray = tokenizeToStringArray(this.coreEnumPackage,ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
-			ResolverUtil<ICoreEnum<?>> resolverUtil = new ResolverUtil<ICoreEnum<?>>();
+			String[] coreEnumPackageArray = tokenizeToStringArray(this.describableEnumPackage,ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
+			ResolverUtil<DescribableEnum<?>> resolverUtil = new ResolverUtil<DescribableEnum<?>>();
 			for (String packageToScan : coreEnumPackageArray) {
-				resolverUtil.findImplementations(ICoreEnum.class, packageToScan);
-				Set<Class<? extends ICoreEnum<?>>> typeSet = resolverUtil.getClasses();
-				for (Class<? extends ICoreEnum<?>> clazz : typeSet) {
-					if (ICoreEnum.class.isAssignableFrom(clazz)
+				resolverUtil.findImplementations(DescribableEnum.class, packageToScan);
+				Set<Class<? extends DescribableEnum<?>>> typeSet = resolverUtil.getClasses();
+				for (Class<? extends DescribableEnum<?>> clazz : typeSet) {
+					if (DescribableEnum.class.isAssignableFrom(clazz)
 							&& ArrayUtils.isNotEmpty(clazz.getGenericInterfaces())) {
 						Type type = clazz.getGenericInterfaces()[0];
 						// 如果该泛型类型是参数化类型
