@@ -101,7 +101,7 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 		}
 		if(info instanceof ISeqCodeObject){
 			if(((ISeqCodeObject)info).isAutoSeqEnabled()&&StringUtils.isBlank(((ISeqCodeObject)info).getSeqCode())){
-				((ISeqCodeObject)info).setSeqCode(((ISeqCodeObject)info).getSeqCodeGenStrategy().genSeqCode((ISeqCodeObject)info));
+				((ISeqCodeObject)info).genSeqCode();
 			}
 		}
 		baseDao.insertEntity(info);

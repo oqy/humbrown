@@ -44,7 +44,7 @@ public abstract class BillBaseInfo extends BaseInfo implements ISeqCodeObject,IB
 	}
 	
 	@Override
-	public void setSeqCode(String seqCode) {
+	public void genSeqCode() {
 		setBillNumber(getSeqCodeGenStrategy().genSeqCode(this));
 	}
 

@@ -49,11 +49,9 @@ public interface ISeqCodeObject extends IModelObject {
 	public String getSeqCode();
 	
 	/**
-	 * 设置顺序号
-	 * 
-	 * @param seqCode
+	 * 生成顺序号
 	 */
-	public void setSeqCode(String seqCode);
+	public void genSeqCode();
 
 	/**
 	 * 获取顺序号生成策略接口
