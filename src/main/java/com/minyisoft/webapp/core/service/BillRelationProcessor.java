@@ -7,7 +7,7 @@ import com.minyisoft.webapp.core.model.IBillObject;
  * 表单对象业务处理接口基类
  * @param <T>
  */
-public interface IBillRelationProcessor<T extends IBillObject>{
+public interface BillRelationProcessor<T extends IBillObject>{
 	/**
 	 * 源单删除后的业务处理
 	 * @param sourceBill

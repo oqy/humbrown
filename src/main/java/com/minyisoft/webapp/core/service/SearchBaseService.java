@@ -13,7 +13,7 @@ import com.minyisoft.webapp.core.model.criteria.SearchCriteria;
  * @author qingyong_ou
  * 搜索引擎服务接口
  */
-public interface ISearchBase  {
+public interface SearchBaseService  {
 	/**
 	 * 创建索引类别，若已存在指定类别，则先删除该类别及对应索引数据
 	 * @param searchType

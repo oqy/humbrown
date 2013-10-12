@@ -13,7 +13,7 @@ import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
  * @param <T>
  * @param <C>
  */
-public interface IBaseService<T extends IModelObject, C extends BaseCriteria> {
+public interface BaseService<T extends IModelObject, C extends BaseCriteria> {
 	/**
 	 * 新增记录
 	 * @param info
@@ -87,5 +87,5 @@ public interface IBaseService<T extends IModelObject, C extends BaseCriteria> {
 	public int count(C criteria);
 	
 	// 缓存IModelObject类对应IBaseService接口
-	public ConcurrentMap<Class<? extends IModelObject>,Class<? extends IBaseService<? extends IModelObject, ? extends BaseCriteria>>> MODEL_SERVICE_CACHE = new ConcurrentHashMap<Class<? extends IModelObject>,Class<? extends IBaseService<? extends IModelObject, ? extends BaseCriteria>>>();
+	public ConcurrentMap<Class<? extends IModelObject>,Class<? extends BaseService<? extends IModelObject, ? extends BaseCriteria>>> MODEL_SERVICE_CACHE = new ConcurrentHashMap<Class<? extends IModelObject>,Class<? extends BaseService<? extends IModelObject, ? extends BaseCriteria>>>();
 }

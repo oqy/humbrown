@@ -34,10 +34,10 @@ import org.slf4j.LoggerFactory;
 import com.minyisoft.webapp.core.model.assistant.search.ISearchDocObject;
 import com.minyisoft.webapp.core.model.assistant.search.ISearchType;
 import com.minyisoft.webapp.core.model.criteria.SearchCriteria;
-import com.minyisoft.webapp.core.service.ISearchBase;
+import com.minyisoft.webapp.core.service.SearchBaseService;
 import com.minyisoft.webapp.core.utils.mapper.json.JsonMapper;
 
-public abstract class SearchBaseImpl implements ISearchBase {
+public abstract class SearchBaseServiceImpl implements SearchBaseService {
 	protected Logger logger = LoggerFactory.getLogger(getClass());
 	
 	private JsonMapper jsonMapper=JsonMapper.nonDefaultMapper();

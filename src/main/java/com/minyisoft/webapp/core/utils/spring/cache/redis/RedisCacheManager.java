@@ -11,7 +11,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
 import com.minyisoft.webapp.core.model.IModelObject;
-import com.minyisoft.webapp.core.persistence.ICacheableDao;
+import com.minyisoft.webapp.core.persistence.CacheableDao;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 import com.minyisoft.webapp.core.utils.redis.JedisTemplate;
 
@@ -40,13 +40,13 @@ public class RedisCacheManager implements CacheManager {
 		Cache c = caches.get(name);
 		if (c == null) {
 			int expiration = computeExpiration(name);
-			if(StringUtils.startsWithIgnoreCase(name, ICacheableDao.MODEL_CACHE)){
-				Class<? extends IModelObject> modelClass=ObjectUuidUtils.getClassByObjectKey(StringUtils.removeStartIgnoreCase(name,ICacheableDao.MODEL_CACHE));
+			if(StringUtils.startsWithIgnoreCase(name, CacheableDao.MODEL_CACHE)){
+				Class<? extends IModelObject> modelClass=ObjectUuidUtils.getClassByObjectKey(StringUtils.removeStartIgnoreCase(name,CacheableDao.MODEL_CACHE));
 				if(modelClass!=null){
 					c = new RedisModelCache(modelClass, template, expiration);
 				}
-			}else if(StringUtils.startsWithIgnoreCase(name, ICacheableDao.MODEL_QUERY_CACHE)){
-				Class<? extends IModelObject> modelClass=ObjectUuidUtils.getClassByObjectKey(StringUtils.removeStartIgnoreCase(name,ICacheableDao.MODEL_QUERY_CACHE));
+			}else if(StringUtils.startsWithIgnoreCase(name, CacheableDao.MODEL_QUERY_CACHE)){
+				Class<? extends IModelObject> modelClass=ObjectUuidUtils.getClassByObjectKey(StringUtils.removeStartIgnoreCase(name,CacheableDao.MODEL_QUERY_CACHE));
 				if(modelClass!=null){
 					c = new RedisModelQueryCache(modelClass, template, expiration);
 				}

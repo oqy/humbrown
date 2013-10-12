@@ -5,7 +5,7 @@ import java.util.List;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
 
-public interface IBaseDao<T extends IModelObject, C extends BaseCriteria> {
+public interface BaseDao<T extends IModelObject, C extends BaseCriteria> {
 	/**
 	 * 根据id查找数据库记录并转换为对应对象
 	 * 

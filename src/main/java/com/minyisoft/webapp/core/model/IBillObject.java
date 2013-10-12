@@ -1,6 +1,6 @@
 package com.minyisoft.webapp.core.model;
 
-import com.minyisoft.webapp.core.service.IBillRelationProcessor;
+import com.minyisoft.webapp.core.service.BillRelationProcessor;
 
 
 /**
@@ -22,7 +22,7 @@ public interface IBillObject extends IModelObject {
 	 * 表单关系处理器
 	 * @return
 	 */
-	public IBillRelationProcessor<? extends IBillObject> getBillRelationProcessor();
+	public BillRelationProcessor<? extends IBillObject> getBillRelationProcessor();
 	/**
 	 * 是否需通知关联对象以进行相应操作
 	 * @param action

@@ -5,6 +5,8 @@ import lombok.Setter;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
+
 @Getter 
 @Setter
 public abstract class CoreBaseInfo implements IModelObject {
@@ -39,6 +41,6 @@ public abstract class CoreBaseInfo implements IModelObject {
 	
 	@Override
 	public boolean isIdPresented() {
-		return StringUtils.isNotBlank(getId());
+		return ObjectUuidUtils.isLegalId(getClass(), id);
 	}
 }

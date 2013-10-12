@@ -11,13 +11,13 @@ import com.minyisoft.webapp.core.model.BillRelationInfo;
 import com.minyisoft.webapp.core.model.IBillObject;
 import com.minyisoft.webapp.core.model.IBillObject.NotifyAction;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
-import com.minyisoft.webapp.core.persistence.IAbstractBillRelationDao;
-import com.minyisoft.webapp.core.persistence.IBaseDao;
-import com.minyisoft.webapp.core.service.IBillRelationProcessor;
+import com.minyisoft.webapp.core.persistence.AbstractBillRelationDao;
+import com.minyisoft.webapp.core.persistence.BaseDao;
+import com.minyisoft.webapp.core.service.BillRelationProcessor;
 
-public abstract class BillBaseImpl<T extends IBillObject, C extends BaseCriteria, D extends IBaseDao<T,C>> extends BaseServiceImpl<T,C,D> implements IBillRelationProcessor<T> {
+public abstract class BillBaseServiceImpl<T extends IBillObject, C extends BaseCriteria, D extends BaseDao<T,C>> extends BaseServiceImpl<T,C,D> implements BillRelationProcessor<T> {
 	@Autowired
-	private @Getter IAbstractBillRelationDao billReationDao;
+	private @Getter AbstractBillRelationDao billReationDao;
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void addNew(T info) {
@@ -30,7 +30,7 @@ public abstract class BillBaseImpl<T extends IBillObject, C extends BaseCriteria
 			billReationDao.insertRelation(relation);
 			
 			// 源单执行相应操作
-			IBillRelationProcessor processor=info.getSourceBill().getBillRelationProcessor();
+			BillRelationProcessor processor=info.getSourceBill().getBillRelationProcessor();
 			if(processor!=null){
 				processor.processAfterTargetBillAdded(info.getSourceBill(),info);
 			}
@@ -50,7 +50,7 @@ public abstract class BillBaseImpl<T extends IBillObject, C extends BaseCriteria
 				
 				// 源单执行相应操作
 				if(info.shouldNotifyObservers(NotifyAction.DELETE, info.getSourceBill())){
-					IBillRelationProcessor processor=info.getSourceBill().getBillRelationProcessor();
+					BillRelationProcessor processor=info.getSourceBill().getBillRelationProcessor();
 					if(processor!=null){
 						processor.processAfterTargetBillDeleted(info.getSourceBill(),info);
 					}
@@ -65,7 +65,7 @@ public abstract class BillBaseImpl<T extends IBillObject, C extends BaseCriteria
 				billReationDao.deleteRelation(relation);
 				// 下游单执行相应操作
 				if(info.shouldNotifyObservers(NotifyAction.DELETE, relation.getTargetBill())){
-					IBillRelationProcessor processor=relation.getTargetBill().getBillRelationProcessor();
+					BillRelationProcessor processor=relation.getTargetBill().getBillRelationProcessor();
 					if(processor!=null){
 						processor.processAfterSourceBillDeleted(info,relation.getTargetBill());
 					}
@@ -82,7 +82,7 @@ public abstract class BillBaseImpl<T extends IBillObject, C extends BaseCriteria
 		if(info.getSourceBill()!=null){
 			// 源单执行相应操作
 			if(info.shouldNotifyObservers(NotifyAction.SAVE, info.getSourceBill())){
-				IBillRelationProcessor processor=info.getSourceBill().getBillRelationProcessor();
+				BillRelationProcessor processor=info.getSourceBill().getBillRelationProcessor();
 				if(processor!=null){
 					processor.processAfterTargetBillUpdated(info.getSourceBill(),info);
 				}
@@ -112,7 +112,7 @@ public abstract class BillBaseImpl<T extends IBillObject, C extends BaseCriteria
 			for(BillRelationInfo r : relations){
 				// 下游单执行相应操作
 				if(info.shouldNotifyObservers(NotifyAction.SAVE, r.getTargetBill())){
-					IBillRelationProcessor processor=r.getTargetBill().getBillRelationProcessor();
+					BillRelationProcessor processor=r.getTargetBill().getBillRelationProcessor();
 					if(processor!=null){
 						processor.processAfterSourceBillUpdated(info,r.getTargetBill());
 					}

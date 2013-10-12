@@ -9,8 +9,8 @@ import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
 
 import com.minyisoft.webapp.core.model.assistant.ISeqCodeObject;
-import com.minyisoft.webapp.core.service.IBaseService;
-import com.minyisoft.webapp.core.service.IBillRelationProcessor;
+import com.minyisoft.webapp.core.service.BaseService;
+import com.minyisoft.webapp.core.service.BillRelationProcessor;
 import com.minyisoft.webapp.core.service.utils.ServiceUtils;
 
 @Getter 
@@ -74,10 +74,10 @@ public abstract class BillBaseInfo extends BaseInfo implements ISeqCodeObject,IB
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public IBillRelationProcessor<? extends IBillObject> getBillRelationProcessor() {
-		IBaseService<?, ?> service=ServiceUtils.getService(getClass());
-		if(service instanceof IBillRelationProcessor){
-			return (IBillRelationProcessor<? extends IBillObject>)service;
+	public BillRelationProcessor<? extends IBillObject> getBillRelationProcessor() {
+		BaseService<?, ?> service=ServiceUtils.getService(getClass());
+		if(service instanceof BillRelationProcessor){
+			return (BillRelationProcessor<? extends IBillObject>)service;
 		}
 		return null;
 	}

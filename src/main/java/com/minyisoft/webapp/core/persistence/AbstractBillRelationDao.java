@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import com.minyisoft.webapp.core.model.BillRelationInfo;
 import com.minyisoft.webapp.core.model.IBillObject;
 
-public abstract interface IAbstractBillRelationDao {
+public abstract interface AbstractBillRelationDao {
 	/**
 	 * 根据目标单查找表单关系信息
 	 * 

@@ -30,13 +30,13 @@ import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.ISystemUserObject;
 import com.minyisoft.webapp.core.model.assistant.ISeqCodeObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
-import com.minyisoft.webapp.core.persistence.IBaseDao;
+import com.minyisoft.webapp.core.persistence.BaseDao;
 import com.minyisoft.webapp.core.security.shiro.BasePrincipal;
 import com.minyisoft.webapp.core.security.utils.PermissionUtils;
-import com.minyisoft.webapp.core.service.IBaseService;
+import com.minyisoft.webapp.core.service.BaseService;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
-public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCriteria, D extends IBaseDao<T, C>> implements IBaseService <T,C>{
+public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCriteria, D extends BaseDao<T, C>> implements BaseService <T,C>{
 	protected final Logger logger=LoggerFactory.getLogger(getClass());
 	/**
 	 * DAO接口
@@ -62,8 +62,8 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 		Class<?>[] interfaces=getClass().getInterfaces();
 		if(ArrayUtils.isNotEmpty(interfaces)){
 			for(Class<?> i:interfaces){
-				if(IBaseService.class.isAssignableFrom(i)){
-					IBaseService.MODEL_SERVICE_CACHE.put(modelClass, (Class<IBaseService<?,?>>)i);
+				if(BaseService.class.isAssignableFrom(i)){
+					BaseService.MODEL_SERVICE_CACHE.put(modelClass, (Class<BaseService<?,?>>)i);
 					break;
 				}
 			}
@@ -158,13 +158,12 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	public void submit(T info) {
 		Assert.notNull(info,"待操作业务对象不存在");
 		
-		if (!info.isIdPresented()
-				|| getValue(info.getId()) == null) {
-			if(!ObjectUuidUtils.isLegalId(info.getClass(), info.getId())){
-				info.setId(null);
-			}
+		if (!info.isIdPresented()) {
+			info.setId(null);
 			addNew(info);
-		}else{
+		} else if (getValue(info.getId()) == null) {
+			addNew(info);
+		} else {
 			save(info);
 		}
 	}

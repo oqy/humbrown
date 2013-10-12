@@ -11,7 +11,7 @@ import com.minyisoft.webapp.core.exception.ServiceException;
 import com.minyisoft.webapp.core.model.CoreBaseInfo;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
-import com.minyisoft.webapp.core.service.IBaseService;
+import com.minyisoft.webapp.core.service.BaseService;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 import com.minyisoft.webapp.core.utils.spring.SpringUtils;
 
@@ -31,13 +31,13 @@ public final class ServiceUtils {
 	 * @throws ServiceException
 	 */
 	@SuppressWarnings("unchecked")
-	public static IBaseService<IModelObject, BaseCriteria> getService(Class<? extends IModelObject> clazz){
+	public static BaseService<IModelObject, BaseCriteria> getService(Class<? extends IModelObject> clazz){
 		Assert.isTrue(clazz!=null&&CoreBaseInfo.class.isAssignableFrom(clazz),"无效的业务实体类型，无法获取对应业务接口");
-		Class<? extends IBaseService<? extends IModelObject,? extends BaseCriteria>> serviceClass=IBaseService.MODEL_SERVICE_CACHE.get(ClassUtils.getUserClass(clazz));
+		Class<? extends BaseService<? extends IModelObject,? extends BaseCriteria>> serviceClass=BaseService.MODEL_SERVICE_CACHE.get(ClassUtils.getUserClass(clazz));
 		if(serviceClass==null){
 			throw new ServiceException("你所请求的业务接口不存在");
 		}
-		return (IBaseService<IModelObject, BaseCriteria>)SpringUtils.getApplicationContext().getBean(serviceClass);
+		return (BaseService<IModelObject, BaseCriteria>)SpringUtils.getApplicationContext().getBean(serviceClass);
 	}
 
 	/**
