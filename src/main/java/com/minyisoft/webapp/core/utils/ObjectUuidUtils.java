@@ -50,6 +50,7 @@ public final class ObjectUuidUtils {
 		
 		// 统一转换为大写
 		Long classKey=key.value();
+		Assert.isTrue(classKey>0,"ModelKey对应Long值需大于0");
 		if(!userClass.equals(keyClassMap.get(classKey))){
 			Assert.isTrue(!keyClassMap.containsKey(classKey),userClass.getName()+"的ModelKey值已注册，请使用其他键值");
 			keyClassMap.put(classKey, userClass);
