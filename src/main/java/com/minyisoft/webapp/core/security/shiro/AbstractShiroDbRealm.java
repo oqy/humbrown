@@ -28,7 +28,7 @@ import com.minyisoft.webapp.core.model.PermissionInfo;
  */
 public abstract class AbstractShiroDbRealm<U extends ISystemUserObject,R extends ISystemRoleObject> extends AuthorizingRealm {
 	/**
-	 * 认证回调函数,登录时调用.
+	 * 认证回调函数，登录时调用
 	 */
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(

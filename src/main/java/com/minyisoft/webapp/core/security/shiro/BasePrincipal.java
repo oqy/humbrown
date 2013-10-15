@@ -35,7 +35,7 @@ public class BasePrincipal implements Serializable {
 	}
 	
 	public ISystemUserObject getSystemUser(){
-		return (ISystemUserObject)ObjectUuidUtils.getObjectById(systemUserId);
+		return (ISystemUserObject)ObjectUuidUtils.getObject(systemUserId);
 	}
 	
 	@Override

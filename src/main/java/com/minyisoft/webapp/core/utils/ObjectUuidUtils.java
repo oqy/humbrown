@@ -29,9 +29,9 @@ import com.minyisoft.webapp.core.security.utils.EncodeUtils;
  */
 public final class ObjectUuidUtils {
 	// 缓存model简码对应的类
-	private static final ConcurrentMap<String, Class<? extends IModelObject>> keyClassMap = new ConcurrentHashMap<String, Class<? extends IModelObject>>();
+	private static final ConcurrentMap<Long, Class<? extends IModelObject>> keyClassMap = new ConcurrentHashMap<Long, Class<? extends IModelObject>>();
 	// 缓存model类对应简码
-	private static final ConcurrentMap<Class<? extends IModelObject>, String> classKeyMap = new ConcurrentHashMap<Class<? extends IModelObject>, String>();
+	private static final ConcurrentMap<Class<? extends IModelObject>, Long> classKeyMap = new ConcurrentHashMap<Class<? extends IModelObject>, Long>();
 	
 	private ObjectUuidUtils(){
 		
@@ -47,23 +47,11 @@ public final class ObjectUuidUtils {
 		Class<? extends IModelObject> userClass=(Class<? extends IModelObject>)ClassUtils.getUserClass(modelClass);
 		ModelKey key=userClass.getAnnotation(ModelKey.class);
 		Assert.notNull(key,userClass.getName()+"没有实现ModelKey注解");
-		registerModelClass(key.value(),userClass);
-	}
-	
-	/**
-	 * 注册ModelClass
-	 * @param modelClass
-	 */
-	@SuppressWarnings("unchecked")
-	public static void registerModelClass(String key,Class<? extends IModelObject> modelClass){
-		Assert.notNull(modelClass,"待索引ModelClass不能为空");
-		Assert.hasLength(key,"待索引Key值不能为空");
 		
 		// 统一转换为大写
-		String classKey=key.toUpperCase();
-		Class<? extends IModelObject> userClass=(Class<? extends IModelObject>)ClassUtils.getUserClass(modelClass);
+		Long classKey=key.value();
 		if(!userClass.equals(keyClassMap.get(classKey))){
-			Assert.isTrue(!keyClassMap.containsKey(classKey),userClass.getName()+"的ModelKey值已被"+keyClassMap.get(classKey)+"注册使用");
+			Assert.isTrue(!keyClassMap.containsKey(classKey),userClass.getName()+"的ModelKey值已注册，请使用其他键值");
 			keyClassMap.put(classKey, userClass);
 			classKeyMap.put(userClass, classKey);
 		}
@@ -74,11 +62,11 @@ public final class ObjectUuidUtils {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutput out = new DataOutputStream(baos);
 		try {
-			out.writeLong(Long.parseLong(classKeyMap.get(ClassUtils.getUserClass(clazz)),16));
+			out.writeLong(classKeyMap.get(ClassUtils.getUserClass(clazz)));
 			out.writeLong(uuid.getMostSignificantBits());
 			out.writeLong(uuid.getLeastSignificantBits());
 		} catch (IOException ioe) {
-			throw new EntityException(CoreExceptionType.ENTITY_ID_GENERATE_ERROR,ClassUtils.getUserClass(clazz).getName());
+			throw new EntityException(CoreExceptionType.ENTITY_ID_GENERATE_ERROR,new Object[]{ClassUtils.getUserClass(clazz).getName()});
 		}
 		return EncodeUtils.encodeUrlSafeBase64(baos.toByteArray());
 	}
@@ -87,9 +75,7 @@ public final class ObjectUuidUtils {
 		try {
 			byte[] array = EncodeUtils.decodeBase64(id); 
 			DataInput in = new DataInputStream(new ByteArrayInputStream(array));
-			Long key = in.readLong();
-
-			return keyClassMap.get(Long.toHexString(key).toUpperCase());
+			return keyClassMap.get(in.readLong());
 		} catch (Exception ioe) {
 			return null;
 		}
@@ -100,7 +86,7 @@ public final class ObjectUuidUtils {
 	 * @param id
 	 * @return
 	 */
-	public static IModelObject getObjectById(String id){
+	public static IModelObject getObject(String id){
 		if(StringUtils.isBlank(id)){
 			return null;
 		}
@@ -131,13 +117,18 @@ public final class ObjectUuidUtils {
 	}
 	
 	public static String getClassShortKey(Class<? extends IModelObject> clazz){
-		Assert.notNull(clazz,"待查询ModelClass不能为空");
-		return classKeyMap.get(ClassUtils.getUserClass(clazz));
+		Assert.isTrue(classKeyMap.containsKey(ClassUtils.getUserClass(clazz)),
+						clazz == null ? "待查询ModelClass不能为空" : ClassUtils.getUserClass(clazz).getName() + "尚未注册");
+		return Long.toHexString(classKeyMap.get(ClassUtils.getUserClass(clazz))).toUpperCase();
 	}
 	
 	public static Class<? extends IModelObject> getClassByObjectKey(String key){
 		Assert.hasLength(key,"待查询索引键值不能为空");
-		return keyClassMap.get(key.toUpperCase());
+		try{
+			return keyClassMap.get(Long.parseLong(key,16));
+		}catch (Exception e) {
+			throw new EntityException("不存在指定key值对应的ModelClass");
+		}
 	}
 	
 	/**

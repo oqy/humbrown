@@ -79,7 +79,7 @@ public final class ServiceUtils {
 		if (ArrayUtils.isEmpty(ids)) {
 			return null;
 		}
-		Class<?> clazz = ClassUtils.getUserClass(ObjectUuidUtils.getObjectById(ids[0]).getClass());
+		Class<?> clazz = ClassUtils.getUserClass(ObjectUuidUtils.getObject(ids[0]).getClass());
 		
 		String className = StringUtils.substring(clazz.getName(), 0, clazz.getName().lastIndexOf("."))+ ".criteria.";
 		if (StringUtils.endsWithIgnoreCase(clazz.getSimpleName(), "info")) {

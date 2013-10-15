@@ -11,7 +11,7 @@ import com.minyisoft.webapp.core.annotation.ModelKey;
  */
 @Getter
 @Setter
-@ModelKey("588A18A0")
+@ModelKey(0x588A18A0)
 public class PermissionInfo extends DataBaseInfo {
 	// 权限值
 	private String value;
