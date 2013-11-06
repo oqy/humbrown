@@ -1,4 +1,4 @@
-webapp-core
+humbrown
 ===========
 
 以spring+mybatis为框架的jee开发基础包，提供用于开发业务对象、dao、service、缓存、安全等业务的基类对象和相关工具类。
