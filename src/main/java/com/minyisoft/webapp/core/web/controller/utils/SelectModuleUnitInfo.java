@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 
@@ -60,7 +59,7 @@ public class SelectModuleUnitInfo {
 	 * @return
 	 */
 	public boolean isValueMatched(Object obj){
-		if(value==null){
+		if(value == null) {
 			return false;
 		}
 		if(value.getClass().isArray()){
@@ -71,7 +70,8 @@ public class SelectModuleUnitInfo {
 			}
 		}else if(Collection.class.isAssignableFrom(value.getClass())){
 			if(obj instanceof Collection){
-				return CollectionUtils.isEqualCollection((Collection<?>)value, (Collection<?>)obj);
+				return ((Collection<?>)value).containsAll((Collection<?>)obj) 
+							&& ((Collection<?>)obj).containsAll((Collection<?>)value);
 			}else{
 				return ((Collection<?>)value).contains(obj);
 			}

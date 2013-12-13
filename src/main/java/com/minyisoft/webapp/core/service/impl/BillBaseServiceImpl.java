@@ -4,8 +4,8 @@ import java.util.List;
 
 import lombok.Getter;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import com.minyisoft.webapp.core.model.BillRelationInfo;
 import com.minyisoft.webapp.core.model.IBillObject;
@@ -59,7 +59,7 @@ public abstract class BillBaseServiceImpl<T extends IBillObject, C extends BaseC
 		}
 		// 若指定bill存在下游单
 		List<BillRelationInfo> relations=billReationDao.getRelations(info);
-		if(CollectionUtils.isNotEmpty(relations)){
+		if(!CollectionUtils.isEmpty(relations)){
 			for(BillRelationInfo relation : relations){
 				// 擦除表单关联关系
 				billReationDao.deleteRelation(relation);
@@ -108,7 +108,7 @@ public abstract class BillBaseServiceImpl<T extends IBillObject, C extends BaseC
 				
 		// 若指定bill存在下游单
 		List<BillRelationInfo> relations=billReationDao.getRelations(info);
-		if(CollectionUtils.isNotEmpty(relations)){
+		if(!CollectionUtils.isEmpty(relations)){
 			for(BillRelationInfo r : relations){
 				// 下游单执行相应操作
 				if(info.shouldNotifyObservers(NotifyAction.SAVE, r.getTargetBill())){

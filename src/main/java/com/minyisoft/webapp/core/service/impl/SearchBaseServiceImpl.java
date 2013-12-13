@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
@@ -30,6 +29,7 @@ import org.elasticsearch.search.facet.Facet;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import com.minyisoft.webapp.core.model.assistant.search.ISearchDocObject;
 import com.minyisoft.webapp.core.model.assistant.search.ISearchType;
@@ -178,10 +178,10 @@ public abstract class SearchBaseServiceImpl implements SearchBaseService {
 					builder.setQuery(QueryBuilders.multiMatchQuery(searchCriteria.getKeyword(),searchType.getKeywordFields()));
 				}
 			}
-			if(CollectionUtils.isNotEmpty(searchCriteria.getFilterList())){
+			if(!CollectionUtils.isEmpty(searchCriteria.getFilterList())){
 				builder.setFilter(FilterBuilders.andFilter(searchCriteria.getFilterList().toArray(new FilterBuilder[searchCriteria.getFilterList().size()])));
 			}
-			if(CollectionUtils.isNotEmpty(searchCriteria.getOrderList())){
+			if(!CollectionUtils.isEmpty(searchCriteria.getOrderList())){
 				for(SortBuilder sortBuilder:searchCriteria.getOrderList()){
 					builder.addSort(sortBuilder);
 				}
@@ -193,7 +193,7 @@ public abstract class SearchBaseServiceImpl implements SearchBaseService {
 
 	@Override
 	public Map<String, Facet> searchFacets(ISearchType searchType, SearchCriteria searchCriteria) {
-		if(searchType!=null&&CollectionUtils.isNotEmpty(searchCriteria.getFacetsList())){
+		if(searchType!=null&&!CollectionUtils.isEmpty(searchCriteria.getFacetsList())){
 			SearchRequestBuilder builder=getClient().prepareSearch(getSearchIndex()).setTypes(searchType.getTypeName());
 			if(StringUtils.isNotBlank(searchCriteria.getKeyword())){
 				if(ArrayUtils.isNotEmpty(searchCriteria.getQueryFields())){
@@ -203,7 +203,7 @@ public abstract class SearchBaseServiceImpl implements SearchBaseService {
 				}
 			}
 			for(AbstractFacetBuilder facetBuilder:searchCriteria.getFacetsList()){
-				if(CollectionUtils.isNotEmpty(searchCriteria.getFilterList())){
+				if(!CollectionUtils.isEmpty(searchCriteria.getFilterList())){
 					facetBuilder.facetFilter(FilterBuilders.andFilter(searchCriteria.getFilterList().toArray(new FilterBuilder[searchCriteria.getFilterList().size()])));
 				}
 				builder.addFacet(facetBuilder);

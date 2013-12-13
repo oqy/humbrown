@@ -8,8 +8,6 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import net.sf.cglib.proxy.Enhancer;
 
@@ -17,6 +15,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.minyisoft.webapp.core.annotation.ModelKey;
 import com.minyisoft.webapp.core.exception.CoreExceptionType;
 import com.minyisoft.webapp.core.exception.EntityException;
@@ -28,11 +28,9 @@ import com.minyisoft.webapp.core.security.utils.EncodeUtils;
  * @author qingyong_ou
  */
 public final class ObjectUuidUtils {
-	// 缓存model简码对应的类
-	private static final ConcurrentMap<Long, Class<? extends IModelObject>> keyClassMap = new ConcurrentHashMap<Long, Class<? extends IModelObject>>();
-	// 缓存model类对应简码
-	private static final ConcurrentMap<Class<? extends IModelObject>, Long> classKeyMap = new ConcurrentHashMap<Class<? extends IModelObject>, Long>();
-	
+	// 缓存model简码与类的对应关系
+	private static final BiMap<Long, Class<? extends IModelObject>> keyClassMap = HashBiMap.create();
+
 	private ObjectUuidUtils(){
 		
 	}
@@ -48,14 +46,10 @@ public final class ObjectUuidUtils {
 		ModelKey key=userClass.getAnnotation(ModelKey.class);
 		Assert.notNull(key,userClass.getName()+"没有实现ModelKey注解");
 		
-		// 统一转换为大写
-		Long classKey=key.value();
-		Assert.isTrue(classKey>0,"ModelKey对应Long值需大于0");
-		if(!userClass.equals(keyClassMap.get(classKey))){
-			Assert.isTrue(!keyClassMap.containsKey(classKey),userClass.getName()+"的ModelKey值已注册，请使用其他键值");
-			keyClassMap.put(classKey, userClass);
-			classKeyMap.put(userClass, classKey);
-		}
+		Long classKey = key.value();
+		Assert.isTrue(classKey > 0 && !keyClassMap.containsKey(classKey), 
+				"["+userClass.getName()+"]ModelKey对应Long值需大于0且不能与已注册的键值相同");
+		keyClassMap.put(classKey, userClass);
 	}
 
 	public static String createObjectID(Class<? extends IModelObject> clazz) {
@@ -63,7 +57,7 @@ public final class ObjectUuidUtils {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutput out = new DataOutputStream(baos);
 		try {
-			out.writeLong(classKeyMap.get(ClassUtils.getUserClass(clazz)));
+			out.writeLong(keyClassMap.inverse().get(ClassUtils.getUserClass(clazz)));
 			out.writeLong(uuid.getMostSignificantBits());
 			out.writeLong(uuid.getLeastSignificantBits());
 		} catch (IOException ioe) {
@@ -118,9 +112,9 @@ public final class ObjectUuidUtils {
 	}
 	
 	public static String getClassShortKey(Class<? extends IModelObject> clazz){
-		Assert.isTrue(classKeyMap.containsKey(ClassUtils.getUserClass(clazz)),
+		Assert.isTrue(keyClassMap.inverse().containsKey(ClassUtils.getUserClass(clazz)),
 						clazz == null ? "待查询ModelClass不能为空" : ClassUtils.getUserClass(clazz).getName() + "尚未注册");
-		return Long.toHexString(classKeyMap.get(ClassUtils.getUserClass(clazz))).toUpperCase();
+		return Long.toHexString(keyClassMap.inverse().get(ClassUtils.getUserClass(clazz))).toUpperCase();
 	}
 	
 	public static Class<? extends IModelObject> getClassByObjectKey(String key){

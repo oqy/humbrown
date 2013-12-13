@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 
+import com.google.common.base.Charsets;
 import com.minyisoft.webapp.core.exception.BaseException;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.PermissionInfo;
@@ -49,7 +50,7 @@ public class InfrastructureResourceLoader implements InitializingBean {
 			String[] permissionPropertySet = null;
 			PermissionInfo permission;
 			for(Resource rs : permissionDefinitions){
-				BufferedReader br=new BufferedReader(new InputStreamReader(rs.getInputStream(),"UTF-8"));
+				BufferedReader br=new BufferedReader(new InputStreamReader(rs.getInputStream(), Charsets.UTF_8));
 				while(StringUtils.isNotBlank(line=br.readLine())){
 					if (line.startsWith("//")) {
 						continue;

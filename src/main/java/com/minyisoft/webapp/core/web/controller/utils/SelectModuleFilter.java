@@ -11,12 +11,13 @@ import java.util.List;
 import lombok.Getter;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.reflect.FieldUtils;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.CollectionUtils;
 
+import com.google.common.base.Charsets;
 import com.minyisoft.webapp.core.annotation.Label;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.assistant.IAutoCompleteObject;
@@ -244,27 +245,27 @@ public class SelectModuleFilter{
 	 * @return
 	 */
 	public String getRequestQueryString(){
-		if(CollectionUtils.isNotEmpty(unitContentList)){
+		if(!CollectionUtils.isEmpty(unitContentList)){
 			StringBuffer sb=new StringBuffer();
 			for(SelectModuleUnitInfo  unit : unitContentList){
 				if(unit.getValue()!=null){
 					if(unit.getValue().getClass().isArray()){
 						for(Object o :(Object[])unit.getValue()){
 							try {
-								sb.append(unit.getName()).append("=").append(URLEncoder.encode(unit.getObjectValue(o), "utf-8")).append("&");
+								sb.append(unit.getName()).append("=").append(URLEncoder.encode(unit.getObjectValue(o), Charsets.UTF_8.name())).append("&");
 							} catch (UnsupportedEncodingException e) {
 							}
 						}
 					}else if(Collection.class.isAssignableFrom(unit.getValue().getClass())){
 						for(Object o :(Collection<?>)unit.getValue()){
 							try {
-								sb.append(unit.getName()).append("=").append(URLEncoder.encode(unit.getObjectValue(o), "utf-8")).append("&");
+								sb.append(unit.getName()).append("=").append(URLEncoder.encode(unit.getObjectValue(o), Charsets.UTF_8.name())).append("&");
 							} catch (UnsupportedEncodingException e) {
 							}
 						}
 					}else{
 						try {
-							sb.append(unit.getName()).append("=").append(URLEncoder.encode(unit.getObjectValue(unit.getValue()), "utf-8")).append("&");
+							sb.append(unit.getName()).append("=").append(URLEncoder.encode(unit.getObjectValue(unit.getValue()), Charsets.UTF_8.name())).append("&");
 						} catch (UnsupportedEncodingException e) {
 						}
 					}

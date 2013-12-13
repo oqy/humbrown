@@ -2,7 +2,6 @@ package com.minyisoft.webapp.core.utils.mybatis;
 
 import java.util.Collection;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -25,7 +24,7 @@ public class Ognl {
 		} else if(obj instanceof Object[]) {
 			return ArrayUtils.isNotEmpty((Object[])obj);
 		} else if(obj instanceof Collection<?>){
-			return CollectionUtils.isNotEmpty((Collection<?>)obj);
+			return !((Collection<?>)obj).isEmpty();
 		} else {
 			return obj != null;
 		}

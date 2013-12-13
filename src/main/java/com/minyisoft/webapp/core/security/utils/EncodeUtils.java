@@ -9,6 +9,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringEscapeUtils;
 
+import com.google.common.base.Charsets;
 import com.minyisoft.webapp.core.exception.utils.Exceptions;
 
 /**
@@ -22,8 +23,6 @@ import com.minyisoft.webapp.core.exception.utils.Exceptions;
  * @author qingyong_ou
  */
 public final class EncodeUtils {
-	private static final String DEFAULT_URL_ENCODING = "UTF-8";
-
 	/**
 	 * Hex编码.
 	 */
@@ -96,7 +95,7 @@ public final class EncodeUtils {
 	 */
 	public static String urlEncode(String part) {
 		try {
-			return URLEncoder.encode(part, DEFAULT_URL_ENCODING);
+			return URLEncoder.encode(part, Charsets.UTF_8.name());
 		} catch (UnsupportedEncodingException e) {
 			throw Exceptions.unchecked(e);
 		}
@@ -108,7 +107,7 @@ public final class EncodeUtils {
 	public static String urlDecode(String part) {
 
 		try {
-			return URLDecoder.decode(part, DEFAULT_URL_ENCODING);
+			return URLDecoder.decode(part, Charsets.UTF_8.name());
 		} catch (UnsupportedEncodingException e) {
 			throw Exceptions.unchecked(e);
 		}

@@ -5,20 +5,19 @@ import static org.springframework.util.StringUtils.tokenizeToStringArray;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.nio.charset.Charset;
 import java.util.Set;
 
 import lombok.Setter;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.ibatis.io.ResolverUtil;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.JdbcType;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.ByteArrayResource;
 
+import com.google.common.base.Charsets;
 import com.minyisoft.webapp.core.model.PermissionInfo;
 import com.minyisoft.webapp.core.model.enumField.DescribableEnum;
 
@@ -60,7 +59,7 @@ public class CustomSqlSessionFactoryBean extends SqlSessionFactoryBean {
 				}
 			}
 			sb.append("</typeHandlers></configuration>");
-			setConfigLocation(new InputStreamResource(IOUtils.toInputStream(sb.toString(), Charset.forName("UTF-8"))));
+			setConfigLocation(new ByteArrayResource(sb.toString().getBytes(Charsets.UTF_8)));
 		}
 		// 注册ModelTypeHandler和PermissionInfo别名
 		setTypeAliases(new Class<?>[]{ModelTypeHandler.class,PermissionInfo.class});

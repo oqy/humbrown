@@ -10,6 +10,7 @@ import org.springframework.util.Assert;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
+import com.google.common.base.Charsets;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.persistence.CacheableDao;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
@@ -43,7 +44,7 @@ class RedisModelQueryCache extends RedisCache {
 		byte[] keyBytes=computeKey(key);
 		byte[] bs = jedis.get(keyBytes);
 		try {
-			logger.debug("读取redis集合缓存["+modelClass.getName()+"]:"+new String(keyBytes,"utf-8"));
+			logger.debug("读取redis集合缓存["+modelClass.getName()+"]:" + new String(keyBytes, Charsets.UTF_8));
 			return (bs == null ? null : new SimpleValueWrapper(ModelJsonMapper.INSTANCE.fromJsonCollectionByte(bs,modelClass)));
 		} catch (Exception e) {
 			logger.error(e.getMessage(),e);

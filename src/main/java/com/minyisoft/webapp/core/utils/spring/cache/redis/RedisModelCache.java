@@ -2,17 +2,18 @@ package com.minyisoft.webapp.core.utils.spring.cache.redis;
 
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
+import com.google.common.base.Charsets;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.persistence.CacheableDao;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
@@ -86,7 +87,7 @@ class RedisModelCache extends RedisCache {
 			byte[] cacheByte=ModelJsonMapper.INSTANCE.toJsonByte(model);
 			transaction.set(cacheKey, cacheByte);
 			if(logger.isDebugEnabled()){
-				logger.debug("写入redis缓存["+modelClass.getName()+"]:"+new String(cacheByte,"utf-8"));
+				logger.debug("写入redis缓存[" + modelClass.getName() + "]:" + new String(cacheByte, Charsets.UTF_8));
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(),e);
@@ -98,7 +99,7 @@ class RedisModelCache extends RedisCache {
 		if(logger.isDebugEnabled()){
 			logger.debug("删除redis缓存["+modelClass.getName()+"]:"+key);
 		}
-		if(key instanceof List<?>&&CollectionUtils.isNotEmpty((List<?>)key)){
+		if(key instanceof List<?>&&!CollectionUtils.isEmpty((List<?>)key)){
 			for(Object k:(List<?>)key){
 				super.evict(k);
 			}

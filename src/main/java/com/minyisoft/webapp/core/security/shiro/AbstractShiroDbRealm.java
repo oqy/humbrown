@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -17,6 +16,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
+import org.springframework.util.CollectionUtils;
 
 import com.minyisoft.webapp.core.model.ISystemOrgObject;
 import com.minyisoft.webapp.core.model.ISystemRoleObject;
@@ -57,13 +57,13 @@ public abstract class AbstractShiroDbRealm<U extends ISystemUserObject,R extends
 		ISystemOrgObject org=getSystemOrg((BasePrincipal)principals.getPrimaryPrincipal());
 		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
 		List<R> userRoles = getUserRoles(user,org);
-		if (CollectionUtils.isNotEmpty(userRoles)) {
+		if (!CollectionUtils.isEmpty(userRoles)) {
 			for (R role : userRoles) {
 				info.addRole(role.getValue());
 			}
 		}
 		List<PermissionInfo> userPermissions = getUserPermissions(user,org);
-		if (CollectionUtils.isNotEmpty(userPermissions)) {
+		if (!CollectionUtils.isEmpty(userPermissions)) {
 			for (PermissionInfo permission : userPermissions) {
 				info.addStringPermission(permission.getValue());
 			}
