@@ -8,8 +8,7 @@ public class ModelObjectModule extends SimpleModule {
 	@Override
 	public void setupModule(SetupContext context) {
 		super.setupModule(context);
-		context.addBeanSerializerModifier(new ModelBeanSerializerModifier());
-		context.addBeanDeserializerModifier(new ModelBeanDeserializerModifier());
+		context.addBeanSerializerModifier(new ModelObjectSerializerModifier());
+		context.addBeanDeserializerModifier(new ModelObjectDeserializerModifier());
 	}
-
 }

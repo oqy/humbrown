@@ -7,17 +7,17 @@ import org.apache.commons.lang.StringUtils;
 
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
-@Getter 
+@Getter
 @Setter
 public abstract class CoreBaseInfo implements IModelObject {
 	// 记录id，主键
 	private String id;
 	// 对象版本号，乐观锁应用
-	private int version=1;
+	private int version = 1;
 
 	@Override
 	public boolean equals(Object obj) {
-		if(this==obj){
+		if (this == obj) {
 			return true;
 		}
 		if (!(obj instanceof CoreBaseInfo)) {
@@ -29,16 +29,16 @@ public abstract class CoreBaseInfo implements IModelObject {
 		CoreBaseInfo compareObj = (CoreBaseInfo) obj;
 		return this.getId().equals(compareObj.getId());
 	}
-	
+
 	@Override
 	public int hashCode() {
 		if (!isIdPresented()) {
 			return super.hashCode();
-		}else{
+		} else {
 			return this.getId().hashCode();
 		}
 	}
-	
+
 	@Override
 	public boolean isIdPresented() {
 		return ObjectUuidUtils.isLegalId(getClass(), id);

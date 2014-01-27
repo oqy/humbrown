@@ -14,7 +14,7 @@ import com.google.common.base.Charsets;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.persistence.CacheableDao;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
-import com.minyisoft.webapp.core.utils.mapper.json.ModelJsonMapper;
+import com.minyisoft.webapp.core.utils.mapper.json.JsonMapper;
 import com.minyisoft.webapp.core.utils.redis.JedisTemplate;
 
 class RedisModelQueryCache extends RedisCache {
@@ -44,8 +44,8 @@ class RedisModelQueryCache extends RedisCache {
 		byte[] keyBytes=computeKey(key);
 		byte[] bs = jedis.get(keyBytes);
 		try {
-			logger.debug("读取redis集合缓存["+modelClass.getName()+"]:" + new String(keyBytes, Charsets.UTF_8));
-			return (bs == null ? null : new SimpleValueWrapper(ModelJsonMapper.INSTANCE.fromJsonCollectionByte(bs,modelClass)));
+			logger.debug("读取redis集合缓存["+modelClass.getName()+"]:"+new String(keyBytes, Charsets.UTF_8));
+			return (bs == null ? null : new SimpleValueWrapper(JsonMapper.MODEL_OBJECT_MAPPER.getMapper().readValue(bs, JsonMapper.MODEL_OBJECT_MAPPER.createCollectionType(Collection.class, modelClass))));
 		} catch (Exception e) {
 			logger.error(e.getMessage(),e);
 			return null;
@@ -63,7 +63,7 @@ class RedisModelQueryCache extends RedisCache {
 		final Collection<? extends IModelObject> col = (Collection<? extends IModelObject>) value;
 		byte[] cacheKey = computeKey(key);
 		try {
-			byte[] cacheByte=ModelJsonMapper.INSTANCE.toJsonByte(col);
+			byte[] cacheByte=JsonMapper.MODEL_OBJECT_MAPPER.getMapper().writeValueAsBytes(col);
 			transaction.set(cacheKey, cacheByte);
 			logger.debug("写入redis集合缓存["+modelClass.getName()+"]:"+new String(cacheByte,defaultCharset));
 		} catch (Exception e) {

@@ -1,15 +1,21 @@
 package com.minyisoft.webapp.core.model.criteria;
 
-import java.util.ArrayList;
+import java.util.List;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.apache.commons.lang.ArrayUtils;
 
+import com.google.common.collect.Lists;
 import com.minyisoft.webapp.core.annotation.Label;
 
 /**
  * @author qingyong_ou
  * 分页器
  */
+@Getter
+@Setter
 public class PageDevice {
 	//系统默认每页显示记录数
 	private static final int RECORDS_PER_PAGE=12;
@@ -44,52 +50,20 @@ public class PageDevice {
 		this.recordsPerPage = recordsPerPage;
 	}
 
-	public int getTotalRecords() {
-		return totalRecords;
-	}
-
-	public void setTotalRecords(int totalRecords) {
-		this.totalRecords = totalRecords;
-	}
-
 	// 总页数=总记录数除以每页显示记录数，当不整除时加1
 	public int getTotalPages() {
 		return (totalRecords % recordsPerPage == 0 && totalRecords > 0) ? (totalRecords / recordsPerPage)
 				: ((totalRecords / recordsPerPage) + 1);
 	}
-
-	public int getRecordsPerPage() {
-		return recordsPerPage;
-	}
-
-	public void setRecordsPerPage(int recordsPerPage) {
-		this.recordsPerPage = recordsPerPage;
-	}
-
-	public int getCurrentPage() {
-		return currentPage;
-	}
-
-	public void setCurrentPage(int currentPage) {
-		this.currentPage = currentPage;
-	}
 	
 	//返回前一页页面，若当前页为第一页，返回-1
 	public int getPreviewPage(){
-		if(currentPage>1){
-			return currentPage-1;
-		}else{
-			return -1;
-		}
+		return currentPage > 1 ? currentPage - 1 : -1;
 	}
 	
 	//返回后一页页面，若当前页为最后一页，返回-1
 	public int getNextPage(){
-		if(currentPage<getTotalPages()){
-			return currentPage+1;
-		}else{
-			return -1;
-		}
+		return currentPage < getTotalPages() ? currentPage + 1 : -1;
 	}
 
 	// 获取当前页第一条数据对应结果集中的记录行号
@@ -113,30 +87,26 @@ public class PageDevice {
 	 * 根据当前页码和总页码，获取可供用户点击的页码列表
 	 * @return
 	 */
-	private final int visiablePageCount=6;
-	public Integer[] getVisiblePageNumbers(){
-		int totalPage=getTotalPages();
-		int startPageNum=Math.max(currentPage-2,1);
-		ArrayList<Integer> pageList=new ArrayList<Integer>(visiablePageCount+4);
-		for(int i=startPageNum;i<=startPageNum+visiablePageCount-1&&i<=totalPage;i++){
-			pageList.add(i);
+	public Integer[] getVisiblePageNumbers(int visiblePageCount) {
+		List<Integer> numbers = Lists.newLinkedList();
+		int startNum = Math.max(currentPage - visiblePageCount / 2 + 1, 1);
+		for (int i = startNum; i < startNum + visiblePageCount
+				&& i <= getTotalPages(); i++) {
+			numbers.add(i);
 		}
-		int currentPageListSize=pageList.size();
-		if(currentPageListSize<visiablePageCount){
-			for(int i=startPageNum-1;i>0&&i>=(startPageNum-(visiablePageCount-currentPageListSize));i--){
-				pageList.add(0, i);
+		if (numbers.size() < visiblePageCount && numbers.get(0) > 1) {
+			for (int i = numbers.get(0) - 1; i >= 1
+					&& numbers.size() < visiblePageCount; i--) {
+				numbers.add(0, i);
 			}
 		}
-		if(pageList.get(0)>2){
-			pageList.add(0,1);
-			pageList.add(1,-1);
-		}
-		currentPageListSize=pageList.size();
-		if(pageList.get(currentPageListSize-1)<totalPage-1){
-			pageList.add(currentPageListSize,-1);
-			pageList.add(currentPageListSize+1,totalPage);
-		}
-		return pageList.toArray(new Integer[pageList.size()]);
+		return numbers.toArray(new Integer[numbers.size()]);
+	}
+	
+	private static final int DEFAULT_VISIBLE_PAGE_COUNT=6;
+	
+	public Integer[] getVisiblePageNumbers(){
+		return getVisiblePageNumbers(DEFAULT_VISIBLE_PAGE_COUNT);
 	}
 	
 	/**

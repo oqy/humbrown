@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
@@ -17,7 +16,7 @@ import com.google.common.base.Charsets;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.persistence.CacheableDao;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
-import com.minyisoft.webapp.core.utils.mapper.json.ModelJsonMapper;
+import com.minyisoft.webapp.core.utils.mapper.json.JsonMapper;
 import com.minyisoft.webapp.core.utils.redis.JedisTemplate;
 
 class RedisModelCache extends RedisCache {
@@ -60,7 +59,7 @@ class RedisModelCache extends RedisCache {
 			if(logger.isDebugEnabled()){
 				logger.debug("读取redis缓存["+modelClass.getName()+"]:"+keyInByte);
 			}
-			return (bs == null ? null : new SimpleValueWrapper(ModelJsonMapper.INSTANCE.fromJsonByte(bs, modelClass)));
+			return (bs == null ? null : new SimpleValueWrapper(JsonMapper.MODEL_OBJECT_MAPPER.getMapper().readValue(bs, modelClass)));
 		} catch (Exception e) {
 			logger.error(e.getMessage(),e);
 			return null;
@@ -84,10 +83,10 @@ class RedisModelCache extends RedisCache {
 			cacheKey = computeKey(model.getId());
 		}
 		try {
-			byte[] cacheByte=ModelJsonMapper.INSTANCE.toJsonByte(model);
+			byte[] cacheByte=JsonMapper.MODEL_OBJECT_MAPPER.getMapper().writeValueAsBytes(model);
 			transaction.set(cacheKey, cacheByte);
 			if(logger.isDebugEnabled()){
-				logger.debug("写入redis缓存[" + modelClass.getName() + "]:" + new String(cacheByte, Charsets.UTF_8));
+				logger.debug("写入redis缓存["+modelClass.getName()+"]:"+new String(cacheByte, Charsets.UTF_8));
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(),e);
@@ -96,14 +95,14 @@ class RedisModelCache extends RedisCache {
 	}
 
 	public void evict(Object key) {
-		if(logger.isDebugEnabled()){
-			logger.debug("删除redis缓存["+modelClass.getName()+"]:"+key);
+		if (logger.isDebugEnabled()) {
+			logger.debug("删除redis缓存[" + modelClass.getName() + "]:" + key);
 		}
-		if(key instanceof List<?>&&!CollectionUtils.isEmpty((List<?>)key)){
-			for(Object k:(List<?>)key){
+		if (key instanceof List<?> && !((List<?>) key).isEmpty()) {
+			for (Object k : (List<?>) key) {
 				super.evict(k);
 			}
-		}else{
+		} else {
 			super.evict(key);
 		}
 	}

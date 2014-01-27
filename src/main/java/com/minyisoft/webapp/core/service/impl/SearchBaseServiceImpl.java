@@ -40,7 +40,7 @@ import com.minyisoft.webapp.core.utils.mapper.json.JsonMapper;
 public abstract class SearchBaseServiceImpl implements SearchBaseService {
 	protected Logger logger = LoggerFactory.getLogger(getClass());
 	
-	private JsonMapper jsonMapper=JsonMapper.nonDefaultMapper();
+	private JsonMapper jsonMapper = JsonMapper.NON_DEFAULT_MAPPER;
 	
 	/**
 	 * 获取搜索客户端

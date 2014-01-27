@@ -2,6 +2,8 @@ package com.minyisoft.webapp.core.utils.mapper.json;
 
 import java.io.IOException;
 
+import lombok.Getter;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,71 +17,54 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+import com.minyisoft.webapp.core.utils.mapper.json.jackson.ModelObjectModule;
 
-/**
- * 简单封装Jackson，实现JSON String<->Java Object的Mapper.
- * 
- * 封装不同的输出风格, 使用不同的builder函数创建实例.
- * 
- * @author calvin
- */
-public class JsonMapper {
+public enum JsonMapper {
+	NON_EMPTY_MAPPER(_initMapper(Include.NON_EMPTY)), // 创建只输出非Null且非Empty(如List.isEmpty)的属性到Json字符串的Mapper,建议在外部接口中使用
+	NON_DEFAULT_MAPPER(_initMapper(Include.NON_DEFAULT)), // 创建只输出初始值被改变的属性到Json字符串的Mapper,最节约的存储方式，建议在内部接口中使用
+	MODEL_OBJECT_MAPPER(_initMapper(Include.NON_DEFAULT)) {
+		@Override
+		protected void furtherInitMapper() {
+			getMapper().registerModule(new ModelObjectModule());
+			// 转换json时只检查变量
+			getMapper().setVisibilityChecker(
+					getMapper().getSerializationConfig()
+							.getDefaultVisibilityChecker()
+							.withFieldVisibility(Visibility.ANY)
+							.withGetterVisibility(Visibility.NONE)
+							.withIsGetterVisibility(Visibility.NONE)
+							.withSetterVisibility(Visibility.NONE));
+		}
+	};// 创建用于序列化与反序列化IModelObject接口实现类，对使用了cglib增强的IModelObject bean，序列化时只输出id值，反序列化时根据id重新构造cglib增强的对象
 
 	private static Logger logger = LoggerFactory.getLogger(JsonMapper.class);
 
+	@Getter
 	private ObjectMapper mapper;
 
-	public JsonMapper() {
-		this(null);
+	private JsonMapper(ObjectMapper mapper) {
+		this.mapper = mapper;
+		furtherInitMapper();
 	}
 
-	public JsonMapper(Include include) {
-		mapper = new ObjectMapper();
-		//设置输出时包含属性的风格
+	private static ObjectMapper _initMapper(Include include) {
+		ObjectMapper mapper = new ObjectMapper();
+		// 设置输出时包含属性的风格
 		if (include != null) {
 			mapper.setSerializationInclusion(include);
 		}
-		//设置输入时忽略在JSON字符串中存在但Java对象实际没有的属性
+		// 设置输入时忽略在JSON字符串中存在但Java对象实际没有的属性
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-	}
-
-	/**
-	 * 创建只输出非Null且非Empty(如List.isEmpty)的属性到Json字符串的Mapper,建议在外部接口中使用.
-	 */
-	public static JsonMapper nonEmptyMapper() {
-		return new JsonMapper(Include.NON_EMPTY);
-	}
-
-	/**
-	 * 创建只输出初始值被改变的属性到Json字符串的Mapper, 最节约的存储方式，建议在内部接口中使用。
-	 */
-	public static JsonMapper nonDefaultMapper() {
-		return new JsonMapper(Include.NON_DEFAULT);
-	}
-	
-	/**
-	 * 创建只转换field的Mapper
-	 * @return
-	 */
-	public static JsonMapper fieldMapper(){
-		JsonMapper mapper=nonDefaultMapper();
-		ObjectMapper objectMapper=mapper.getMapper();
-		// 转换json时只检查变量
-		objectMapper.setVisibilityChecker(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
-																				.withFieldVisibility(Visibility.ANY)
-																				.withGetterVisibility(Visibility.NONE)
-																				.withIsGetterVisibility(Visibility.NONE)
-																				.withSetterVisibility(Visibility.NONE));
 		return mapper;
 	}
 
+	protected void furtherInitMapper() {
+	};
+
 	/**
-	 * Object可以是POJO，也可以是Collection或数组。
-	 * 如果对象为Null, 返回"null".
-	 * 如果集合为空集合, 返回"[]".
+	 * Object可以是POJO，也可以是Collection或数组。 如果对象为Null, 返回"null". 如果集合为空集合, 返回"[]".
 	 */
 	public String toJson(Object object) {
-
 		try {
 			return mapper.writeValueAsString(object);
 		} catch (IOException e) {
@@ -91,10 +76,10 @@ public class JsonMapper {
 	/**
 	 * 反序列化POJO或简单Collection如List<String>.
 	 * 
-	 * 如果JSON字符串为Null或"null"字符串, 返回Null.
-	 * 如果JSON字符串为"[]", 返回空集合.
+	 * 如果JSON字符串为Null或"null"字符串, 返回Null. 如果JSON字符串为"[]", 返回空集合.
 	 * 
 	 * 如需反序列化复杂Collection如List<MyBean>, 请使用fromJson(String,JavaType)
+	 * 
 	 * @see #fromJson(String, JavaType)
 	 */
 	public <T> T fromJson(String jsonString, Class<T> clazz) {
@@ -112,6 +97,7 @@ public class JsonMapper {
 
 	/**
 	 * 反序列化复杂Collection如List<Bean>, 先使用函數createCollectionType构造类型,然后调用本函数.
+	 * 
 	 * @see #createCollectionType(Class, Class...)
 	 */
 	@SuppressWarnings("unchecked")
@@ -129,12 +115,14 @@ public class JsonMapper {
 	}
 
 	/**
-	 * 構造泛型的Collection Type如:
-	 * ArrayList<MyBean>, 则调用constructCollectionType(ArrayList.class,MyBean.class)
+	 * 構造泛型的Collection Type如: ArrayList<MyBean>,
+	 * 则调用constructCollectionType(ArrayList.class,MyBean.class)
 	 * HashMap<String,MyBean>, 则调用(HashMap.class,String.class, MyBean.class)
 	 */
-	public JavaType createCollectionType(Class<?> collectionClass, Class<?>... elementClasses) {
-		return mapper.getTypeFactory().constructParametricType(collectionClass, elementClasses);
+	public JavaType createCollectionType(Class<?> collectionClass,
+			Class<?>... elementClasses) {
+		return mapper.getTypeFactory().constructParametricType(collectionClass,
+				elementClasses);
 	}
 
 	/**
@@ -145,9 +133,11 @@ public class JsonMapper {
 		try {
 			return (T) mapper.readerForUpdating(object).readValue(jsonString);
 		} catch (JsonProcessingException e) {
-			logger.warn("update json string:" + jsonString + " to object:" + object + " error.", e);
+			logger.warn("update json string:" + jsonString + " to object:"
+					+ object + " error.", e);
 		} catch (IOException e) {
-			logger.warn("update json string:" + jsonString + " to object:" + object + " error.", e);
+			logger.warn("update json string:" + jsonString + " to object:"
+					+ object + " error.", e);
 		}
 		return null;
 	}
@@ -160,8 +150,7 @@ public class JsonMapper {
 	}
 
 	/**
-	 * 設定是否使用Enum的toString函數來讀寫Enum,
-	 * 為False時時使用Enum的name()函數來讀寫Enum, 默認為False.
+	 * 設定是否使用Enum的toString函數來讀寫Enum, 為False時時使用Enum的name()函數來讀寫Enum, 默認為False.
 	 * 注意本函數一定要在Mapper創建後, 所有的讀寫動作之前調用.
 	 */
 	public void enableEnumUseToString() {
@@ -176,12 +165,5 @@ public class JsonMapper {
 	public void enableJaxbAnnotation() {
 		JaxbAnnotationModule module = new JaxbAnnotationModule();
 		mapper.registerModule(module);
-	}
-
-	/**
-	 * 取出Mapper做进一步的设置或使用其他序列化API.
-	 */
-	public ObjectMapper getMapper() {
-		return mapper;
 	}
 }
