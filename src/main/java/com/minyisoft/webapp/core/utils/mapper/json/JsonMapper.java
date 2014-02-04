@@ -15,9 +15,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
-import com.minyisoft.webapp.core.utils.mapper.json.jackson.ModelObjectModule;
+import com.minyisoft.webapp.core.utils.mapper.json.jackson.ModelObjectDeserializerModifier;
+import com.minyisoft.webapp.core.utils.mapper.json.jackson.ModelObjectSerializerModifier;
 
 public enum JsonMapper {
 	NON_EMPTY_MAPPER(_initMapper(Include.NON_EMPTY)), // 创建只输出非Null且非Empty(如List.isEmpty)的属性到Json字符串的Mapper,建议在外部接口中使用
@@ -25,7 +27,15 @@ public enum JsonMapper {
 	MODEL_OBJECT_MAPPER(_initMapper(Include.NON_DEFAULT)) {
 		@Override
 		protected void furtherInitMapper() {
-			getMapper().registerModule(new ModelObjectModule());
+			getMapper().registerModule(new SimpleModule() {
+				private static final long serialVersionUID = 3919928191745949680L;
+
+				public void setupModule(SetupContext context) {
+					super.setupModule(context);
+					context.addBeanSerializerModifier(new ModelObjectSerializerModifier());
+					context.addBeanDeserializerModifier(new ModelObjectDeserializerModifier());
+				}
+			});
 			// 转换json时只检查变量
 			getMapper().setVisibilityChecker(
 					getMapper().getSerializationConfig()
