@@ -33,7 +33,7 @@ import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 @SuppressWarnings("serial")
 public class CustomCacheInterceptor extends CacheInterceptor {
 	@Override
-	protected Collection<Cache> getCaches(CacheOperation operation) {
+	protected Collection<? extends Cache> getCaches(CacheOperation operation) {
 		if (operation instanceof ModelCacheableOperation
 				|| operation instanceof ModelCacheEvictOperation) {
 			Set<String> cacheNames = operation.getCacheNames();

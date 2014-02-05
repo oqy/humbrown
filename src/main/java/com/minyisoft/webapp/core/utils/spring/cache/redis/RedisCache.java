@@ -227,4 +227,11 @@ class RedisCache implements Cache {
 		} while (retry);
 		return foundLock;
 	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T get(Object key, Class<T> type) {
+		ValueWrapper wrapper = get(key);
+		return wrapper == null ? null : (T) wrapper.get();
+	}
 }
