@@ -6,29 +6,33 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import lombok.Setter;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.util.Assert;
 
 import com.minyisoft.webapp.core.model.IModelObject;
-import com.minyisoft.webapp.core.persistence.CacheableDao;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 import com.minyisoft.webapp.core.utils.redis.JedisTemplate;
+import com.minyisoft.webapp.core.utils.spring.cache.ModelCacheManager;
 
 /**
- * CacheManager implementation for Redis.
- * base on org.springframework.data.redis.cache.RedisCacheManager
+ * CacheManager implementation for Redis. base on
+ * org.springframework.data.redis.cache.RedisCacheManager
  * 
  * @author qingyong_ou
  */
-public class RedisCacheManager implements CacheManager {
+public class RedisCacheManager implements CacheManager, ModelCacheManager {
 
 	// fast lookup by name map
 	private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
 	private final Collection<String> names = Collections.unmodifiableSet(caches.keySet());
 	private final JedisTemplate template;
-	
-	// 0 - never expire
+
+	// defaultExpireTime time in seconds (0 = never expire)
+	@Setter
 	private int defaultExpiration = 0;
 	private Map<String, Integer> expires = null;
 
@@ -40,18 +44,25 @@ public class RedisCacheManager implements CacheManager {
 		Cache c = caches.get(name);
 		if (c == null) {
 			int expiration = computeExpiration(name);
-			if(StringUtils.startsWithIgnoreCase(name, CacheableDao.MODEL_CACHE)){
-				Class<? extends IModelObject> modelClass=ObjectUuidUtils.getClassByObjectKey(StringUtils.removeStartIgnoreCase(name,CacheableDao.MODEL_CACHE));
-				if(modelClass!=null){
+			if (StringUtils.startsWithIgnoreCase(name,
+					ModelCacheTypeEnum.MODEL_CACHE.getType())) {
+				Class<? extends IModelObject> modelClass = ObjectUuidUtils
+						.getClassByObjectKey(StringUtils.removeStartIgnoreCase(
+								name, ModelCacheTypeEnum.MODEL_CACHE.getType()));
+				if (modelClass != null) {
 					c = new RedisModelCache(modelClass, template, expiration);
 				}
-			}else if(StringUtils.startsWithIgnoreCase(name, CacheableDao.MODEL_QUERY_CACHE)){
-				Class<? extends IModelObject> modelClass=ObjectUuidUtils.getClassByObjectKey(StringUtils.removeStartIgnoreCase(name,CacheableDao.MODEL_QUERY_CACHE));
-				if(modelClass!=null){
-					c = new RedisModelQueryCache(modelClass, template, expiration);
+			} else if (StringUtils.startsWithIgnoreCase(name,
+					ModelCacheTypeEnum.MODEL_QUERY_CACHE.getType())) {
+				Class<? extends IModelObject> modelClass = ObjectUuidUtils
+						.getClassByObjectKey(StringUtils.removeStartIgnoreCase(
+								name, ModelCacheTypeEnum.MODEL_QUERY_CACHE.getType()));
+				if (modelClass != null) {
+					c = new RedisModelQueryCache(modelClass, template,
+							expiration);
 				}
 			}
-			if(c==null){
+			if (c == null) {
 				c = new RedisCache(name, template, expiration);
 			}
 			caches.put(name, c);
@@ -73,20 +84,26 @@ public class RedisCacheManager implements CacheManager {
 	}
 
 	/**
-	 * Sets the default expire time (in seconds).
-	 *
-	 * @param defaultExpireTime time in seconds.
-	 */
-	public void setDefaultExpiration(int defaultExpireTime) {
-		this.defaultExpiration = defaultExpireTime;
-	}
-
-	/**
 	 * Sets the expire time (in seconds) for cache regions (by key).
-	 *
-	 * @param expires time in seconds
+	 * 
+	 * @param expires
+	 *            time in seconds
 	 */
 	public void setExpires(Map<String, Integer> expires) {
-		this.expires = (expires != null ? new ConcurrentHashMap<String, Integer>(expires) : null);
+		this.expires = (expires != null ? new ConcurrentHashMap<String, Integer>(
+				expires) : null);
+	}
+
+	@Override
+	public Cache getModelCache(Class<? extends IModelObject> modelClazz) {
+		Assert.notNull(modelClazz);
+		return getCache(ModelCacheTypeEnum.MODEL_CACHE.getCacheName(modelClazz));
+	}
+
+	@Override
+	public Cache getModelQueryCache(
+			Class<? extends IModelObject> modelClazz) {
+		Assert.notNull(modelClazz);
+		return getCache(ModelCacheTypeEnum.MODEL_QUERY_CACHE.getCacheName(modelClazz));
 	}
 }

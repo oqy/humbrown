@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import net.sf.cglib.proxy.Enhancer;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -30,9 +31,22 @@ import com.minyisoft.webapp.core.security.utils.EncodeUtils;
 public final class ObjectUuidUtils {
 	// 缓存model简码与类的对应关系
 	private static final BiMap<Long, Class<? extends IModelObject>> keyClassMap = HashBiMap.create();
-
+	
 	private ObjectUuidUtils(){
 		
+	}
+	
+	/**
+	 * 获取指定modelClass的@ModelKey值
+	 * @param modelClass
+	 * @return
+	 */
+	private static long _getModelKey(Class<? extends IModelObject> modelClass) {
+		Assert.notNull(modelClass);
+		Class<?> userClass = ClassUtils.getUserClass(modelClass);
+		ModelKey key = userClass.getAnnotation(ModelKey.class);
+		Assert.notNull(key, userClass.getName() + "没有实现ModelKey注解");
+		return key.value();
 	}
 	
 	/**
@@ -41,14 +55,10 @@ public final class ObjectUuidUtils {
 	 */
 	@SuppressWarnings("unchecked")
 	public static void registerModelClass(Class<? extends IModelObject> modelClass){
-		Assert.notNull(modelClass,"待索引ModelClass不能为空");
-		Class<? extends IModelObject> userClass=(Class<? extends IModelObject>)ClassUtils.getUserClass(modelClass);
-		ModelKey key=userClass.getAnnotation(ModelKey.class);
-		Assert.notNull(key,userClass.getName()+"没有实现ModelKey注解");
-		
-		Long classKey = key.value();
+		long classKey = _getModelKey(modelClass);
+		Class<? extends IModelObject> userClass = (Class<? extends IModelObject>) ClassUtils.getUserClass(modelClass);
 		Assert.isTrue(classKey > 0 && !keyClassMap.containsKey(classKey), 
-				"["+userClass.getName()+"]ModelKey对应Long值需大于0且不能与已注册的键值相同");
+				"[" + userClass.getName() + "]ModelKey对应Long值需大于0且不能与已注册的键值相同");
 		keyClassMap.put(classKey, userClass);
 	}
 
@@ -82,39 +92,37 @@ public final class ObjectUuidUtils {
 	 * @return
 	 */
 	public static IModelObject getObject(String id){
-		if(StringUtils.isBlank(id)){
+		if (StringUtils.isBlank(id)) {
 			return null;
 		}
-		try{
-			Class<? extends IModelObject> clazz=getObejctClass(id);
+		try {
+			Class<? extends IModelObject> clazz = getObejctClass(id);
 			// 目标对象为枚举类型
-			if(clazz.isEnum()){
-				for(IModelObject e:clazz.getEnumConstants()){
-					if(e.getId().equals(id)){
+			if (clazz.isEnum()) {
+				for (IModelObject e : clazz.getEnumConstants()) {
+					if (e.getId().equals(id)) {
 						return e;
 					}
 				}
 				return null;
 			}
 			// 目标对象为CoreBaseInfo对象类型
-			else{
-				IModelObject info= (IModelObject)clazz.newInstance();
+			else {
+				IModelObject info = (IModelObject) clazz.newInstance();
 				info.setId(id);
-				
-				Enhancer enhancer=new Enhancer();  
-			    enhancer.setSuperclass(info.getClass());
-			    enhancer.setCallback(new ModelLazyLoadMethodInterceptor(info));
-			    return (IModelObject)enhancer.create();
+
+				Enhancer enhancer = new Enhancer();
+				enhancer.setSuperclass(info.getClass());
+				enhancer.setCallback(new ModelLazyLoadMethodInterceptor(info));
+				return (IModelObject) enhancer.create();
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			return null;
 		}
 	}
 	
 	public static String getClassShortKey(Class<? extends IModelObject> clazz){
-		Assert.isTrue(keyClassMap.inverse().containsKey(ClassUtils.getUserClass(clazz)),
-						clazz == null ? "待查询ModelClass不能为空" : ClassUtils.getUserClass(clazz).getName() + "尚未注册");
-		return Long.toHexString(keyClassMap.inverse().get(ClassUtils.getUserClass(clazz))).toUpperCase();
+		return Long.toHexString(_getModelKey(clazz)).toUpperCase();
 	}
 	
 	public static Class<? extends IModelObject> getClassByObjectKey(String key){
@@ -132,9 +140,20 @@ public final class ObjectUuidUtils {
 	 * @param id
 	 * @return
 	 */
-	public static boolean isLegalId(Class<? extends IModelObject> modelClazz,String id){
-		return modelClazz != null && StringUtils.isNotBlank(id)
+	public static boolean isLegalId(Class<? extends IModelObject> modelClazz, String id){
+		return modelClazz != null && id != null && Base64.isBase64(id)
 				&& (id.length() == 32 || id.length() == 24)
 				&& (ClassUtils.getUserClass(modelClazz) == getObejctClass(id));
+	}
+	
+	/**
+	 * 判断指定id是否合法
+	 * @param id
+	 * @return
+	 */
+	public static boolean isLegalId(String id) {
+		return id != null && Base64.isBase64(id)
+				&& (id.length() == 32 || id.length() == 24)
+				&& keyClassMap.containsValue(getObejctClass(id));
 	}
 }

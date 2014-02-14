@@ -14,10 +14,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import com.minyisoft.webapp.core.utils.mapper.json.jackson.ModelObjectDeserializerModifier;
 import com.minyisoft.webapp.core.utils.mapper.json.jackson.ModelObjectSerializerModifier;
 
@@ -157,23 +155,5 @@ public enum JsonMapper {
 	 */
 	public String toJsonP(String functionName, Object object) {
 		return toJson(new JSONPObject(functionName, object));
-	}
-
-	/**
-	 * 設定是否使用Enum的toString函數來讀寫Enum, 為False時時使用Enum的name()函數來讀寫Enum, 默認為False.
-	 * 注意本函數一定要在Mapper創建後, 所有的讀寫動作之前調用.
-	 */
-	public void enableEnumUseToString() {
-		mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
-		mapper.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
-	}
-
-	/**
-	 * 支持使用Jaxb的Annotation，使得POJO上的annotation不用与Jackson耦合。
-	 * 默认会先查找jaxb的annotation，如果找不到再找jackson的。
-	 */
-	public void enableJaxbAnnotation() {
-		JaxbAnnotationModule module = new JaxbAnnotationModule();
-		mapper.registerModule(module);
 	}
 }

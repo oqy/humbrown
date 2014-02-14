@@ -4,43 +4,27 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 
+import com.google.common.collect.Maps;
 import com.minyisoft.webapp.core.exception.CoreExceptionType;
 import com.minyisoft.webapp.core.model.PermissionInfo;
 
 public final class PermissionUtils {
-	private static Map<String, PermissionInfo> permissionMap = new ConcurrentHashMap<String, PermissionInfo>();
+	private static Map<String, PermissionInfo> permissionMap = Maps.newConcurrentMap();
 
-	private static ThreadLocal<Boolean> suspendPermissionCheck = new ThreadLocal<Boolean>();
-	
-	/**
-	 * 新增权限键值
-	 */
-	public static final String PERMISSION_CREATE="create";
-	
-	/**
-	 * 查看权限键值
-	 */
-	public static final String PERMISSION_READ="read";
-	
-	/**
-	 * 更新权限键值
-	 */
-	public static final String PERMISSION_UPDATE="update";
-	
-	/**
-	 * 删除权限键值
-	 */
-	public static final String PERMISSION_DELETE="delete";
+	private static ThreadLocal<Boolean> suspendPermissionCheck = new ThreadLocal<Boolean>() {
+		protected Boolean initialValue() {
+			return false;
+		};
+	};
 	
 	/**
 	 * 默认角色【系统管理员】角色键值
 	 */
-	public static final String ADMINISTRATOR_ROLE="ADMINISTRATOR";
+	public static final String ADMINISTRATOR_ROLE = "ADMINISTRATOR";
 	
 	private PermissionUtils(){
 		
@@ -61,9 +45,6 @@ public final class PermissionUtils {
 	 * @return
 	 */
 	public static boolean isPermissionDefined(String permissionString) {
-		if (permissionMap.size() == 0) {
-			return false;
-		}
 		return permissionMap.containsKey(permissionString);
 	}
 
@@ -101,12 +82,14 @@ public final class PermissionUtils {
 	 */
 	public static boolean hasPermission(String permissionString) {
 		// 若当前线程暂停权限检查，直接返回true
-		if(suspendPermissionCheck.get()!=null&&suspendPermissionCheck.get()){
+		if (!permissionMap.containsKey(permissionString)
+				|| suspendPermissionCheck.get()) {
 			return true;
 		}
 		Subject currentUser = SecurityUtils.getSubject();
-		return currentUser != null && currentUser.isAuthenticated()
-				&& (currentUser.isPermitted(permissionString)||currentUser.hasRole(ADMINISTRATOR_ROLE));
+		return currentUser != null
+				&& currentUser.isAuthenticated()
+				&& (currentUser.isPermitted(permissionString) || currentUser.hasRole(ADMINISTRATOR_ROLE));
 	}
 
 	/**
@@ -127,7 +110,7 @@ public final class PermissionUtils {
 	 */
 	public static boolean hasRole(String RoleKey) {
 		// 若当前线程暂停权限检查，直接返回true
-		if(suspendPermissionCheck.get()!=null&&suspendPermissionCheck.get()){
+		if (suspendPermissionCheck.get()) {
 			return true;
 		}
 		Subject currentUser = SecurityUtils.getSubject();
@@ -139,17 +122,13 @@ public final class PermissionUtils {
 	 * 在当前线程暂停权限检查
 	 */
 	public static void stopPermissionCheck(){
-		if(suspendPermissionCheck.get()==null){
-			suspendPermissionCheck.set(true);
-		}
+		suspendPermissionCheck.set(true);
 	}
 	
 	/**
 	 * 在当前线程启动权限检查
 	 */
 	public static void startPermissionCheck(){
-		if(suspendPermissionCheck.get()!=null){
-			suspendPermissionCheck.remove();
-		}
+		suspendPermissionCheck.set(false);
 	}
 }

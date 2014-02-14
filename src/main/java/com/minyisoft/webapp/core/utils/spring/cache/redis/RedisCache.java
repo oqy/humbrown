@@ -22,6 +22,8 @@ import java.util.Set;
 
 import lombok.Getter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.core.convert.converter.Converter;
@@ -38,10 +40,11 @@ import com.minyisoft.webapp.core.utils.redis.JedisTemplate.JedisActionNoResult;
 
 /**
  * Cache implementation on top of Redis.
- * base on com.minyisoft.webapp.core.utils.spring.cache.redis.RedisModelCache
+ * base on com.fusung.webapp.core.utils.spring.cache.redis.RedisModelCache
  * @author qingyong_ou
  */
 class RedisCache implements Cache {
+	protected final Logger logger=LoggerFactory.getLogger(getClass());
 
 	private static final int PAGE_SIZE = 128;
 	private final String name;
@@ -103,23 +106,23 @@ class RedisCache implements Cache {
 	
 	protected ValueWrapper _get(Jedis jedis, Object key){
 		byte[] bs = jedis.get(computeKey(key));
-		return (bs == null ? null : new SimpleValueWrapper(deserializer.convert(bs)));
+		return bs == null ? null : new SimpleValueWrapper(deserializer.convert(bs));
 	}
 
 	public void put(final Object key, final Object value) {
-		if(!isObjectCacheable(key,value)){
+		if (!isObjectCacheable(key, value)) {
 			return;
 		}
 		
 		template.execute(new JedisActionNoResult() {
-			
+
 			@Override
 			public void action(Jedis jedis) throws Exception {
 				waitForLock(jedis);
-				Transaction t=jedis.multi();
-				byte[] cacheKey=_put(t,key,value);
+				Transaction t = jedis.multi();
+				byte[] cacheKey = _put(t, key, value);
 				t.zadd(setName, 0, cacheKey);
-				
+
 				if (expiration > 0) {
 					t.expire(cacheKey, expiration);
 					// update the expiration of the set of keys as well
@@ -230,8 +233,8 @@ class RedisCache implements Cache {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T get(Object key, Class<T> type) {
-		ValueWrapper wrapper = get(key);
-		return wrapper == null ? null : (T) wrapper.get();
+	public <T> T get(Object key, Class<T> arg1) {
+		ValueWrapper value = get(key);
+		return value == null ? null : (T) value.get();
 	}
 }

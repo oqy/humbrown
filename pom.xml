@@ -17,7 +17,7 @@
 
 		<hibernate-validator.version>4.3.0.Final</hibernate-validator.version>
 		<shiro.version>1.2.1</shiro.version>
-		<jackson.version>2.1.1</jackson.version>
+		<jackson-datatype-guava.version>2.3.1</jackson-datatype-guava.version>
 		<slf4j.version>1.7.2</slf4j.version>
 		
 		<lombok.version>0.11.6</lombok.version>
@@ -26,8 +26,7 @@
 		<commons-lang.version>2.6</commons-lang.version>
 		<commons-beanutils.version>1.8.3</commons-beanutils.version>
 		<commons-codec.version>1.7</commons-codec.version>
-		<guava.version>15.0</guava.version>
-		
+		<joda-time.version>2.3</joda-time.version>
 		<elasticsearch.version>0.20.6</elasticsearch.version>
 		<jedis.version>2.2.0</jedis.version>
 		
@@ -173,14 +172,9 @@
 
 		<!-- JACKSON -->
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
-			<artifactId>jackson-module-jaxb-annotations</artifactId>
-			<version>${jackson.version}</version>
+		    <groupId>com.fasterxml.jackson.datatype</groupId>
+		    <artifactId>jackson-datatype-guava</artifactId>
+		    <version>${jackson-datatype-guava.version}</version>
 		</dependency>
 
 		<!-- 日志配置  -->
@@ -250,9 +244,9 @@
 		    <scope>runtime</scope>
 		</dependency>
 		<dependency>
-		    <groupId>com.google.guava</groupId>
-		    <artifactId>guava</artifactId>
-		    <version>${guava.version}</version>
+		    <groupId>joda-time</groupId>
+		    <artifactId>joda-time</artifactId>
+		    <version>${joda-time.version}</version>
 		</dependency>
 		
 		<!-- NoSQL -->

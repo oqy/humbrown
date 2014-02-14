@@ -18,11 +18,11 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.CollectionUtils;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 import com.minyisoft.webapp.core.annotation.Label;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.assistant.IAutoCompleteObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
-import com.minyisoft.webapp.core.model.criteria.SortDirection;
 import com.minyisoft.webapp.core.model.enumField.DescribableEnum;
 
 /**
@@ -34,17 +34,12 @@ public class SelectModuleFilter{
 	 * 过滤组件列表
 	 */
 	@Getter
-	private List<SelectModuleUnitInfo> unitContentList = new ArrayList<SelectModuleUnitInfo>();
+	private List<SelectModuleUnitInfo> unitContentList = Lists.newArrayList();
 	/**
 	 * 目标过滤对象
 	 */
 	@Getter
 	private BaseCriteria criteria;
-	/**
-	 * 是否有排序条件
-	 */
-	@Getter
-	private boolean sortFlag = false;
 
 	/**
 	 * 创建搜索组件
@@ -52,11 +47,6 @@ public class SelectModuleFilter{
 	 */
 	public SelectModuleFilter(BaseCriteria criteria) {
 		this.criteria = criteria;
-	}
-	public SelectModuleFilter(BaseCriteria criteria,boolean sortFlag) {
-		this.criteria = criteria;
-		this.sortFlag = sortFlag;
-		buildSort();
 	}
 
 	/**
@@ -207,24 +197,6 @@ public class SelectModuleFilter{
 	}
 
 	/**
-	 * 根据排序名获取该排序字段的排序方式
-	 * @param name 排序名
-	 * @return
-	 */
-	public String getSortDirection(String name) {
-		String result = "";
-		if(this.criteria.getSortDirections() != null && this.criteria.getSortDirections().length != 0) {
-			for(SortDirection sort : this.criteria.getSortDirections()) {
-				if(sort.getItem().equals(name)) {
-					result = sort.getSortDirection().toString().toLowerCase();
-					break;
-				}
-			}
-		}
-		return result;
-	}
-
-	/**
 	 * 是否隐藏
 	 * @return
 	 * @throws Exception
@@ -295,19 +267,6 @@ public class SelectModuleFilter{
 		}
 	}
 	
-	/**
-	 * 对排序进行处理
-	 */
-	private void buildSort() {
-		if(!StringUtils.isBlank(criteria.getSortDirectionString())) {
-			try {
-				criteria.setSortDirectionByString();
-				criteria.setSortDirectionStringByArray();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
 	/**
 	 * 获取过滤对象指定属性的@Label注解值
 	 * @param criteria
