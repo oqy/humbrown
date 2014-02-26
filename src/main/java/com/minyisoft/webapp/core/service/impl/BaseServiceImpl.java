@@ -39,8 +39,7 @@ import com.minyisoft.webapp.core.service.BaseService;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 import com.minyisoft.webapp.core.utils.spring.cache.ModelCacheManager;
 
-public abstract class BaseServiceImpl<T extends IModelObject, C extends BaseCriteria, D extends BaseDao<T, C>>
-		implements BaseService<T, C> {
+public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCriteria, D extends BaseDao<T, C>> implements BaseService <T,C>{
 	protected final Logger logger=LoggerFactory.getLogger(getClass());
 	/**
 	 * DAO接口
@@ -50,6 +49,10 @@ public abstract class BaseServiceImpl<T extends IModelObject, C extends BaseCrit
 	 * 校验器实例
 	 */
 	private @Getter Validator validator;
+	/**
+	 * 缓存管理器实例
+	 */
+	private @Getter ModelCacheManager cacheManager;
 	/**
 	 * 当前服务类对应的Model对象类型
 	 */
@@ -77,9 +80,15 @@ public abstract class BaseServiceImpl<T extends IModelObject, C extends BaseCrit
 	}
 	
 	@Autowired
-	public void setDao(D dao, Validator validator) {
+	public void setDao(D dao) {
 		this.baseDao = dao;
+	}
+	
+	@Autowired(required = false)
+	public void setOptionalComponent(Validator validator,
+			ModelCacheManager cacheManager) {
 		this.validator = validator;
+		this.cacheManager = cacheManager;
 	}
 	
 	@Override
@@ -152,7 +161,7 @@ public abstract class BaseServiceImpl<T extends IModelObject, C extends BaseCrit
 			return null;
 		}
 		if (_modelCacheEnabled()) {
-			ValueWrapper wrapper = getCacheManager().getModelCache(modelClass)
+			ValueWrapper wrapper = cacheManager.getModelCache(modelClass)
 					.get(id);
 			if (wrapper != null) {
 				return (T) wrapper.get();
@@ -160,7 +169,7 @@ public abstract class BaseServiceImpl<T extends IModelObject, C extends BaseCrit
 		}
 		T info = baseDao.getEntity(id);
 		if (_modelCacheEnabled() && info != null) {
-			getCacheManager().getModelCache(modelClass).put(id, info);
+			cacheManager.getModelCache(modelClass).put(id, info);
 		}
 		return info;
 	}
@@ -212,14 +221,14 @@ public abstract class BaseServiceImpl<T extends IModelObject, C extends BaseCrit
 		final Object cacheKey = criteria != null ? criteria : "all";
 
 		if (_queryCacheEnabled()) {
-			ValueWrapper wrapper = getCacheManager().getModelQueryCache(modelClass).get(cacheKey);
+			ValueWrapper wrapper = cacheManager.getModelQueryCache(modelClass).get(cacheKey);
 			if (wrapper != null) {
 				return (List<T>) wrapper.get();
 			}
 		}
 		List<T> col = baseDao.getEntityCollection(criteria);
 		if (_queryCacheEnabled()) {
-			getCacheManager().getModelQueryCache(modelClass).put(cacheKey, col);
+			cacheManager.getModelQueryCache(modelClass).put(cacheKey, col);
 		}
 		return col;
 	}
@@ -232,14 +241,6 @@ public abstract class BaseServiceImpl<T extends IModelObject, C extends BaseCrit
 	@Override
 	public int count(C criteria) {
 		return baseDao.countEntity(criteria);
-	}
-	
-	/**
-	 * 获取缓存管理器
-	 * @return
-	 */
-	public ModelCacheManager getCacheManager(){
-		return null;
 	}
 	
 	/**
@@ -259,11 +260,11 @@ public abstract class BaseServiceImpl<T extends IModelObject, C extends BaseCrit
 	}
 	
 	private boolean _modelCacheEnabled() {
-		return getCacheManager() != null && useModelCache();
+		return cacheManager != null && useModelCache();
 	}
 	
 	private boolean _queryCacheEnabled() {
-		return getCacheManager() != null && useQueryCache();
+		return cacheManager != null && useQueryCache();
 	}
 	
 	/**
@@ -272,14 +273,14 @@ public abstract class BaseServiceImpl<T extends IModelObject, C extends BaseCrit
 	 */
 	protected void evictModelCache(T info){
 		if (_modelCacheEnabled()) {
-			getCacheManager().getModelCache(modelClass).evict(info.getId());
+			cacheManager.getModelCache(modelClass).evict(info.getId());
 		}
 		clearQueryCache();
 	}
 	
 	protected void clearModelCache(){
 		if (_modelCacheEnabled()) {
-			getCacheManager().getModelCache(modelClass).clear();
+			cacheManager.getModelCache(modelClass).clear();
 		}
 		clearQueryCache();
 	}
@@ -289,7 +290,7 @@ public abstract class BaseServiceImpl<T extends IModelObject, C extends BaseCrit
 	 */
 	protected void clearQueryCache(){
 		if (_queryCacheEnabled()) {
-			getCacheManager().getModelQueryCache(modelClass).clear();
+			cacheManager.getModelQueryCache(modelClass).clear();
 		}
 	}
 	

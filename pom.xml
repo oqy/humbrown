@@ -11,9 +11,9 @@
 		<!-- 主要依赖库的版本定义 -->
 		<spring.version>4.0.1.RELEASE</spring.version>
 		<javax-servlet.version>2.5</javax-servlet.version>
-		<mybatis.version>3.2.1</mybatis.version>
-		<mybatis-spring.version>1.2.0</mybatis-spring.version>
-		<thymeleaf.version>2.0.17</thymeleaf.version>
+		<mybatis.version>3.2.5</mybatis.version>
+		<mybatis-spring.version>1.2.2</mybatis-spring.version>
+		<thymeleaf.version>2.1.2.RELEASE</thymeleaf.version>
 
 		<hibernate-validator.version>4.3.0.Final</hibernate-validator.version>
 		<shiro.version>1.2.1</shiro.version>
@@ -130,13 +130,14 @@
 		<!-- THYMELEAF -->
 		<dependency>
 			<groupId>org.thymeleaf</groupId>
-    		<artifactId>thymeleaf</artifactId>
+			<artifactId>thymeleaf-spring4</artifactId>
 			<version>${thymeleaf.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.thymeleaf</groupId>
-			<artifactId>thymeleaf-spring3</artifactId>
-			<version>${thymeleaf.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Shiro -->
