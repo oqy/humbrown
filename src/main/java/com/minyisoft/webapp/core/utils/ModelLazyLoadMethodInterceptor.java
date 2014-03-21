@@ -2,10 +2,9 @@ package com.minyisoft.webapp.core.utils;
 
 import java.lang.reflect.Method;
 
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
-
 import org.apache.commons.lang.StringUtils;
+import org.springframework.cglib.proxy.MethodInterceptor;
+import org.springframework.cglib.proxy.MethodProxy;
 
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.service.utils.ServiceUtils;

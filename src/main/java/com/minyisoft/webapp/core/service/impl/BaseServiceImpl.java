@@ -41,25 +41,17 @@ import com.minyisoft.webapp.core.utils.spring.cache.ModelCacheManager;
 
 public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCriteria, D extends BaseDao<T, C>> implements BaseService <T,C>{
 	protected final Logger logger=LoggerFactory.getLogger(getClass());
-	/**
-	 * DAO接口
-	 */
+	// DAO接口
 	private @Getter D baseDao;
-	/**
-	 * 校验器实例
-	 */
+	// 校验器实例
+	@Autowired(required = false)
 	private @Getter Validator validator;
-	/**
-	 * 缓存管理器实例
-	 */
+	// 缓存管理器实例
+	@Autowired(required = false)
 	private @Getter ModelCacheManager cacheManager;
-	/**
-	 * 当前服务类对应的Model对象类型
-	 */
+	// 当前服务类对应的Model对象类型
 	private Class<T> modelClass;
-	/**
-	 * 根据当前业务操作实例（以***Impl形式命名）获取model对象对应的对象别名
-	 */
+	// 根据当前业务操作实例（以***Impl形式命名）获取model对象对应的对象别名
 	private final String MODEL_CLASS_ALIAS;
 	
 	@SuppressWarnings("unchecked")
@@ -82,13 +74,6 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	@Autowired
 	public void setDao(D dao) {
 		this.baseDao = dao;
-	}
-	
-	@Autowired(required = false)
-	public void setOptionalComponent(Validator validator,
-			ModelCacheManager cacheManager) {
-		this.validator = validator;
-		this.cacheManager = cacheManager;
 	}
 	
 	@Override

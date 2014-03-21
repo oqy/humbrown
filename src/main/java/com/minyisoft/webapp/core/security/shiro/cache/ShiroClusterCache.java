@@ -68,20 +68,20 @@ public class ShiroClusterCache<K,V> implements Cache<K, V> {
 	private final Charset defaultCharset=Charset.forName("UTF8");
 	
 	public ShiroClusterCache(String prefix,JedisTemplate template,Ehcache ehCache){
-		Assert.hasText(prefix,"缓存前缀不允许为空");
-		Assert.notNull(template,"集群缓存不允许为空");
-		jedisTemplate=template;
-		localCacheEnabled=(ehCache!=null);
-		localCache=ehCache;
-		keyPrefix=prefix.concat(":");
-		keyPrefixBytes=keyPrefix.getBytes(defaultCharset);
-		cacheKeySetName=(prefix+"~cacheKeys").getBytes(defaultCharset);
-		originalKeySetName=(prefix+"~originalKeys").getBytes(defaultCharset);
+		Assert.hasText(prefix, "缓存前缀不允许为空");
+		Assert.notNull(template, "集群缓存不允许为空");
+		jedisTemplate = template;
+		localCacheEnabled = (ehCache != null);
+		localCache = ehCache;
+		keyPrefix = prefix.concat(":");
+		keyPrefixBytes = keyPrefix.getBytes(defaultCharset);
+		cacheKeySetName = (prefix + "~cacheKeys").getBytes(defaultCharset);
+		originalKeySetName = (prefix + "~originalKeys").getBytes(defaultCharset);
 	}
 	
 	private byte[] computeKey(Object key){
-		if(key instanceof String){
-			return (keyPrefix.concat((String)key)).getBytes(defaultCharset);
+		if (key instanceof String) {
+			return (keyPrefix.concat((String) key)).getBytes(defaultCharset);
 		}
 		byte[] k = serializer.convert(key);
 		byte[] result = Arrays.copyOf(keyPrefixBytes, keyPrefixBytes.length + k.length);
@@ -95,7 +95,7 @@ public class ShiroClusterCache<K,V> implements Cache<K, V> {
 		if (key == null) {
 			return null;
 		} else {
-			if(localCacheEnabled){
+			if(localCacheEnabled) {
 				// 先从本地缓存获取信息
 				logger.debug("从本地缓存查找shiro缓存，key="+key);
 				Element element = localCache.get(key);
@@ -113,7 +113,12 @@ public class ShiroClusterCache<K,V> implements Cache<K, V> {
 					if (bs == null) {
 						return null;
 					} else {
-						return (V) deserializer.convert(bs);
+						V val = (V) deserializer.convert(bs);
+						if(localCacheEnabled){
+							// 设置本地缓存
+							localCache.put(new Element(key, val));
+						}
+						return val;
 					}
 				}
 			});
@@ -123,17 +128,16 @@ public class ShiroClusterCache<K,V> implements Cache<K, V> {
 	@Override
 	public V put(final K key, final V value) throws CacheException {
 		V previous = get(key);
-		if(localCacheEnabled){
-			// 设置本地缓存
-			Element element = new Element(key, value);
-			localCache.put(element);
+		if (localCacheEnabled) {
+			// 清除本地缓存
+			localCache.remove(key);
 		}
 		// 设置集群缓存
 		jedisTemplate.execute(new JedisActionNoResult() {
 
 			@Override
 			public void action(Jedis jedis) throws Exception {
-				byte[] cacheKey=computeKey(key);
+				byte[] cacheKey = computeKey(key);
 				jedis.set(cacheKey, serializer.convert(value));
 				jedis.zadd(cacheKeySetName, 0, cacheKey);
 				jedis.zadd(originalKeySetName, 0, serializer.convert(key));
@@ -145,13 +149,13 @@ public class ShiroClusterCache<K,V> implements Cache<K, V> {
 	@Override
 	public V remove(final K key) throws CacheException {
 		V previous = get(key);
-		if(localCacheEnabled){
+		if (localCacheEnabled) {
 			// 删除本地缓存
 			localCache.remove(key);
 		}
 		// 删除集群缓存
 		jedisTemplate.execute(new JedisActionNoResult() {
-			
+
 			@Override
 			public void action(Jedis jedis) throws Exception {
 				byte[] cacheKey = computeKey(key);
@@ -168,7 +172,7 @@ public class ShiroClusterCache<K,V> implements Cache<K, V> {
 
 	@Override
 	public void clear() throws CacheException {
-		if(localCacheEnabled){
+		if (localCacheEnabled) {
 			localCache.removeAll();
 		}
 		jedisTemplate.execute(new JedisActionNoResult() {
@@ -216,16 +220,16 @@ public class ShiroClusterCache<K,V> implements Cache<K, V> {
 				int offset = 0;
 				boolean finished = false;
 
-				Set<K> keySet=new HashSet<K>();
+				Set<K> keySet = new HashSet<K>();
 				do {
 					// need to paginate the keys
-					Set<byte[]> originalKeys = jedis.zrange(originalKeySetName, (offset)
-							* PAGE_SIZE, (offset + 1) * PAGE_SIZE - 1);
+					Set<byte[]> originalKeys = jedis.zrange(originalKeySetName,
+							(offset) * PAGE_SIZE, (offset + 1) * PAGE_SIZE - 1);
 					finished = originalKeys.size() < PAGE_SIZE;
 					offset++;
 					if (!originalKeys.isEmpty()) {
-						for(byte[] originalKey : originalKeys){
-							keySet.add((K)serializer.convert(originalKey));
+						for (byte[] originalKey : originalKeys) {
+							keySet.add((K) serializer.convert(originalKey));
 						}
 					}
 				} while (!finished);
@@ -236,14 +240,14 @@ public class ShiroClusterCache<K,V> implements Cache<K, V> {
 
 	@Override
 	public Collection<V> values() {
-		Set<K> keys=keys();
-		if(keys.isEmpty()){
+		Set<K> keys = keys();
+		if (keys.isEmpty()) {
 			return null;
-		}else{
-			Collection<V> valueList=new ArrayList<V>();
-			for(K key:keys){
-				V value=get(key);
-				if(value!=null){
+		} else {
+			Collection<V> valueList = new ArrayList<V>();
+			for (K key : keys) {
+				V value = get(key);
+				if (value != null) {
 					valueList.add(value);
 				}
 			}

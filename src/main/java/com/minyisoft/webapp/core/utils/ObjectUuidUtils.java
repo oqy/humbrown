@@ -9,10 +9,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.UUID;
 
-import net.sf.cglib.proxy.Enhancer;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 

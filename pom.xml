@@ -28,7 +28,7 @@
 		<commons-codec.version>1.7</commons-codec.version>
 		<joda-time.version>2.3</joda-time.version>
 		<elasticsearch.version>0.20.6</elasticsearch.version>
-		<jedis.version>2.2.0</jedis.version>
+		<jedis.version>2.1.0</jedis.version>
 		
 		<junit.version>4.11</junit.version>
 
@@ -78,11 +78,6 @@
 			<artifactId>aspectjweaver</artifactId> 
 			<version>1.7.2</version> 
 		</dependency> 
-		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib</artifactId>
-			<version>2.2.2</version>
-		</dependency>
 
 		<!-- spring -->
 		<dependency>
