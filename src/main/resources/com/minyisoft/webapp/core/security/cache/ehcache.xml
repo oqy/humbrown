@@ -62,37 +62,16 @@
                                      (specified as LFU)
     -->
 
-    <defaultCache maxElementsInMemory="10000" 
-    	eternal="false"
-		timeToIdleSeconds="5" 
-		timeToLiveSeconds="5" 
-		overflowToDisk="false"
-		diskPersistent="false" 
-		diskExpiryThreadIntervalSeconds="120" />
-	
-	<cache name="Shiro:Default" 
-		maxElementsInMemory="10000" eternal="false"
-		timeToIdleSeconds="5" 
-		timeToLiveSeconds="5" 
-		overflowToDisk="false"
-		diskPersistent="false" 
-		diskExpiryThreadIntervalSeconds="120" />
+	<defaultCache maxElementsInMemory="10000" eternal="false"
+		overflowToDisk="false" timeToLiveSeconds="1" />
 
-	<cache name="Shiro:Session" 
-		maxElementsInMemory="10000" eternal="false"
-		timeToIdleSeconds="5" 
-		timeToLiveSeconds="5" 
-		overflowToDisk="false"
-		diskPersistent="false" 
-		diskExpiryThreadIntervalSeconds="120" />
+	<cache name="Shiro:Default" maxElementsInMemory="10000" eternal="false"
+		overflowToDisk="false" timeToLiveSeconds="1" />
 
-	<cache name="Shiro:Authorization" 
-		maxElementsInMemory="10000"
-		eternal="false" 
-		timeToIdleSeconds="5" 
-		timeToLiveSeconds="5"
-		overflowToDisk="false" 
-		diskPersistent="false"
-		diskExpiryThreadIntervalSeconds="120" />
+	<cache name="Shiro:Session" maxElementsInMemory="10000" eternal="false"
+		overflowToDisk="false" timeToLiveSeconds="1" />
+
+	<cache name="Shiro:Authorization" maxElementsInMemory="10000"
+		eternal="false" overflowToDisk="false" timeToLiveSeconds="1" />
 
 </ehcache>

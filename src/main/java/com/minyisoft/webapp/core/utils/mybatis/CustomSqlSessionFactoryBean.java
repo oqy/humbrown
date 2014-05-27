@@ -47,9 +47,11 @@ public class CustomSqlSessionFactoryBean extends SqlSessionFactoryBean {
 		// 注册ModelTypeHandler和PermissionInfo别名
 		setTypeAliases(new Class<?>[] { ModelTypeHandler.class,
 				PermissionInfo.class, DescribableEnumArrayTypeHandler.class });
+		// 注册自定义ObjectFactory
+		setObjectFactory(new CustomObjectFactory());
 		super.afterPropertiesSet();
 		
-		Configuration configuration=getObject().getConfiguration();
+		Configuration configuration = getObject().getConfiguration();
 		// 插入null值时jdbcType默认类型
 		configuration.setJdbcTypeForNull(JdbcType.NULL);
 	}

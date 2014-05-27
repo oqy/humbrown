@@ -1,4 +1,4 @@
-package com.minyisoft.webapp.core.web.controller.converter;
+package com.minyisoft.webapp.core.web.converter;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

@@ -1,4 +1,4 @@
-package com.minyisoft.webapp.core.web.controller.formatter;
+package com.minyisoft.webapp.core.web.formatter;
 
 import java.text.ParseException;
 import java.util.Locale;

@@ -10,8 +10,7 @@ import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.service.utils.ServiceUtils;
 
 /**
- * @author qingong_ou
- * 业务对象后加载拦截器
+ * @author qingong_ou 业务对象后加载拦截器
  */
 public class ModelLazyLoadMethodInterceptor implements MethodInterceptor {
 	/**
@@ -21,26 +20,29 @@ public class ModelLazyLoadMethodInterceptor implements MethodInterceptor {
 	/**
 	 * 是否已加载
 	 */
-	private boolean lazyLoaded=false;
+	private boolean lazyLoaded = false;
 	/**
 	 * 加载排除方法
 	 */
-	private String[] excludeMethods={"notify","wait","finalize","getClass","getId","isIdPresented"};
-	
-	public ModelLazyLoadMethodInterceptor(IModelObject model){
+	private String[] excludeMethods = { "notify", "wait", "finalize",
+			"getClass", "getId", "isIdPresented", "hashCode", "equals" };
+
+	public ModelLazyLoadMethodInterceptor(IModelObject model) {
 		super();
-		bizModel=model;
+		bizModel = model;
 	}
 
 	@Override
-	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-		if (!lazyLoaded && !StringUtils.startsWithAny(method.getName(), excludeMethods)) {
-			bizModel=ServiceUtils.getModel(bizModel.getId());
-			lazyLoaded=true;
-        }
-		if(bizModel==null){
+	public Object intercept(Object obj, Method method, Object[] args,
+			MethodProxy proxy) throws Throwable {
+		if (!lazyLoaded
+				&& !StringUtils.startsWithAny(method.getName(), excludeMethods)) {
+			bizModel = ServiceUtils.getModel(bizModel.getId());
+			lazyLoaded = true;
+		}
+		if (bizModel == null) {
 			return null;
-		}else{
+		} else {
 			return method.invoke(bizModel, args);
 		}
 	}

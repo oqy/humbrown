@@ -8,6 +8,7 @@ import com.minyisoft.webapp.core.model.IModelObject;
 public interface ISearchDocObject extends IModelObject {
 	/**
 	 * 获取对应索引类别
+	 * 
 	 * @return
 	 */
 	public ISearchType getSearchType();
@@ -18,4 +19,11 @@ public interface ISearchDocObject extends IModelObject {
 	 * @return
 	 */
 	public boolean isIndexable();
+
+	/**
+	 * 搜索权重
+	 * 
+	 * @return
+	 */
+	public int getSearchWeight();
 }

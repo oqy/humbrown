@@ -65,9 +65,9 @@ public interface ISearchType {
 	 * 索引字段类型
 	 */
 	public static enum FieldTypeEnum {
-		STRING("string"), FLOAT("float"), DOUBLE("double"), BYTE("byte"), 
-		SHORT("short"), INTEGER("integer"), LONG("long"), DATE("date"), 
-		BOOLEAN("boolean"), BINARY("binary");
+		STRING("string"), FLOAT("float"), DOUBLE("double"), BYTE("byte"), SHORT(
+				"short"), INTEGER("integer"), LONG("long"), DATE("date"), BOOLEAN(
+				"boolean"), BINARY("binary"), GEO_POINT("geo_point");
 
 		private String type;
 

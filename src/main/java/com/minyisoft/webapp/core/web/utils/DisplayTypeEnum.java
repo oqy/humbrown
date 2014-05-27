@@ -1,4 +1,4 @@
-package com.minyisoft.webapp.core.web.controller.utils;
+package com.minyisoft.webapp.core.web.utils;
 
 import com.minyisoft.webapp.core.model.enumField.DescribableEnum;
 

@@ -58,6 +58,18 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	public BaseServiceImpl(){
 		modelClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 		MODEL_CLASS_ALIAS=StringUtils.removeEndIgnoreCase(modelClass.getSimpleName(),"info");
+		_registerModelClass(modelClass);
+	}
+	
+	public BaseServiceImpl(Class<T> modelClass){
+		this.modelClass = modelClass;
+		MODEL_CLASS_ALIAS = StringUtils.removeEndIgnoreCase(
+				modelClass.getSimpleName(), "info");
+		_registerModelClass(modelClass);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void _registerModelClass(Class<T> modelClass){
 		Class<?>[] interfaces = getClass().getInterfaces();
 		if (ArrayUtils.isNotEmpty(interfaces)) {
 			for (Class<?> i : interfaces) {

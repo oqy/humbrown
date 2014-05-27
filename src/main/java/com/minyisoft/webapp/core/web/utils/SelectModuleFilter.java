@@ -1,4 +1,4 @@
-package com.minyisoft.webapp.core.web.controller.utils;
+package com.minyisoft.webapp.core.web.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;

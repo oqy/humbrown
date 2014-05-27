@@ -40,7 +40,7 @@ import com.minyisoft.webapp.core.utils.redis.JedisTemplate.JedisActionNoResult;
 
 /**
  * Cache implementation on top of Redis.
- * base on com.fusung.webapp.core.utils.spring.cache.redis.RedisModelCache
+ * base on org.springframework.data.redis.cache.RedisCache
  * @author qingyong_ou
  */
 class RedisCache implements Cache {
@@ -221,7 +221,7 @@ class RedisCache implements Cache {
 			if (connection.exists(cacheLockName)) {
 				foundLock = true;
 				try {
-					Thread.currentThread().wait(WAIT_FOR_LOCK);
+					Thread.sleep(WAIT_FOR_LOCK);
 				} catch (InterruptedException ex) {
 					// ignore
 				}

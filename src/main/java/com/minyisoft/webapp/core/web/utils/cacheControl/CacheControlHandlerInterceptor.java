@@ -1,4 +1,4 @@
-package com.minyisoft.webapp.core.web.controller.utils.cacheControl;
+package com.minyisoft.webapp.core.web.utils.cacheControl;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;

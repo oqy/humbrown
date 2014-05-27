@@ -22,6 +22,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.facet.AbstractFacetBuilder;
@@ -31,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
+import com.minyisoft.webapp.core.model.assistant.search.CustomScriptField;
 import com.minyisoft.webapp.core.model.assistant.search.ISearchDocObject;
 import com.minyisoft.webapp.core.model.assistant.search.ISearchType;
 import com.minyisoft.webapp.core.model.criteria.SearchCriteria;
@@ -39,8 +41,6 @@ import com.minyisoft.webapp.core.utils.mapper.json.JsonMapper;
 
 public abstract class SearchBaseServiceImpl implements SearchBaseService {
 	protected Logger logger = LoggerFactory.getLogger(getClass());
-	
-	private JsonMapper jsonMapper = JsonMapper.NON_DEFAULT_MAPPER;
 	
 	/**
 	 * 获取搜索客户端
@@ -138,7 +138,7 @@ public abstract class SearchBaseServiceImpl implements SearchBaseService {
 				if(object!=null&&object.isIdPresented()&&object.isIndexable()){
 					searchType=object.getSearchType();
 					bulkRequest.add(getClient().prepareIndex(getSearchIndex(), searchType.getTypeName(), object.getId())
-						        .setSource(jsonMapper.toJson(searchType.getIndexFields(object))));
+						        .setSource(JsonMapper.NON_DEFAULT_MAPPER.toJson(searchType.getIndexFields(object))));
 				}
 			}
 			if(bulkRequest.numberOfActions()>0){
@@ -158,32 +158,53 @@ public abstract class SearchBaseServiceImpl implements SearchBaseService {
 	
 	@Override
 	public SearchHits search(ISearchType searchType, SearchCriteria searchCriteria) {
-		if(searchType!=null){
-			SearchRequestBuilder builder=getClient().prepareSearch(getSearchIndex()).setTypes(searchType.getTypeName());
-			if(searchCriteria.getPageDevice()!=null){
-				builder.setFrom(searchCriteria.getPageDevice().getStartRowNumberOfCurrentPage()-1);
-				builder.setSize(searchCriteria.getPageDevice().getRecordsPerPage());
+		if (searchType != null) {
+			SearchRequestBuilder builder = getClient().prepareSearch(
+					getSearchIndex()).setTypes(searchType.getTypeName());
+			if (searchCriteria.getPageDevice() != null) {
+				builder.setFrom(searchCriteria.getPageDevice()
+						.getStartRowNumberOfCurrentPage() - 1);
+				builder.setSize(searchCriteria.getPageDevice()
+						.getRecordsPerPage());
 			}
 			if(StringUtils.isNotBlank(searchCriteria.getKeyword())){
 				markSearchKeyword(searchCriteria.getKeyword());
-				if(ArrayUtils.isNotEmpty(searchCriteria.getQueryFields())){
-					for(String field:searchCriteria.getQueryFields()){
+				QueryBuilder queryBuilder = null;
+				if (ArrayUtils.isNotEmpty(searchCriteria.getQueryFields())) {
+					for (String field : searchCriteria.getQueryFields()) {
 						builder.addHighlightedField(field);
 					}
-					builder.setQuery(QueryBuilders.multiMatchQuery(searchCriteria.getKeyword(),searchCriteria.getQueryFields()));
-				}else{
-					for(String field:searchType.getKeywordFields()){
+					queryBuilder = QueryBuilders.multiMatchQuery(
+							searchCriteria.getKeyword(),
+							searchCriteria.getQueryFields());
+				} else {
+					for (String field : searchType.getKeywordFields()) {
 						builder.addHighlightedField(field);
 					}
-					builder.setQuery(QueryBuilders.multiMatchQuery(searchCriteria.getKeyword(),searchType.getKeywordFields()));
+					queryBuilder = QueryBuilders.multiMatchQuery(
+							searchCriteria.getKeyword(),
+							searchType.getKeywordFields());
+				}
+				if (StringUtils.isNotBlank(searchCriteria
+						.getCustomScoreScript())) {
+					queryBuilder = QueryBuilders.customScoreQuery(queryBuilder).script(searchCriteria.getCustomScoreScript());
+				}
+				builder.setQuery(queryBuilder);
+			}
+			if (!CollectionUtils.isEmpty(searchCriteria.getFilterList())) {
+				builder.setFilter(FilterBuilders.andFilter(searchCriteria
+						.getFilterList().toArray(
+								new FilterBuilder[searchCriteria
+										.getFilterList().size()])));
+			}
+			if (!CollectionUtils.isEmpty(searchCriteria.getOrderList())) {
+				for (SortBuilder sortBuilder : searchCriteria.getOrderList()) {
+					builder.addSort(sortBuilder);
 				}
 			}
-			if(!CollectionUtils.isEmpty(searchCriteria.getFilterList())){
-				builder.setFilter(FilterBuilders.andFilter(searchCriteria.getFilterList().toArray(new FilterBuilder[searchCriteria.getFilterList().size()])));
-			}
-			if(!CollectionUtils.isEmpty(searchCriteria.getOrderList())){
-				for(SortBuilder sortBuilder:searchCriteria.getOrderList()){
-					builder.addSort(sortBuilder);
+			if (!CollectionUtils.isEmpty(searchCriteria.getScriptFields())) {
+				for (CustomScriptField field : searchCriteria.getScriptFields()) {
+					builder.addScriptField(field.getName(), field.getScript());
 				}
 			}
 			return builder.execute().actionGet().hits();

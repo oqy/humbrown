@@ -1,4 +1,4 @@
-package com.minyisoft.webapp.core.web.controller;
+package com.minyisoft.webapp.core.web;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +7,6 @@ import org.slf4j.LoggerFactory;
  * @author qingyong_ou 
  * 基类controller
  */
-public class BaseController {
+public abstract class BaseController {
 	protected Logger logger = LoggerFactory.getLogger(getClass());
 }
