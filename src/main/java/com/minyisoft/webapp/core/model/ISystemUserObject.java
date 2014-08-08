@@ -9,26 +9,26 @@ public interface ISystemUserObject extends IModelObject {
 	 * 
 	 * @return
 	 */
-	public String getName();
+	String getName();
 
 	/**
 	 * 用户登录账号
 	 * 
 	 * @return
 	 */
-	public String getUserLoginName();
+	String getUserLoginName();
 
 	/**
 	 * 用户登录密码
 	 * 
 	 * @return
 	 */
-	public String getUserPassword();
+	String getUserPassword();
 
 	/**
 	 * 用户登录密码附加字符串
 	 * 
 	 * @return
 	 */
-	public String getUserPasswordSalt();
+	String getUserPasswordSalt();
 }

@@ -11,12 +11,12 @@ public interface IAutoCompleteObject extends IModelObject {
 	 * 
 	 * @return
 	 */
-	public String getValue();
+	String getValue();
 
 	/**
 	 * AutoComplete组件label属性
 	 * 
 	 * @return
 	 */
-	public String getLabel();
+	String getLabel();
 }

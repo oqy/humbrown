@@ -16,6 +16,8 @@ public interface ModelCacheManager {
 
 	Cache getModelQueryCache(Class<? extends IModelObject> modelClazz);
 
+	void clearAllCache();
+
 	public enum ModelCacheTypeEnum {
 		MODEL_CACHE("Model:"), MODEL_QUERY_CACHE("ModelQuery:");
 

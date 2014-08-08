@@ -13,32 +13,32 @@ public interface ISearchType {
 	 * 获取名称
 	 * @return
 	 */
-	public String getTypeName();
+	String getTypeName();
 	
 	/**
 	 * 获取用于关键字搜索的字段集合
 	 * @return
 	 */
-	public String[] getKeywordFields();
+	String[] getKeywordFields();
 	
 	/**
 	 * 获取用于辅助搜索（如排序、聚合查询）的字段集合
 	 * @return
 	 */
-	public String[] getAssistiveFields();
+	String[] getAssistiveFields();
 	
 	/**
 	 * 获取索引字段属性集合，Map中key为字段名，value为字段对应属性集
 	 * @return
 	 */
-	public Map<String,ISearchType.FieldProperties> getFieldsProperties();
+	Map<String,ISearchType.FieldProperties> getFieldsProperties();
 	
 	/**
 	 * 从指定待索引对象获取索引字段集合
 	 * @param indexObject
 	 * @return
 	 */
-	public Map<String, Object> getIndexFields(ISearchDocObject indexObject);
+	Map<String, Object> getIndexFields(ISearchDocObject indexObject);
 	
 	
 	/**

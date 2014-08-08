@@ -14,7 +14,7 @@ public abstract interface AbstractBillRelationDao {
 	 * @param targetBill
 	 * @return
 	 */
-	public BillRelationInfo getRelation(@Param("targetBill")IBillObject targetBill);
+	BillRelationInfo getRelation(@Param("targetBill")IBillObject targetBill);
 
 	/**
 	 * 根据源单查找表单关系信息
@@ -22,14 +22,14 @@ public abstract interface AbstractBillRelationDao {
 	 * @param sourceBill
 	 * @return
 	 */
-	public List<BillRelationInfo> getRelations(@Param("sourceBill")IBillObject sourceBill);
+	List<BillRelationInfo> getRelations(@Param("sourceBill")IBillObject sourceBill);
 	
 	/**
 	 * 新增记录
 	 * 
 	 * @param relation
 	 */
-	public void insertRelation(BillRelationInfo relation);
+	void insertRelation(BillRelationInfo relation);
 
 	/**
 	 * 更新（保存）记录
@@ -37,7 +37,7 @@ public abstract interface AbstractBillRelationDao {
 	 * @param info
 	 * @return
 	 */
-	public int updateRelation(BillRelationInfo relation);
+	int updateRelation(BillRelationInfo relation);
 
 	/**
 	 * 根据id集合批量删除记录
@@ -45,5 +45,5 @@ public abstract interface AbstractBillRelationDao {
 	 * @param ids
 	 * @return
 	 */
-	public int deleteRelation(BillRelationInfo relation);
+	int deleteRelation(BillRelationInfo relation);
 }

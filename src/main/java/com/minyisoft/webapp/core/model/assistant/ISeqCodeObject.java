@@ -11,52 +11,52 @@ public interface ISeqCodeObject extends IModelObject {
 	 * 
 	 * @return
 	 */
-	public boolean isAutoSeqEnabled();
+	boolean isAutoSeqEnabled();
 
 	/**
 	 * 获取初始顺序号
 	 * 
 	 * @return
 	 */
-	public int getInitValue();
+	int getInitValue();
 
 	/**
 	 * 获取顺序号递增步长
 	 * 
 	 * @return
 	 */
-	public int getAutoIncreaseStep();
+	int getAutoIncreaseStep();
 
 	/**
 	 * 获取顺序号前缀
 	 * 
 	 * @return
 	 */
-	public String getSeqCodePrefix();
+	String getSeqCodePrefix();
 
 	/**
 	 * 获取顺序号阿拉伯数字位数
 	 * 
 	 * @return
 	 */
-	public int getDigitLength();
+	int getDigitLength();
 	
 	/**
 	 * 获取顺序号
 	 * 
 	 * @return
 	 */
-	public String getSeqCode();
+	String getSeqCode();
 	
 	/**
 	 * 生成顺序号
 	 */
-	public void genSeqCode();
+	void genSeqCode();
 
 	/**
 	 * 获取顺序号生成策略接口
 	 * 
 	 * @return
 	 */
-	public ISeqCodeGenStrategy getSeqCodeGenStrategy();
+	ISeqCodeGenStrategy getSeqCodeGenStrategy();
 }

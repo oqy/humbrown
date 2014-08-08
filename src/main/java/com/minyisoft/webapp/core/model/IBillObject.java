@@ -12,24 +12,24 @@ public interface IBillObject extends IModelObject {
 	 * 表单编码
 	 * @return
 	 */
-	public String getBillNumber();
+	String getBillNumber();
 	/**
 	 * 表单源单
 	 * @return
 	 */
-	public IBillObject getSourceBill();
+	IBillObject getSourceBill();
 	/**
 	 * 表单关系处理器
 	 * @return
 	 */
-	public BillRelationProcessor<? extends IBillObject> getBillRelationProcessor();
+	BillRelationProcessor<? extends IBillObject> getBillRelationProcessor();
 	/**
 	 * 是否需通知关联对象以进行相应操作
 	 * @param action
 	 * @param observer
 	 * @return
 	 */
-	public boolean shouldNotifyObservers(NotifyAction action,IBillObject observer);
+	boolean shouldNotifyObservers(NotifyAction action,IBillObject observer);
 	
 	public enum NotifyAction{
 		SAVE,DELETE;	

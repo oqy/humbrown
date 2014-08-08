@@ -8,5 +8,5 @@ public interface ISystemOrgObject extends IModelObject {
 	 * 获取组织名称
 	 * @return
 	 */
-	public String getName();
+	String getName();
 }

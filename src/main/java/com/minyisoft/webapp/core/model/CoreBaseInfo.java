@@ -3,7 +3,7 @@ package com.minyisoft.webapp.core.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
@@ -13,7 +13,14 @@ public abstract class CoreBaseInfo implements IModelObject {
 	// 记录id，主键
 	private String id;
 	// 对象版本号，乐观锁应用
+	@Setter
 	private int version = 1;
+
+	public void setId(String id) {
+		if (ObjectUuidUtils.isLegalId(getClass(), id)) {
+			this.id = id;
+		}
+	}
 
 	@Override
 	public boolean equals(Object obj) {

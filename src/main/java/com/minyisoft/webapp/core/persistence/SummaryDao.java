@@ -11,5 +11,5 @@ public interface SummaryDao<C extends BaseCriteria, S extends SummaryResult>{
 	 * @param criteria
 	 * @return
 	 */
-	public List<S> summaryEntity(C criteria);
+	List<S> summaryEntity(C criteria);
 }

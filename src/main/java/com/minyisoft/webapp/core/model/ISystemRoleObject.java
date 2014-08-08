@@ -9,5 +9,5 @@ public interface ISystemRoleObject extends IModelObject {
 	 * 
 	 * @return
 	 */
-	public String getValue();
+	String getValue();
 }

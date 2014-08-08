@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentMap;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.ShiroException;
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
@@ -36,7 +36,7 @@ public class ShiroClusterCacheManager<K,V> implements CacheManager, Initializabl
 	/**
 	 * 本地缓存配置文件路径
 	 */
-	private final String cacheManagerConfigFile = "classpath:com/minyisoft/webapp/core/security/cache/ehcache.xml";
+	private final String cacheManagerConfigFile = "classpath:com/fusung/webapp/core/security/cache/ehcache.xml";
 	
 	// fast lookup by name map
 	private final ConcurrentMap<String, Cache<K,V>> caches = new ConcurrentHashMap<String, Cache<K,V>>();

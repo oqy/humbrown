@@ -4,7 +4,7 @@ import java.util.List;
 
 import lombok.Getter;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.collect.Lists;
 import com.minyisoft.webapp.core.annotation.Label;

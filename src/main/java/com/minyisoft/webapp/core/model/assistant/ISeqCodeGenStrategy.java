@@ -10,5 +10,5 @@ public interface ISeqCodeGenStrategy {
 	 * @param seqCodeObject
 	 * @return
 	 */
-	public String genSeqCode(ISeqCodeObject seqCodeObject);
+	String genSeqCode(ISeqCodeObject seqCodeObject);
 }

@@ -18,14 +18,14 @@ public interface SearchBaseService  {
 	 * 创建索引类别，若已存在指定类别，则先删除该类别及对应索引数据
 	 * @param searchType
 	 */
-	public void createIndexType(ISearchType searchType);
+	void createIndexType(ISearchType searchType);
 	
 	/**
 	 * 索引对象所有属性
 	 * @param indexObjects
 	 * @return
 	 */
-	public void index(ISearchDocObject... indexObjects);
+	void index(ISearchDocObject... indexObjects);
 	
 	/**
 	 * 根据对象id集合删除索引,id集合为空时删除索引类别
@@ -33,7 +33,7 @@ public interface SearchBaseService  {
 	 * @param ids
 	 * @return
 	 */
-	public void delete(ISearchType searchType,String... ids);
+	void delete(ISearchType searchType,String... ids);
 	
 	/**
 	 * 根据指定关键字，对指定对象指定属性内容进行查询，按指定分页返回结果
@@ -42,7 +42,7 @@ public interface SearchBaseService  {
 	 * @param searchCriteria
 	 * @return
 	 */
-	public SearchHits search(ISearchType searchType,SearchCriteria searchCriteria);
+	SearchHits search(ISearchType searchType,SearchCriteria searchCriteria);
 
 	/**
 	 * 根据指定关键字、过滤条件、排序，对指定对象指定属性内容进行查询，按指定分页返回结果，且统计指定的字段
@@ -50,5 +50,5 @@ public interface SearchBaseService  {
 	 * @param searchCriteria
 	 * @return
 	 */
-	public Map<String, Facet> searchFacets(ISearchType searchType,SearchCriteria searchCriteria);
+	Map<String, Facet> searchFacets(ISearchType searchType,SearchCriteria searchCriteria);
 }

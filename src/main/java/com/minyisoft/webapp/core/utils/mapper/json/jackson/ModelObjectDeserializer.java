@@ -2,7 +2,7 @@ package com.minyisoft.webapp.core.utils.mapper.json.jackson;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,8 +14,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
-public class ModelObjectDeserializer extends StdDeserializer<IModelObject>
-		implements ResolvableDeserializer {
+public class ModelObjectDeserializer extends StdDeserializer<IModelObject> implements ResolvableDeserializer {
 	private static final long serialVersionUID = -7882247910895109366L;
 
 	private final JsonDeserializer<?> defaultDeserializer;
@@ -26,8 +25,8 @@ public class ModelObjectDeserializer extends StdDeserializer<IModelObject>
 	}
 
 	@Override
-	public IModelObject deserialize(JsonParser jp, DeserializationContext ctxt)
-			throws IOException, JsonProcessingException {
+	public IModelObject deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException,
+			JsonProcessingException {
 		if (StringUtils.isNotBlank(jp.getValueAsString())) {
 			return ObjectUuidUtils.getObject(jp.getValueAsString());
 		}
@@ -35,8 +34,7 @@ public class ModelObjectDeserializer extends StdDeserializer<IModelObject>
 	}
 
 	@Override
-	public void resolve(DeserializationContext ctxt)
-			throws JsonMappingException {
+	public void resolve(DeserializationContext ctxt) throws JsonMappingException {
 		if (defaultDeserializer instanceof ResolvableDeserializer) {
 			((ResolvableDeserializer) defaultDeserializer).resolve(ctxt);
 		}

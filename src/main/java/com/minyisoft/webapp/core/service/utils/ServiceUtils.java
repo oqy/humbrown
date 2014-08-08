@@ -2,8 +2,8 @@ package com.minyisoft.webapp.core.service.utils;
 
 import java.util.List;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -31,13 +31,14 @@ public final class ServiceUtils {
 	 * @throws ServiceException
 	 */
 	@SuppressWarnings("unchecked")
-	public static BaseService<IModelObject, BaseCriteria> getService(Class<? extends IModelObject> clazz){
-		Assert.isTrue(clazz!=null&&CoreBaseInfo.class.isAssignableFrom(clazz),"无效的业务实体类型，无法获取对应业务接口");
-		Class<? extends BaseService<? extends IModelObject,? extends BaseCriteria>> serviceClass=BaseService.MODEL_SERVICE_CACHE.get(ClassUtils.getUserClass(clazz));
-		if(serviceClass==null){
+	public static BaseService<IModelObject, BaseCriteria> getService(Class<? extends IModelObject> clazz) {
+		Assert.isTrue(clazz != null && CoreBaseInfo.class.isAssignableFrom(clazz), "无效的业务实体类型，无法获取对应业务接口");
+		Class<? extends BaseService<? extends IModelObject, ? extends BaseCriteria>> serviceClass = BaseService.MODEL_SERVICE_CACHE
+				.get(ClassUtils.getUserClass(clazz));
+		if (serviceClass == null) {
 			throw new ServiceException("你所请求的业务接口不存在");
 		}
-		return (BaseService<IModelObject, BaseCriteria>)SpringUtils.getApplicationContext().getBean(serviceClass);
+		return (BaseService<IModelObject, BaseCriteria>) SpringUtils.getApplicationContext().getBean(serviceClass);
 	}
 
 	/**
@@ -47,16 +48,16 @@ public final class ServiceUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static IModelObject getModel(String id){
+	public static IModelObject getModel(String id) {
 		if (StringUtils.isBlank(id)) {
 			return null;
 		}
-		Class<? extends IModelObject> clazz=ObjectUuidUtils.getObejctClass(id);
-		if(clazz!=null){
+		Class<? extends IModelObject> clazz = ObjectUuidUtils.getObejctClass(id);
+		if (clazz != null) {
 			// 目标对象为枚举类型
-			if(clazz.isEnum()){
-				for(IModelObject e:clazz.getEnumConstants()){
-					if(e.getId().equals(id)){
+			if (clazz.isEnum()) {
+				for (IModelObject e : clazz.getEnumConstants()) {
+					if (e.getId().equals(id)) {
 						return e;
 					}
 				}
@@ -75,23 +76,23 @@ public final class ServiceUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static List<? extends IModelObject> getModelCollection(String[] ids){
+	public static List<? extends IModelObject> getModelCollection(String[] ids) {
 		if (ArrayUtils.isEmpty(ids)) {
 			return null;
 		}
 		Class<?> clazz = ClassUtils.getUserClass(ObjectUuidUtils.getObject(ids[0]).getClass());
-		
-		String className = StringUtils.substring(clazz.getName(), 0, clazz.getName().lastIndexOf("."))+ ".criteria.";
+
+		String className = StringUtils.substring(clazz.getName(), 0, clazz.getName().lastIndexOf(".")) + ".criteria.";
 		if (StringUtils.endsWithIgnoreCase(clazz.getSimpleName(), "info")) {
 			className += StringUtils.substring(clazz.getSimpleName(), 0,
-					StringUtils.lastIndexOfIgnoreCase(clazz.getSimpleName(),"Info"));
+					StringUtils.lastIndexOfIgnoreCase(clazz.getSimpleName(), "Info"));
 		}
-		try{
+		try {
 			BaseCriteria criteria = (BaseCriteria) Class.forName(className + "Criteria").newInstance();
 			criteria.setIds(ids);
 			return getService(ObjectUuidUtils.getObejctClass(ids[0])).getCollection(criteria);
-		}catch(Exception e){
-			throw new ServiceException(e.getMessage(),e);
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e);
 		}
 	}
 
@@ -102,8 +103,8 @@ public final class ServiceUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static <T extends IModelObject> void deleteModel(T object){
-		if(!object.getClass().isEnum()){
+	public static <T extends IModelObject> void deleteModel(T object) {
+		if (!object.getClass().isEnum()) {
 			getService(object.getClass()).delete(object);
 		}
 	}

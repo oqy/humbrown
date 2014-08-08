@@ -9,8 +9,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.criteria.SortDirection;
@@ -52,30 +52,31 @@ public class SelectModuleUnitInfo {
 		this.id = name;
 		this.value = value;
 	}
-	
+
 	/**
 	 * 指定对象是否与组件对象值相匹配
+	 * 
 	 * @param obj
 	 * @return
 	 */
-	public boolean isValueMatched(Object obj){
-		if(value == null) {
+	public boolean isValueMatched(Object obj) {
+		if (value == null) {
 			return false;
 		}
-		if(value.getClass().isArray()){
-			if(obj instanceof Object[]){
-				return Arrays.equals((Object[])value, (Object[])obj);
-			}else{
-				return ArrayUtils.contains((Object[])value, obj);
+		if (value.getClass().isArray()) {
+			if (obj instanceof Object[]) {
+				return Arrays.equals((Object[]) value, (Object[]) obj);
+			} else {
+				return ArrayUtils.contains((Object[]) value, obj);
 			}
-		}else if(Collection.class.isAssignableFrom(value.getClass())){
-			if(obj instanceof Collection){
-				return ((Collection<?>)value).containsAll((Collection<?>)obj) 
-							&& ((Collection<?>)obj).containsAll((Collection<?>)value);
-			}else{
-				return ((Collection<?>)value).contains(obj);
+		} else if (Collection.class.isAssignableFrom(value.getClass())) {
+			if (obj instanceof Collection) {
+				return ((Collection<?>) value).containsAll((Collection<?>) obj)
+						&& ((Collection<?>) obj).containsAll((Collection<?>) value);
+			} else {
+				return ((Collection<?>) value).contains(obj);
 			}
-		}else{
+		} else {
 			return value.equals(obj);
 		}
 	}
@@ -103,13 +104,13 @@ public class SelectModuleUnitInfo {
 		}
 		if (obj instanceof IModelObject) {
 			try {
-				return String.valueOf(PropertyUtils.getProperty(obj,"name"));
+				return String.valueOf(PropertyUtils.getProperty(obj, "name"));
 			} catch (Exception e) {
 				return ((IModelObject) obj).getId();
 			}
 		} else if (obj instanceof DescribableEnum<?>) {
 			return ((DescribableEnum<?>) obj).getDescription();
-		}else if (obj instanceof Date) {
+		} else if (obj instanceof Date) {
 			return DateFormatUtils.format((Date) obj, "yyyy-MM-dd");
 		} else if (obj instanceof Boolean) {
 			if ((Boolean) obj) {

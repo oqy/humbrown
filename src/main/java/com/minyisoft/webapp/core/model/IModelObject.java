@@ -9,19 +9,19 @@ public interface IModelObject {
 	 * 
 	 * @return
 	 */
-	public String getId();
+	String getId();
 
 	/**
 	 * 设置对象主键
 	 * 
 	 * @param id
 	 */
-	public void setId(String id);
+	void setId(String id);
 
 	/**
 	 * 判断id是否非空
 	 * 
 	 * @return
 	 */
-	public boolean isIdPresented();
+	boolean isIdPresented();
 }

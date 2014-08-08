@@ -13,8 +13,8 @@ import javax.validation.Validator;
 
 import lombok.Getter;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +22,12 @@ import org.springframework.cache.Cache.ValueWrapper;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.minyisoft.webapp.core.annotation.Label;
 import com.minyisoft.webapp.core.exception.ServiceException;
 import com.minyisoft.webapp.core.model.BaseInfo;
 import com.minyisoft.webapp.core.model.CoreBaseInfo;
-import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.ISystemUserObject;
 import com.minyisoft.webapp.core.model.assistant.ISeqCodeObject;
 import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
@@ -36,10 +36,12 @@ import com.minyisoft.webapp.core.security.BasePermissionTypeEnum;
 import com.minyisoft.webapp.core.security.shiro.BasePrincipal;
 import com.minyisoft.webapp.core.security.utils.PermissionUtils;
 import com.minyisoft.webapp.core.service.BaseService;
+import com.minyisoft.webapp.core.service.CUDPostProcessor;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 import com.minyisoft.webapp.core.utils.spring.cache.ModelCacheManager;
 
-public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCriteria, D extends BaseDao<T, C>> implements BaseService <T,C>{
+public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCriteria, D extends BaseDao<T, C>>
+		implements BaseService<T, C> {
 	protected final Logger logger=LoggerFactory.getLogger(getClass());
 	// DAO接口
 	private @Getter D baseDao;
@@ -50,14 +52,21 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	@Autowired(required = false)
 	private @Getter ModelCacheManager cacheManager;
 	// 当前服务类对应的Model对象类型
-	private Class<T> modelClass;
+	private final Class<T> modelClass;
 	// 根据当前业务操作实例（以***Impl形式命名）获取model对象对应的对象别名
 	private final String MODEL_CLASS_ALIAS;
+	// 是否包含增删改后处理接口
+	private final boolean containPostProcessors;
+	
+	protected CUDPostProcessor<?>[] getPostProcessors() {
+		return null;
+	}
 	
 	@SuppressWarnings("unchecked")
 	public BaseServiceImpl(){
 		modelClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 		MODEL_CLASS_ALIAS=StringUtils.removeEndIgnoreCase(modelClass.getSimpleName(),"info");
+		containPostProcessors = !ObjectUtils.isEmpty(getPostProcessors());
 		_registerModelClass(modelClass);
 	}
 	
@@ -65,6 +74,7 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 		this.modelClass = modelClass;
 		MODEL_CLASS_ALIAS = StringUtils.removeEndIgnoreCase(
 				modelClass.getSimpleName(), "info");
+		containPostProcessors = !ObjectUtils.isEmpty(getPostProcessors());
 		_registerModelClass(modelClass);
 	}
 	
@@ -89,6 +99,7 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	}
 	
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addNew(T info) {
 		_validateData(info, BasePermissionTypeEnum.CREATE);
 		_checkAuthentication(BasePermissionTypeEnum.CREATE);
@@ -118,9 +129,18 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 		baseDao.insertEntity(info);
 		
 		clearQueryCache();
+		
+		if(containPostProcessors){
+			for(CUDPostProcessor processor : getPostProcessors()){
+				if(processor.canProcess(modelClass)){
+					processor.processAferAddNew(info);
+				}
+			}
+		}
 	}
 
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void delete(T info) {
 		_validateData(info, BasePermissionTypeEnum.DELETE);
 		_checkAuthentication(BasePermissionTypeEnum.DELETE);
@@ -129,8 +149,17 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 		}
 		
 		evictModelCache(info);
+		
+		if(containPostProcessors){
+			for(CUDPostProcessor processor : getPostProcessors()){
+				if (processor.canProcess(modelClass)) {
+					processor.processAfterDelete(info);
+				}
+			}
+		}
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void save(T info) {
 		_validateData(info, BasePermissionTypeEnum.UPDATE);
@@ -149,6 +178,14 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 		}
 		
 		evictModelCache(info);
+		
+		if(containPostProcessors){
+			for(CUDPostProcessor processor : getPostProcessors()){
+				if (processor.canProcess(modelClass)) {
+					processor.processAfterSave(info);
+				}
+			}
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -187,12 +224,9 @@ public abstract class BaseServiceImpl<T extends IModelObject,C extends BaseCrite
 	public void submit(T info) {
 		Assert.notNull(info,"待操作业务对象不存在");
 		
-		if (!info.isIdPresented()) {
-			info.setId(null);
+		if (!info.isIdPresented() || getValue(info.getId()) == null) {
 			addNew(info);
-		}else if(getValue(info.getId()) == null){
-			addNew(info);
-		}else{
+		} else {
 			save(info);
 		}
 	}

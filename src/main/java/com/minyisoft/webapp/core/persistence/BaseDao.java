@@ -12,7 +12,7 @@ public interface BaseDao<T extends IModelObject, C extends BaseCriteria> {
 	 * @param id
 	 * @return
 	 */
-	public T getEntity(String id);
+	T getEntity(String id);
 
 	/**
 	 * 获取满足过滤条件的记录总数
@@ -20,7 +20,7 @@ public interface BaseDao<T extends IModelObject, C extends BaseCriteria> {
 	 * @param baseCriteria
 	 * @return
 	 */
-	public int countEntity(C criteria);
+	int countEntity(C criteria);
 
 	/**
 	 * 根据过滤条件查找，返回满足条件的所有记录
@@ -28,14 +28,14 @@ public interface BaseDao<T extends IModelObject, C extends BaseCriteria> {
 	 * @param baseCriteria
 	 * @return
 	 */
-	public List<T> getEntityCollection(C criteria);
+	List<T> getEntityCollection(C criteria);
 
 	/**
 	 * 新增记录
 	 * 
 	 * @param info
 	 */
-	public void insertEntity(T info);
+	void insertEntity(T info);
 
 	/**
 	 * 更新（保存）记录
@@ -43,7 +43,7 @@ public interface BaseDao<T extends IModelObject, C extends BaseCriteria> {
 	 * @param info
 	 * @return
 	 */
-	public int updateEntity(IModelObject info);
+	int updateEntity(IModelObject info);
 
 	/**
 	 * 根据id集合批量删除记录
@@ -51,5 +51,5 @@ public interface BaseDao<T extends IModelObject, C extends BaseCriteria> {
 	 * @param ids
 	 * @return
 	 */
-	public int batchDelete(List<String> ids);
+	int batchDelete(List<String> ids);
 }

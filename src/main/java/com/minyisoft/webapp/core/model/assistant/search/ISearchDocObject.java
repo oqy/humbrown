@@ -11,19 +11,19 @@ public interface ISearchDocObject extends IModelObject {
 	 * 
 	 * @return
 	 */
-	public ISearchType getSearchType();
+	ISearchType getSearchType();
 
 	/**
 	 * 是否满足索引条件
 	 * 
 	 * @return
 	 */
-	public boolean isIndexable();
+	boolean isIndexable();
 
 	/**
 	 * 搜索权重
 	 * 
 	 * @return
 	 */
-	public int getSearchWeight();
+	int getSearchWeight();
 }

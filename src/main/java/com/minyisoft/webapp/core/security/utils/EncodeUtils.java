@@ -3,11 +3,12 @@ package com.minyisoft.webapp.core.security.utils;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.google.common.base.Charsets;
 import com.minyisoft.webapp.core.exception.utils.Exceptions;
@@ -23,6 +24,8 @@ import com.minyisoft.webapp.core.exception.utils.Exceptions;
  * @author qingyong_ou
  */
 public final class EncodeUtils {
+	private static final Charset DEFAULT_URL_ENCODING = Charsets.UTF_8;
+
 	/**
 	 * Hex编码.
 	 */
@@ -66,21 +69,21 @@ public final class EncodeUtils {
 	 * Html 转码.
 	 */
 	public static String escapeHtml(String html) {
-		return StringEscapeUtils.escapeHtml(html);
+		return StringEscapeUtils.escapeHtml4(html);
 	}
 
 	/**
 	 * Html 解码.
 	 */
 	public static String unescapeHtml(String htmlEscaped) {
-		return StringEscapeUtils.unescapeHtml(htmlEscaped);
+		return StringEscapeUtils.unescapeHtml4(htmlEscaped);
 	}
 
 	/**
 	 * Xml 转码.
 	 */
 	public static String escapeXml(String xml) {
-		return StringEscapeUtils.escapeXml(xml);
+		return StringEscapeUtils.escapeXml10(xml);
 	}
 
 	/**
@@ -95,7 +98,7 @@ public final class EncodeUtils {
 	 */
 	public static String urlEncode(String part) {
 		try {
-			return URLEncoder.encode(part, Charsets.UTF_8.name());
+			return URLEncoder.encode(part, DEFAULT_URL_ENCODING.name());
 		} catch (UnsupportedEncodingException e) {
 			throw Exceptions.unchecked(e);
 		}
@@ -107,7 +110,7 @@ public final class EncodeUtils {
 	public static String urlDecode(String part) {
 
 		try {
-			return URLDecoder.decode(part, Charsets.UTF_8.name());
+			return URLDecoder.decode(part, DEFAULT_URL_ENCODING.name());
 		} catch (UnsupportedEncodingException e) {
 			throw Exceptions.unchecked(e);
 		}

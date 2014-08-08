@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.minyisoft.webapp.core.model.assistant.ISeqCodeObject;
 import com.minyisoft.webapp.core.service.BaseService;

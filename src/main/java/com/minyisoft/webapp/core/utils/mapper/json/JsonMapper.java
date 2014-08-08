@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import lombok.Getter;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,14 +36,12 @@ public enum JsonMapper {
 			});
 			// 转换json时只检查变量
 			getMapper().setVisibilityChecker(
-					getMapper().getSerializationConfig()
-							.getDefaultVisibilityChecker()
-							.withFieldVisibility(Visibility.ANY)
-							.withGetterVisibility(Visibility.NONE)
-							.withIsGetterVisibility(Visibility.NONE)
-							.withSetterVisibility(Visibility.NONE));
+					getMapper().getSerializationConfig().getDefaultVisibilityChecker()
+							.withFieldVisibility(Visibility.ANY).withGetterVisibility(Visibility.NONE)
+							.withIsGetterVisibility(Visibility.NONE).withSetterVisibility(Visibility.NONE));
 		}
-	};// 创建用于序列化与反序列化IModelObject接口实现类，对使用了cglib增强的IModelObject bean，序列化时只输出id值，反序列化时根据id重新构造cglib增强的对象
+	};// 创建用于序列化与反序列化IModelObject接口实现类，对使用了cglib增强的IModelObject
+		// bean，序列化时只输出id值，反序列化时根据id重新构造cglib增强的对象
 
 	private static Logger logger = LoggerFactory.getLogger(JsonMapper.class);
 
@@ -127,10 +125,8 @@ public enum JsonMapper {
 	 * 则调用constructCollectionType(ArrayList.class,MyBean.class)
 	 * HashMap<String,MyBean>, 则调用(HashMap.class,String.class, MyBean.class)
 	 */
-	public JavaType createCollectionType(Class<?> collectionClass,
-			Class<?>... elementClasses) {
-		return mapper.getTypeFactory().constructParametricType(collectionClass,
-				elementClasses);
+	public JavaType createCollectionType(Class<?> collectionClass, Class<?>... elementClasses) {
+		return mapper.getTypeFactory().constructParametricType(collectionClass, elementClasses);
 	}
 
 	/**
@@ -141,11 +137,9 @@ public enum JsonMapper {
 		try {
 			return (T) mapper.readerForUpdating(object).readValue(jsonString);
 		} catch (JsonProcessingException e) {
-			logger.warn("update json string:" + jsonString + " to object:"
-					+ object + " error.", e);
+			logger.warn("update json string:" + jsonString + " to object:" + object + " error.", e);
 		} catch (IOException e) {
-			logger.warn("update json string:" + jsonString + " to object:"
-					+ object + " error.", e);
+			logger.warn("update json string:" + jsonString + " to object:" + object + " error.", e);
 		}
 		return null;
 	}

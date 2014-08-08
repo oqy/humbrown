@@ -9,12 +9,12 @@ public interface DescribableEnum<T> {
 	 * 
 	 * @return
 	 */
-	public T getValue();
+	T getValue();
 
 	/**
 	 * 获取枚举值描述
 	 * 
 	 * @return
 	 */
-	public String getDescription();
+	String getDescription();
 }

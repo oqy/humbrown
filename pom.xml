@@ -23,7 +23,7 @@
 		<lombok.version>0.11.6</lombok.version>
 		<commons-dbcp.version>1.4</commons-dbcp.version>
 		<commons-pool.version>1.6</commons-pool.version>
-		<commons-lang.version>2.6</commons-lang.version>
+		<commons-lang.version>3.3.2</commons-lang.version>
 		<commons-beanutils.version>1.8.3</commons-beanutils.version>
 		<commons-codec.version>1.7</commons-codec.version>
 		<joda-time.version>2.3</joda-time.version>
@@ -212,8 +212,8 @@
 			<version>${commons-codec.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
+			<groupId>org.apache.commons</groupId>
+    		<artifactId>commons-lang3</artifactId>
 			<version>${commons-lang.version}</version>
 		</dependency>
 		<dependency>

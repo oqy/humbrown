@@ -12,7 +12,7 @@ public class ModelObjectFormatter<T extends IModelObject> implements Formatter<T
 
 	@Override
 	public String print(T object, Locale locale) {
-		if(object!=null&&object.isIdPresented()){
+		if (object != null && object.isIdPresented()) {
 			return object.getId();
 		}
 		return "";
@@ -21,9 +21,9 @@ public class ModelObjectFormatter<T extends IModelObject> implements Formatter<T
 	@SuppressWarnings("unchecked")
 	@Override
 	public T parse(String text, Locale locale) throws ParseException {
-		try{
-			return (T)ServiceUtils.getModel(text);
-		}catch (Exception e) {
+		try {
+			return (T) ServiceUtils.getModel(text);
+		} catch (Exception e) {
 			return null;
 		}
 	}

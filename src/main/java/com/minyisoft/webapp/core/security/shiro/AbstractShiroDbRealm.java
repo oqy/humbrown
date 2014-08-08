@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -26,20 +26,21 @@ import com.minyisoft.webapp.core.model.PermissionInfo;
 /**
  * @author qingyong_ou shiro登录对象
  */
-public abstract class AbstractShiroDbRealm<U extends ISystemUserObject,R extends ISystemRoleObject> extends AuthorizingRealm {
+public abstract class AbstractShiroDbRealm<U extends ISystemUserObject, R extends ISystemRoleObject> extends
+		AuthorizingRealm {
 	/**
-	 * 认证回调函数，登录时调用
+	 * 认证回调函数,登录时调用
 	 */
 	@Override
-	protected AuthenticationInfo doGetAuthenticationInfo(
-			AuthenticationToken authcToken) throws AuthenticationException {
+	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authcToken) throws AuthenticationException {
 		UsernamePasswordToken token = (UsernamePasswordToken) authcToken;
 		ISystemUserObject user = getUserByLoginName(token.getUsername());
 		if (user != null) {
-			if(StringUtils.isBlank(user.getUserPasswordSalt())){
-				return new SimpleAuthenticationInfo(createPrincipal(user), user.getUserPassword(),null, getName());
-			}else{
-				return new SimpleAuthenticationInfo(createPrincipal(user), user.getUserPassword(),ByteSource.Util.bytes(user.getUserPasswordSalt()), getName());
+			if (StringUtils.isBlank(user.getUserPasswordSalt()) || !isCredentialsSaltEnabled()) {
+				return new SimpleAuthenticationInfo(createPrincipal(user), user.getUserPassword(), null, getName());
+			} else {
+				return new SimpleAuthenticationInfo(createPrincipal(user), user.getUserPassword(),
+						ByteSource.Util.bytes(user.getUserPasswordSalt()), getName());
 			}
 		} else {
 			return null;
@@ -51,18 +52,17 @@ public abstract class AbstractShiroDbRealm<U extends ISystemUserObject,R extends
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	protected AuthorizationInfo doGetAuthorizationInfo(
-			PrincipalCollection principals) {
-		U user = (U) ((BasePrincipal)principals.getPrimaryPrincipal()).getSystemUser();
-		ISystemOrgObject org=getSystemOrg((BasePrincipal)principals.getPrimaryPrincipal());
+	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+		U user = (U) ((BasePrincipal) principals.getPrimaryPrincipal()).getSystemUser();
+		ISystemOrgObject org = getSystemOrg((BasePrincipal) principals.getPrimaryPrincipal());
 		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
-		List<R> userRoles = getUserRoles(user,org);
+		List<R> userRoles = getUserRoles(user, org);
 		if (!CollectionUtils.isEmpty(userRoles)) {
 			for (R role : userRoles) {
 				info.addRole(role.getValue());
 			}
 		}
-		List<PermissionInfo> userPermissions = getUserPermissions(user,org);
+		List<PermissionInfo> userPermissions = getUserPermissions(user, org);
 		if (!CollectionUtils.isEmpty(userPermissions)) {
 			for (PermissionInfo permission : userPermissions) {
 				info.addStringPermission(permission.getValue());
@@ -72,43 +72,53 @@ public abstract class AbstractShiroDbRealm<U extends ISystemUserObject,R extends
 	}
 
 	/**
+	 * 是否启用密码加盐检查
+	 * @return
+	 */
+	protected boolean isCredentialsSaltEnabled() {
+		return true;
+	}
+
+	/**
 	 * 设定Password校验的Hash算法与迭代次数.
 	 */
 	@PostConstruct
-	public void initCredentialsMatcher() {
+	protected void initCredentialsMatcher() {
 		HashedCredentialsMatcher matcher = new HashedCredentialsMatcher(getHashAlgorithm());
-		matcher.setHashIterations(getHashInterations()<=0?1024:getHashInterations());
+		matcher.setHashIterations(getHashInterations() <= 0 ? 1024 : getHashInterations());
 
 		setCredentialsMatcher(matcher);
 	}
-	
+
 	/**
 	 * 创建Principal，业务系统可根据实际需求返回继承BasePrincipal的Principal
+	 * 
 	 * @param user
 	 * @return
 	 */
-	public abstract BasePrincipal createPrincipal(ISystemUserObject user);
+	protected abstract BasePrincipal createPrincipal(ISystemUserObject user);
 
 	/**
 	 * 获取哈希算法
 	 * 
 	 * @return
 	 */
-	public abstract String getHashAlgorithm();
+	protected abstract String getHashAlgorithm();
 
 	/**
 	 * 获取哈希迭代次数
 	 * 
 	 * @return
 	 */
-	public abstract int getHashInterations();
-	
+	protected abstract int getHashInterations();
+
 	/**
 	 * 获取登录用户所在组织架构
+	 * 
 	 * @param basePrincipal
 	 * @return
 	 */
-	public abstract ISystemOrgObject getSystemOrg(BasePrincipal basePrincipal);
+	protected abstract ISystemOrgObject getSystemOrg(BasePrincipal basePrincipal);
 
 	/**
 	 * 根据登录名获取用户信息
@@ -116,21 +126,25 @@ public abstract class AbstractShiroDbRealm<U extends ISystemUserObject,R extends
 	 * @param userLoginName
 	 * @return
 	 */
-	public abstract U getUserByLoginName(String userLoginName);
+	protected abstract U getUserByLoginName(String userLoginName);
 
 	/**
 	 * 获取授予指定用户于指定组织结构的角色列表
+	 * 
 	 * @param user
-	 * @param systemOrg 可为空
+	 * @param systemOrg
+	 *            可为空
 	 * @return
 	 */
-	public abstract List<R> getUserRoles(U user,ISystemOrgObject systemOrg);
+	protected abstract List<R> getUserRoles(U user, ISystemOrgObject systemOrg);
 
 	/**
 	 * 获取授予指定用户于指定组织结构的权限列表
+	 * 
 	 * @param user
-	 * @param systemOrg 可为空
+	 * @param systemOrg
+	 *            可为空
 	 * @return
 	 */
-	public abstract List<PermissionInfo> getUserPermissions(U user,ISystemOrgObject systemOrg);
+	protected abstract List<PermissionInfo> getUserPermissions(U user, ISystemOrgObject systemOrg);
 }

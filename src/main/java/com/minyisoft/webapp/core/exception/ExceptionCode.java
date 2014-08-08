@@ -9,5 +9,5 @@ public interface ExceptionCode {
 	 * 异常号
 	 * @return
 	 */
-	public String getExceptionCode();
+	String getExceptionCode();
 }

@@ -2,7 +2,7 @@ package com.minyisoft.webapp.core.exception;
 
 import java.util.Locale;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
 public abstract class BaseException extends RuntimeException {

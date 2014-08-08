@@ -1,7 +1,7 @@
 package com.minyisoft.webapp.core.model.criteria.summary;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public final class GroupByItemHelper {
 	private GroupByItemHelper() {
