@@ -20,21 +20,22 @@ public final class PermissionUtils {
 			return false;
 		};
 	};
-	
+
 	/**
 	 * 默认角色【系统管理员】角色键值
 	 */
 	public static final String ADMINISTRATOR_ROLE = "ADMINISTRATOR";
-	
-	private PermissionUtils(){
-		
+
+	private PermissionUtils() {
+
 	}
-	
+
 	/**
 	 * 注册权限
+	 * 
 	 * @param permission
 	 */
-	public static void registerPermission(PermissionInfo permission){
+	public static void registerPermission(PermissionInfo permission) {
 		permissionMap.put(permission.getValue(), permission);
 	}
 
@@ -55,7 +56,7 @@ public final class PermissionUtils {
 	 */
 	public static List<PermissionInfo> getSystemPermissionList() {
 		List<PermissionInfo> systemPermissionList = new ArrayList<PermissionInfo>();
-		if (permissionMap.size() >0) {
+		if (permissionMap.size() > 0) {
 			Iterator<String> iterator = permissionMap.keySet().iterator();
 			while (iterator.hasNext()) {
 				systemPermissionList.add(permissionMap.get(iterator.next()));
@@ -74,21 +75,20 @@ public final class PermissionUtils {
 			throw new com.minyisoft.webapp.core.exception.SecurityException(CoreExceptionType.NOT_HAS_PERMISSION);
 		}
 	}
-	
+
 	/**
 	 * 检查当前用户是否包含指定权限（系统管理用户默认拥有所有权限）
+	 * 
 	 * @param permissionString
 	 * @return
 	 */
 	public static boolean hasPermission(String permissionString) {
 		// 若当前线程暂停权限检查，直接返回true
-		if (!permissionMap.containsKey(permissionString)
-				|| suspendPermissionCheck.get()) {
+		if (!permissionMap.containsKey(permissionString) || suspendPermissionCheck.get()) {
 			return true;
 		}
 		Subject currentUser = SecurityUtils.getSubject();
-		return currentUser != null
-				&& currentUser.isAuthenticated()
+		return currentUser != null && currentUser.isAuthenticated()
 				&& (currentUser.isPermitted(permissionString) || currentUser.hasRole(ADMINISTRATOR_ROLE));
 	}
 
@@ -114,21 +114,20 @@ public final class PermissionUtils {
 			return true;
 		}
 		Subject currentUser = SecurityUtils.getSubject();
-		return currentUser != null && currentUser.isAuthenticated()
-				&& currentUser.hasRole(RoleKey);
+		return currentUser != null && currentUser.isAuthenticated() && currentUser.hasRole(RoleKey);
 	}
-	
+
 	/**
 	 * 在当前线程暂停权限检查
 	 */
-	public static void stopPermissionCheck(){
+	public static void stopPermissionCheck() {
 		suspendPermissionCheck.set(true);
 	}
-	
+
 	/**
 	 * 在当前线程启动权限检查
 	 */
-	public static void startPermissionCheck(){
+	public static void startPermissionCheck() {
 		suspendPermissionCheck.set(false);
 	}
 }

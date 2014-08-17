@@ -8,76 +8,80 @@ import lombok.Setter;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.minyisoft.webapp.core.model.assistant.ISeqCodeGenStrategy;
 import com.minyisoft.webapp.core.model.assistant.ISeqCodeObject;
 import com.minyisoft.webapp.core.service.BaseService;
 import com.minyisoft.webapp.core.service.BillRelationProcessor;
 import com.minyisoft.webapp.core.service.utils.ServiceUtils;
 
-@Getter 
+@Getter
 @Setter
-public abstract class BillBaseInfo extends BaseInfo implements ISeqCodeObject,IBillObject {
+public abstract class BillBaseInfo extends BaseInfo implements ISeqCodeObject, IBillObject {
 	// 单据号码
 	private String billNumber;
 	// 备注描述
 	private String description;
 	// 源单
-	private IBillObject sourceBill; 
-	
+	private IBillObject sourceBill;
+
 	public boolean isAutoSeqEnabled() {
 		return false;
 	}
-	
+
 	public int getAutoIncreaseStep() {
 		return 1;
 	}
-	
+
 	public int getInitValue() {
 		return 1;
 	}
-	
+
 	public String getSeqCodePrefix() {
-		return null;
+		return "";
 	}
-	
+
 	public int getDigitLength() {
 		return 4;
 	}
-	
+
 	@Override
 	public void genSeqCode() {
-		setBillNumber(getSeqCodeGenStrategy().genSeqCode(this));
+		if (StringUtils.isBlank(billNumber) && isAutoSeqEnabled() && getSeqCodeGenStrategy() != null) {
+			setBillNumber(getSeqCodeGenStrategy().genSeqCode(this));
+		}
 	}
 
 	@Override
-	public String getSeqCode() {
-		return getBillNumber();
+	public ISeqCodeGenStrategy getSeqCodeGenStrategy() {
+		return null;
 	}
 
 	/**
 	 * 去掉多余的空格与换行符
+	 * 
 	 * @return
 	 */
 	public String getTrimDescription() {
-		if(StringUtils.isNotBlank(getDescription())){
+		if (StringUtils.isNotBlank(getDescription())) {
 			Pattern p = Pattern.compile("\t|\r|\n");
 			Matcher m = p.matcher(this.getDescription().trim());
 			return m.replaceAll(" ");
-		}else{
+		} else {
 			return null;
 		}
 	}
-	
+
 	@Override
-	public boolean shouldNotifyObservers(NotifyAction action,IBillObject observer) {
+	public boolean shouldNotifyObservers(NotifyAction action, IBillObject observer) {
 		return false;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public BillRelationProcessor<? extends IBillObject> getBillRelationProcessor() {
-		BaseService<?, ?> service=ServiceUtils.getService(getClass());
-		if(service instanceof BillRelationProcessor){
-			return (BillRelationProcessor<? extends IBillObject>)service;
+		BaseService<?, ?> service = ServiceUtils.getService(getClass());
+		if (service instanceof BillRelationProcessor) {
+			return (BillRelationProcessor<? extends IBillObject>) service;
 		}
 		return null;
 	}

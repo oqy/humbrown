@@ -42,62 +42,63 @@ import com.minyisoft.webapp.core.utils.spring.cache.ModelCacheManager;
 
 public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCriteria, D extends BaseDao<T, C>>
 		implements BaseService<T, C> {
-	protected final Logger logger=LoggerFactory.getLogger(getClass());
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	// DAO接口
-	private @Getter D baseDao;
+	private @Getter
+	D baseDao;
 	// 校验器实例
 	@Autowired(required = false)
-	private @Getter Validator validator;
+	private @Getter
+	Validator validator;
 	// 缓存管理器实例
 	@Autowired(required = false)
-	private @Getter ModelCacheManager cacheManager;
+	private @Getter
+	ModelCacheManager cacheManager;
 	// 当前服务类对应的Model对象类型
 	private final Class<T> modelClass;
 	// 根据当前业务操作实例（以***Impl形式命名）获取model对象对应的对象别名
 	private final String MODEL_CLASS_ALIAS;
 	// 是否包含增删改后处理接口
 	private final boolean containPostProcessors;
-	
+
 	protected CUDPostProcessor<?>[] getPostProcessors() {
 		return null;
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public BaseServiceImpl(){
+	public BaseServiceImpl() {
 		modelClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-		MODEL_CLASS_ALIAS=StringUtils.removeEndIgnoreCase(modelClass.getSimpleName(),"info");
+		MODEL_CLASS_ALIAS = StringUtils.removeEndIgnoreCase(modelClass.getSimpleName(), "info");
 		containPostProcessors = !ObjectUtils.isEmpty(getPostProcessors());
 		_registerModelClass(modelClass);
 	}
-	
-	public BaseServiceImpl(Class<T> modelClass){
+
+	public BaseServiceImpl(Class<T> modelClass) {
 		this.modelClass = modelClass;
-		MODEL_CLASS_ALIAS = StringUtils.removeEndIgnoreCase(
-				modelClass.getSimpleName(), "info");
+		MODEL_CLASS_ALIAS = StringUtils.removeEndIgnoreCase(modelClass.getSimpleName(), "info");
 		containPostProcessors = !ObjectUtils.isEmpty(getPostProcessors());
 		_registerModelClass(modelClass);
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	private void _registerModelClass(Class<T> modelClass){
+	private void _registerModelClass(Class<T> modelClass) {
 		Class<?>[] interfaces = getClass().getInterfaces();
 		if (ArrayUtils.isNotEmpty(interfaces)) {
 			for (Class<?> i : interfaces) {
 				if (BaseService.class.isAssignableFrom(i)) {
-					BaseService.MODEL_SERVICE_CACHE.put(modelClass,
-							(Class<BaseService<?, ?>>) i);
+					BaseService.MODEL_SERVICE_CACHE.put(modelClass, (Class<BaseService<?, ?>>) i);
 					break;
 				}
 			}
 		}
 		ObjectUuidUtils.registerModelClass(modelClass);
 	}
-	
+
 	@Autowired
 	public void setDao(D dao) {
 		this.baseDao = dao;
 	}
-	
+
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addNew(T info) {
@@ -121,18 +122,16 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 				((BaseInfo) info).setLastUpdateUser(((BaseInfo) info).getCreateUser());
 			}
 		}
-		if (info instanceof ISeqCodeObject
-				&& ((ISeqCodeObject) info).isAutoSeqEnabled()
-				&& StringUtils.isBlank(((ISeqCodeObject) info).getSeqCode())) {
+		if (info instanceof ISeqCodeObject) {
 			((ISeqCodeObject) info).genSeqCode();
 		}
 		baseDao.insertEntity(info);
-		
+
 		clearQueryCache();
-		
-		if(containPostProcessors){
-			for(CUDPostProcessor processor : getPostProcessors()){
-				if(processor.canProcess(modelClass)){
+
+		if (containPostProcessors) {
+			for (CUDPostProcessor processor : getPostProcessors()) {
+				if (processor.canProcess(modelClass)) {
 					processor.processAferAddNew(info);
 				}
 			}
@@ -147,11 +146,11 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 		if (baseDao.batchDelete(Arrays.asList(info.getId())) <= 0) {
 			throw new ServiceException("无法删除业务对象，请稍后再试");
 		}
-		
+
 		evictModelCache(info);
-		
-		if(containPostProcessors){
-			for(CUDPostProcessor processor : getPostProcessors()){
+
+		if (containPostProcessors) {
+			for (CUDPostProcessor processor : getPostProcessors()) {
 				if (processor.canProcess(modelClass)) {
 					processor.processAfterDelete(info);
 				}
@@ -176,11 +175,11 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 		if (info instanceof CoreBaseInfo) {
 			((CoreBaseInfo) info).setVersion(((CoreBaseInfo) info).getVersion() + 1);
 		}
-		
+
 		evictModelCache(info);
-		
-		if(containPostProcessors){
-			for(CUDPostProcessor processor : getPostProcessors()){
+
+		if (containPostProcessors) {
+			for (CUDPostProcessor processor : getPostProcessors()) {
 				if (processor.canProcess(modelClass)) {
 					processor.processAfterSave(info);
 				}
@@ -195,8 +194,7 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 			return null;
 		}
 		if (_modelCacheEnabled()) {
-			ValueWrapper wrapper = cacheManager.getModelCache(modelClass)
-					.get(id);
+			ValueWrapper wrapper = cacheManager.getModelCache(modelClass).get(id);
 			if (wrapper != null) {
 				return (T) wrapper.get();
 			}
@@ -222,8 +220,8 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 
 	@Override
 	public void submit(T info) {
-		Assert.notNull(info,"待操作业务对象不存在");
-		
+		Assert.notNull(info, "待操作业务对象不存在");
+
 		if (!info.isIdPresented() || getValue(info.getId()) == null) {
 			addNew(info);
 		} else {
@@ -273,74 +271,78 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 	public int count(C criteria) {
 		return baseDao.countEntity(criteria);
 	}
-	
+
 	/**
 	 * 单体对象缓存开关
+	 * 
 	 * @return
 	 */
 	protected boolean useModelCache() {
 		return false;
 	}
-	
+
 	/**
 	 * 查询缓存开关
+	 * 
 	 * @return
 	 */
 	protected boolean useQueryCache() {
 		return false;
 	}
-	
+
 	private boolean _modelCacheEnabled() {
 		return cacheManager != null && useModelCache();
 	}
-	
+
 	private boolean _queryCacheEnabled() {
 		return cacheManager != null && useQueryCache();
 	}
-	
+
 	/**
 	 * 清除指定对象缓存信息
+	 * 
 	 * @param info
 	 */
-	protected void evictModelCache(T info){
+	protected void evictModelCache(T info) {
 		if (_modelCacheEnabled()) {
 			cacheManager.getModelCache(modelClass).evict(info.getId());
 		}
 		clearQueryCache();
 	}
-	
-	protected void clearModelCache(){
+
+	protected void clearModelCache() {
 		if (_modelCacheEnabled()) {
 			cacheManager.getModelCache(modelClass).clear();
 		}
 		clearQueryCache();
 	}
-	
+
 	/**
 	 * 清除全部查询缓存信息
 	 */
-	protected void clearQueryCache(){
+	protected void clearQueryCache() {
 		if (_queryCacheEnabled()) {
 			cacheManager.getModelQueryCache(modelClass).clear();
 		}
 	}
-	
+
 	/**
 	 * 用户授权检查
+	 * 
 	 * @param pojoAlias
 	 * @param action
 	 */
-	private void _checkAuthentication(BasePermissionTypeEnum oprtType){
+	private void _checkAuthentication(BasePermissionTypeEnum oprtType) {
 		String permissionString = MODEL_CLASS_ALIAS + ":" + oprtType;
 		if (PermissionUtils.isPermissionDefined(permissionString)) {
 			PermissionUtils.checkHasPermission(permissionString);
 		}
 	}
-	
+
 	/**
 	 * 对象数据检查方法，供子类覆盖实现，检查不通过直接抛出异常
 	 */
-	private void _validateData(T info, BasePermissionTypeEnum oprtType){
+	private void _validateData(T info, BasePermissionTypeEnum oprtType) {
 		if (oprtType == BasePermissionTypeEnum.DELETE) {
 			Assert.isTrue(info != null && info.isIdPresented(), "待删除业务对象不能为空");
 			_validateDataBeforeDelete(info);
@@ -353,68 +355,74 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 				_validateDataBeforeSave(info);
 			}
 			_validateDataBeforeSubmit(info);
-			
-			if (validator == null
-					|| ClassUtils.isCglibProxyClass(info.getClass())) {
+
+			if (validator == null || ClassUtils.isCglibProxyClass(info.getClass())) {
 				return;
 			}
-			Set<ConstraintViolation<T>> constraintViolations= validator.validate(info);
-			if(!constraintViolations.isEmpty()){
-				Iterator<ConstraintViolation<T>> violations=constraintViolations.iterator();
-				StringBuffer sb=new StringBuffer();
-				int count=0;
-				while(violations.hasNext()){
-					ConstraintViolation<T> violation=violations.next();
-					try{
-						Field field=info.getClass().getDeclaredField(violation.getPropertyPath().iterator().next().getName());
-						if(field.isAnnotationPresent(Label.class)){
-							sb.append(++count).append(".").append(AnnotationUtils.getValue(field.getAnnotation(Label.class), "value")).append(violation.getMessage()).append("\t");
+			Set<ConstraintViolation<T>> constraintViolations = validator.validate(info);
+			if (!constraintViolations.isEmpty()) {
+				Iterator<ConstraintViolation<T>> violations = constraintViolations.iterator();
+				StringBuffer sb = new StringBuffer();
+				int count = 0;
+				while (violations.hasNext()) {
+					ConstraintViolation<T> violation = violations.next();
+					try {
+						Field field = info.getClass().getDeclaredField(
+								violation.getPropertyPath().iterator().next().getName());
+						if (field.isAnnotationPresent(Label.class)) {
+							sb.append(++count).append(".")
+									.append(AnnotationUtils.getValue(field.getAnnotation(Label.class), "value"))
+									.append(violation.getMessage()).append("\t");
 						}
-					}catch (Exception e) {
-						logger.error(e.getMessage(),e);
+					} catch (Exception e) {
+						logger.error(e.getMessage(), e);
 					}
 				}
 				throw new ServiceException(sb.toString());
 			}
 		}
 	}
-	
+
 	/**
 	 * 删除检查方法，供子类继承实现
+	 * 
 	 * @param info
 	 */
 	protected void _validateDataBeforeDelete(T info) {
-		
+
 	}
-	
+
 	/**
 	 * 新增检查方法，供子类继承实现
+	 * 
 	 * @param info
 	 */
 	protected void _validateDataBeforeAdd(T info) {
-			
+
 	}
-	
+
 	/**
 	 * 更新检查方法，供子类继承实现
+	 * 
 	 * @param info
 	 */
 	protected void _validateDataBeforeSave(T info) {
-		
+
 	}
-	
+
 	/**
 	 * 提交检查方法，供子类继承实现
+	 * 
 	 * @param info
 	 */
 	protected void _validateDataBeforeSubmit(T info) {
-		
+
 	}
-	
-	protected ISystemUserObject getCurrentUser(){
-		try{
-			return ((BasePrincipal)org.apache.shiro.SecurityUtils.getSubject().getPrincipal()).getSystemUser();
-		}catch(Exception e){
+
+	protected ISystemUserObject getCurrentUser() {
+		try {
+			return ((BasePrincipal) org.apache.shiro.SecurityUtils.getSubject().getPrincipal()).getSystemUser();
+		} catch (Exception e) {
 			return null;
 		}
 	}

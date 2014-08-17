@@ -42,13 +42,6 @@ public interface ISeqCodeObject extends IModelObject {
 	int getDigitLength();
 	
 	/**
-	 * 获取顺序号
-	 * 
-	 * @return
-	 */
-	String getSeqCode();
-	
-	/**
 	 * 生成顺序号
 	 */
 	void genSeqCode();
