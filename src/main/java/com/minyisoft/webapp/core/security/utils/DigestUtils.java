@@ -13,18 +13,19 @@ import com.minyisoft.webapp.core.exception.utils.Exceptions;
 /**
  * @author qingyong_ou 支持SHA-1/MD5消息摘要的工具类.
  * 
- * 返回ByteSource，可进一步被编码为Hex, Base64或UrlSafeBase64
+ *         返回ByteSource，可进一步被编码为Hex, Base64或UrlSafeBase64
  * 
- * 参考springside-core-4.0.0GA org.springside.modules.security.utils.Digests工具类
+ *         参考springside-core-4.0.0GA
+ *         org.springside.modules.security.utils.Digests工具类
  */
 public final class DigestUtils {
 	private static final String SHA1 = "SHA-1";
 	private static final String MD5 = "MD5";
 
 	private static SecureRandom random = new SecureRandom();
-	
-	private DigestUtils(){
-		
+
+	private DigestUtils() {
+
 	}
 
 	/**
@@ -45,8 +46,7 @@ public final class DigestUtils {
 	/**
 	 * 对字符串进行散列, 支持md5与sha1算法.
 	 */
-	private static byte[] digest(byte[] input, String algorithm, byte[] salt,
-			int iterations) {
+	private static byte[] digest(byte[] input, String algorithm, byte[] salt, int iterations) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance(algorithm);
 
@@ -73,9 +73,7 @@ public final class DigestUtils {
 	 *            byte数组的大小
 	 */
 	public static byte[] generateSalt(int numBytes) {
-		Validate.isTrue(numBytes > 0,
-				"numBytes argument must be a positive integer (1 or larger)",
-				numBytes);
+		Validate.isTrue(numBytes > 0, "numBytes argument must be a positive integer (1 or larger)", numBytes);
 
 		byte[] bytes = new byte[numBytes];
 		random.nextBytes(bytes);
@@ -96,8 +94,7 @@ public final class DigestUtils {
 		return digest(input, SHA1);
 	}
 
-	private static byte[] digest(InputStream input, String algorithm)
-			throws IOException {
+	private static byte[] digest(InputStream input, String algorithm) throws IOException {
 		try {
 			MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
 			int bufferLength = 8 * 1024;

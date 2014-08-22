@@ -11,5 +11,5 @@ import lombok.Setter;
 @Setter
 public abstract class EntryBaseInfo extends CoreBaseInfo {
 	// 分录记录顺序
-	private int seq;
+	private int seq = 1;
 }

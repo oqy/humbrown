@@ -20,30 +20,28 @@ import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
 /**
  * @author qingyong_ou
- *         加载CoreEunm枚举描述文件、Permission权限描述文件，注册IModelObject接口实现类，主要于Spring配置文件注册后使用
- *         IBaseService接口的实现类初始化时将会同步注册其对应的IModelObject接口实现类，因此无需通过此loader注册
+ *         加载DescribableEnum枚举描述文件、Permission权限描述文件，注册IModelObject接口实现类
+ *         ，主要于Spring配置文件注册后使用
+ *         BaseService接口的实现类初始化时将会同步注册其对应的IModelObject接口实现类，因此无需通过此loader注册
  */
+@Setter
 public class InfrastructureResourceLoader implements InitializingBean {
 	/**
 	 * 权限描述文件
 	 */
-	private @Setter
-	Resource[] permissionDefinitions;
+	private Resource[] permissionDefinitions;
 	/**
 	 * DescribableEnum枚举描述文件
 	 */
-	private @Setter
-	String[] describableEnumDescriptionBaseNames;
+	private String[] describableEnumDescriptionBaseNames;
 	/**
 	 * 异常类型枚举描述文件
 	 */
-	private @Setter
-	String[] exceptionDescriptionBaseNames;
+	private String[] exceptionDescriptionBaseNames;
 	/**
 	 * IModelObject接口实现类
 	 */
-	private @Setter
-	Class<? extends IModelObject>[] modelObjectClasses;
+	private Class<? extends IModelObject>[] modelObjectClasses;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {

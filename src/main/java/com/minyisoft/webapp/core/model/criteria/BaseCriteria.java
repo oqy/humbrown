@@ -15,7 +15,7 @@ import com.minyisoft.webapp.core.utils.mapper.json.JsonMapper;
 //查询条件基类
 @Getter
 @Setter
-public abstract class BaseCriteria{
+public abstract class BaseCriteria {
 	// 主键集合
 	private String[] ids;
 	// 需排除主键集合
@@ -32,7 +32,7 @@ public abstract class BaseCriteria{
 	private SortDirection lastUpdateDateOrder;
 	// 分页器
 	private PageDevice pageDevice;
-	
+
 	/**
 	 * 通过转json格式后计算md5值，获取指定查询对象的key值，用于缓存等用途
 	 * 
@@ -41,15 +41,14 @@ public abstract class BaseCriteria{
 	 */
 	public final static String getKey(BaseCriteria criteria) {
 		Assert.notNull(criteria);
-		return DigestUtils.md5Hex(JsonMapper.MODEL_OBJECT_MAPPER
-				.toJson(criteria));
+		return DigestUtils.md5Hex(JsonMapper.MODEL_OBJECT_MAPPER.toJson(criteria));
 	}
-	
-	public void setExcludeIds(String... ids){
-		this.excludeIds=ids;
+
+	public void setExcludeIds(String... ids) {
+		this.excludeIds = ids;
 	}
-	
-	public void setIds(String... ids){
-		this.ids=ids;
+
+	public void setIds(String... ids) {
+		this.ids = ids;
 	}
 }
