@@ -65,8 +65,7 @@ public class PageDevice {
 	 * @param recordsPerPage
 	 */
 	public void setRecordsPerPage(int recordsPerPage) {
-		this.recordsPerPage = recordsPerPage > 0 ? recordsPerPage
-				: RECORDS_PER_PAGE;
+		this.recordsPerPage = recordsPerPage > 0 ? recordsPerPage : RECORDS_PER_PAGE;
 	}
 
 	/**
@@ -98,17 +97,20 @@ public class PageDevice {
 	}
 
 	/**
-	 * 获取当前页第一条数据对应结果集中的记录行号
+	 * 获取当前页第一条数据对应结果集中的记录索引号，以0为起始索引号
+	 * 
+	 * @return
+	 */
+	public int getStartRowIndexOfCurrentPage() {
+		return (currentPage - 1) * recordsPerPage;
+	}
+
+	/**
+	 * 获取当前页第一条数据对应结果集中的记录行号，以1为起始行号
 	 * 
 	 * @return
 	 */
 	public int getStartRowNumberOfCurrentPage() {
-		/*
-		 * if (CURRENT_PAGE_STYLE == MYSQL_PAGE_STYLE) { return (currentPage -
-		 * 1) * recordsPerPage; } else if (CURRENT_PAGE_STYLE ==
-		 * ORACLE_PAGE_STYLE) { return (currentPage - 1) * recordsPerPage + 1; }
-		 * else { return (currentPage - 1) * recordsPerPage + 1; }
-		 */
 		return (currentPage - 1) * recordsPerPage + 1;
 	}
 
@@ -129,13 +131,11 @@ public class PageDevice {
 	public Integer[] getVisiblePageNumbers(int visiblePageCount) {
 		List<Integer> numbers = Lists.newLinkedList();
 		int startNum = Math.max(currentPage - visiblePageCount / 2 + 1, 1);
-		for (int i = startNum; i < startNum + visiblePageCount
-				&& i <= getTotalPages(); i++) {
+		for (int i = startNum; i < startNum + visiblePageCount && i <= getTotalPages(); i++) {
 			numbers.add(i);
 		}
 		if (numbers.size() < visiblePageCount && numbers.get(0) > 1) {
-			for (int i = numbers.get(0) - 1; i >= 1
-					&& numbers.size() < visiblePageCount; i--) {
+			for (int i = numbers.get(0) - 1; i >= 1 && numbers.size() < visiblePageCount; i--) {
 				numbers.add(0, i);
 			}
 		}
