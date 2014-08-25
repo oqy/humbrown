@@ -7,6 +7,7 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.codec.binary.Base64;
@@ -17,6 +18,8 @@ import org.springframework.util.ClassUtils;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.minyisoft.webapp.core.annotation.ModelKey;
 import com.minyisoft.webapp.core.exception.CoreExceptionType;
 import com.minyisoft.webapp.core.exception.EntityException;
@@ -159,5 +162,22 @@ public final class ObjectUuidUtils {
 	public static boolean isLegalId(String id) {
 		return id != null && Base64.isBase64(id) && (id.length() == 32 || id.length() == 24)
 				&& keyClassMap.containsValue(getObejctClass(id));
+	}
+
+	/**
+	 * 获取指定父类对象/接口的所有已注册ModelObject
+	 * 
+	 * @param superclass
+	 * @return
+	 */
+	public static Set<Class<? extends IModelObject>> getSubclasses(Class<?> superclass) {
+		Assert.notNull(superclass);
+		Set<Class<? extends IModelObject>> classSet = Sets.newHashSet();
+		for (Class<? extends IModelObject> mapClass : keyClassMap.values()) {
+			if (superclass.isAssignableFrom(mapClass)) {
+				classSet.add(mapClass);
+			}
+		}
+		return ImmutableSet.copyOf(classSet);
 	}
 }
