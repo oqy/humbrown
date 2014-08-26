@@ -16,26 +16,23 @@ import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 public class ModelTypeHandler extends BaseTypeHandler<IModelObject> {
 
 	@Override
-	public void setNonNullParameter(PreparedStatement ps, int i,
-			IModelObject parameter, JdbcType jdbcType) throws SQLException {
+	public void setNonNullParameter(PreparedStatement ps, int i, IModelObject parameter, JdbcType jdbcType)
+			throws SQLException {
 		ps.setString(i, parameter.getId());
 	}
 
 	@Override
-	public IModelObject getNullableResult(ResultSet rs, String columnName)
-			throws SQLException {
+	public IModelObject getNullableResult(ResultSet rs, String columnName) throws SQLException {
 		return ObjectUuidUtils.getObject(rs.getString(columnName));
 	}
 
 	@Override
-	public IModelObject getNullableResult(ResultSet rs, int columnIndex)
-			throws SQLException {
+	public IModelObject getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
 		return ObjectUuidUtils.getObject(rs.getString(columnIndex));
 	}
 
 	@Override
-	public IModelObject getNullableResult(CallableStatement cs, int columnIndex)
-			throws SQLException {
+	public IModelObject getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
 		return ObjectUuidUtils.getObject(cs.getString(columnIndex));
 	}
 }

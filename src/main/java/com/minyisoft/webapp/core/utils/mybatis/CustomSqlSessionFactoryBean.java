@@ -52,7 +52,7 @@ public class CustomSqlSessionFactoryBean extends SqlSessionFactoryBean {
 		}
 		// 注册ModelTypeHandler和PermissionInfo别名
 		setTypeAliases(new Class<?>[] { ModelTypeHandler.class, PermissionInfo.class,
-				DescribableEnumArrayTypeHandler.class });
+				DescribableEnumArrayTypeHandler.class, ModelClassTypeHandler.class });
 		// 注册自定义ObjectFactory
 		setObjectFactory(new CustomObjectFactory());
 		super.afterPropertiesSet();

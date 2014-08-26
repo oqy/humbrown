@@ -13,6 +13,7 @@ import java.util.UUID;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cglib.proxy.Enhancer;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -20,6 +21,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.minyisoft.webapp.core.annotation.Label;
 import com.minyisoft.webapp.core.annotation.ModelKey;
 import com.minyisoft.webapp.core.exception.CoreExceptionType;
 import com.minyisoft.webapp.core.exception.EntityException;
@@ -179,5 +181,16 @@ public final class ObjectUuidUtils {
 			}
 		}
 		return ImmutableSet.copyOf(classSet);
+	}
+
+	/**
+	 * 获取指定类型标识
+	 * 
+	 * @param clazz
+	 * @return
+	 */
+	public static String getClassLabel(Class<? extends IModelObject> clazz) {
+		Assert.notNull(clazz);
+		return (String) AnnotationUtils.getValue(clazz.getAnnotation(Label.class), "value");
 	}
 }

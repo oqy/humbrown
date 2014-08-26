@@ -16,15 +16,11 @@ public class CustomObjectFactory extends DefaultObjectFactory {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T create(Class<T> type, List<Class<?>> constructorArgTypes,
-			List<Object> constructorArgs) {
+	public <T> T create(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
 		// 若类型为IModelObject且<constructor>中只包含一个1个字符型参数，返回一个增强后的IModelObject对象
-		if (IModelObject.class.isAssignableFrom(type)
-				&& constructorArgTypes != null && constructorArgs != null
-				&& constructorArgs.size() == 1
-				&& constructorArgs.get(0) instanceof String) {
-			return (T) ObjectUuidUtils.getObject((String) constructorArgs
-					.get(0));
+		if (IModelObject.class.isAssignableFrom(type) && constructorArgTypes != null && constructorArgs != null
+				&& constructorArgs.size() == 1 && constructorArgs.get(0) instanceof String) {
+			return (T) ObjectUuidUtils.getObject((String) constructorArgs.get(0));
 		}
 		// 否则调用父类方法
 		return super.create(type, constructorArgTypes, constructorArgs);
