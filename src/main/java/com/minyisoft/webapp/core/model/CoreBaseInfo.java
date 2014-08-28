@@ -50,4 +50,8 @@ public abstract class CoreBaseInfo implements IModelObject {
 	public boolean isIdPresented() {
 		return ObjectUuidUtils.isLegalId(getClass(), id);
 	}
+
+	public String getClassLabel() {
+		return ObjectUuidUtils.getClassLabel(getClass());
+	}
 }
