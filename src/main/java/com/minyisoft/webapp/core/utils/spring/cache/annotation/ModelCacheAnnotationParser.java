@@ -19,7 +19,7 @@ import org.springframework.util.Assert;
  * <bean id="annotationCacheOperationSource"
 		class="org.springframework.cache.annotation.AnnotationCacheOperationSource">
 		<constructor-arg name="annotationParser">
-			<bean class="com.fusung.webapp.core.utils.spring.cache.annotation.ModelCacheAnnotationParser" />
+			<bean class="com.minyisoft.webapp.core.utils.spring.cache.annotation.ModelCacheAnnotationParser" />
 		</constructor-arg>
 	</bean>
 	<bean id="cacheInterceptor" class="org.springframework.cache.interceptor.CacheInterceptor">
