@@ -3,6 +3,7 @@ package com.minyisoft.webapp.core.service.impl;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -22,8 +23,8 @@ import org.springframework.cache.Cache.ValueWrapper;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ObjectUtils;
 
+import com.google.common.collect.Lists;
 import com.minyisoft.webapp.core.annotation.Label;
 import com.minyisoft.webapp.core.exception.ServiceException;
 import com.minyisoft.webapp.core.model.BaseInfo;
@@ -44,39 +45,33 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 		implements BaseService<T, C> {
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	// DAO接口
-	private @Getter
-	D baseDao;
+	@Getter
+	private D baseDao;
 	// 校验器实例
 	@Autowired(required = false)
-	private @Getter
-	Validator validator;
+	@Getter
+	private Validator validator;
 	// 缓存管理器实例
 	@Autowired(required = false)
-	private @Getter
-	ModelCacheManager cacheManager;
+	@Getter
+	private ModelCacheManager cacheManager;
 	// 当前服务类对应的Model对象类型
 	private final Class<T> modelClass;
 	// 根据当前业务操作实例（以***Impl形式命名）获取model对象对应的对象别名
 	private final String MODEL_CLASS_ALIAS;
-	// 是否包含增删改后处理接口
-	private final boolean containPostProcessors;
-
-	protected CUDPostProcessor<?>[] getPostProcessors() {
-		return null;
-	}
+	// 增删改后处理接口
+	private List<CUDPostProcessor<?>> postProcessors = Collections.emptyList();
 
 	@SuppressWarnings("unchecked")
 	public BaseServiceImpl() {
 		modelClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 		MODEL_CLASS_ALIAS = StringUtils.removeEndIgnoreCase(modelClass.getSimpleName(), "info");
-		containPostProcessors = !ObjectUtils.isEmpty(getPostProcessors());
 		_registerModelClass(modelClass);
 	}
 
 	public BaseServiceImpl(Class<T> modelClass) {
 		this.modelClass = modelClass;
 		MODEL_CLASS_ALIAS = StringUtils.removeEndIgnoreCase(modelClass.getSimpleName(), "info");
-		containPostProcessors = !ObjectUtils.isEmpty(getPostProcessors());
 		_registerModelClass(modelClass);
 	}
 
@@ -95,8 +90,19 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 	}
 
 	@Autowired
-	public void setDao(D dao) {
+	public final void setDao(D dao) {
 		this.baseDao = dao;
+	}
+
+	public final void setPostProcessors(List<CUDPostProcessor<?>> postProcessors) {
+		List<CUDPostProcessor<?>> processors = Lists.newArrayList();
+		for (CUDPostProcessor<?> processor : postProcessors) {
+			if (processor.canProcess(modelClass)) {
+				processors.add(processor);
+			}
+		}
+		postProcessors.addAll(this.postProcessors);
+		this.postProcessors = postProcessors;
 	}
 
 	@Override
@@ -129,12 +135,8 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 
 		clearQueryCache();
 
-		if (containPostProcessors) {
-			for (CUDPostProcessor processor : getPostProcessors()) {
-				if (processor.canProcess(modelClass)) {
-					processor.processAferAddNew(info);
-				}
-			}
+		for (CUDPostProcessor processor : postProcessors) {
+			processor.processAferAddNew(info);
 		}
 	}
 
@@ -149,12 +151,8 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 
 		evictModelCache(info);
 
-		if (containPostProcessors) {
-			for (CUDPostProcessor processor : getPostProcessors()) {
-				if (processor.canProcess(modelClass)) {
-					processor.processAfterDelete(info);
-				}
-			}
+		for (CUDPostProcessor processor : postProcessors) {
+			processor.processAfterDelete(info);
 		}
 	}
 
@@ -178,12 +176,8 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 
 		evictModelCache(info);
 
-		if (containPostProcessors) {
-			for (CUDPostProcessor processor : getPostProcessors()) {
-				if (processor.canProcess(modelClass)) {
-					processor.processAfterSave(info);
-				}
-			}
+		for (CUDPostProcessor processor : postProcessors) {
+			processor.processAfterSave(info);
 		}
 	}
 
