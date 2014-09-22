@@ -1,4 +1,4 @@
-package com.minyisoft.webapp.core.web.utils.cacheControl;
+package com.minyisoft.webapp.core.web.utils.cachecontrol;
 
 /**
  * Provides an enumeration of cache control policies.
