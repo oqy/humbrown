@@ -21,7 +21,7 @@
 		<slf4j.version>1.7.2</slf4j.version>
 		
 		<lombok.version>0.11.6</lombok.version>
-		<commons-dbcp.version>1.4</commons-dbcp.version>
+		<tomcat-dbcp.version>7.0.54</tomcat-dbcp.version>
 		<commons-pool.version>1.6</commons-pool.version>
 		<commons-lang.version>3.3.2</commons-lang.version>
 		<commons-beanutils.version>1.8.3</commons-beanutils.version>
@@ -228,9 +228,9 @@
 		    </exclusions>
 		</dependency>
 		<dependency>
-			<groupId>commons-dbcp</groupId>
-			<artifactId>commons-dbcp</artifactId>
-			<version>${commons-dbcp.version}</version>
+			<groupId>org.apache.tomcat</groupId>
+    		<artifactId>tomcat-dbcp</artifactId>
+			<version>${tomcat-dbcp.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
