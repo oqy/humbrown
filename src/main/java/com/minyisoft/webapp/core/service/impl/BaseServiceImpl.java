@@ -101,8 +101,11 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 				processors.add(processor);
 			}
 		}
-		postProcessors.addAll(this.postProcessors);
-		this.postProcessors = postProcessors;
+		if (this.postProcessors == Collections.EMPTY_LIST) {
+			this.postProcessors = postProcessors;
+		} else {
+			this.postProcessors.addAll(postProcessors);
+		}
 	}
 
 	@Override
