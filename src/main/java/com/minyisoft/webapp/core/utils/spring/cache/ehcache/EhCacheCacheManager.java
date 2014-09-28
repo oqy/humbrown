@@ -79,7 +79,7 @@ public class EhCacheCacheManager extends org.springframework.cache.ehcache.EhCac
 	public void destroy() throws Exception {
 		if (cacheManagerImplicitlyCreated) {
 			try {
-				logger.warn("关闭EhCache CacheManager实例");
+				logger.info("关闭EhCache CacheManager实例");
 				getCacheManager().shutdown();
 			} catch (Exception e) {
 				logger.warn("无法关闭EhCache CacheManager实例，忽略关闭操作");
