@@ -102,8 +102,8 @@ public final class ObjectUuidUtils {
 	 * @return
 	 */
 	public static IModelObject getObject(String id) {
-		if (!StringUtils.isBlank(id)) {
-			Class<? extends IModelObject> clazz = getObejctClass(id);
+		Class<? extends IModelObject> clazz;
+		if (!StringUtils.isBlank(id) && (clazz = getObejctClass(id)) != null) {
 			// 目标对象为枚举类型
 			if (clazz.isEnum()) {
 				for (IModelObject e : clazz.getEnumConstants()) {
