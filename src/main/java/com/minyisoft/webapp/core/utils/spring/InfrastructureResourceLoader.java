@@ -12,6 +12,7 @@ import org.springframework.core.io.Resource;
 
 import com.google.common.base.Charsets;
 import com.minyisoft.webapp.core.exception.BaseException;
+import com.minyisoft.webapp.core.model.BillRelationInfo;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.model.PermissionInfo;
 import com.minyisoft.webapp.core.model.enumField.DescribableEnumHelper;
@@ -88,6 +89,7 @@ public class InfrastructureResourceLoader implements InitializingBean {
 		}
 
 		// 注册IModelObject接口实现类，以用于生成ModelClass实例id，及根据id获取ModelClass实例
+		ObjectUuidUtils.registerModelClass(BillRelationInfo.class);
 		if (ArrayUtils.isNotEmpty(modelObjectClasses)) {
 			for (Class<? extends IModelObject> modelClass : modelObjectClasses) {
 				ObjectUuidUtils.registerModelClass(modelClass);

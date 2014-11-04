@@ -15,6 +15,7 @@ import com.minyisoft.webapp.core.model.criteria.BaseCriteria;
 import com.minyisoft.webapp.core.persistence.AbstractBillRelationDao;
 import com.minyisoft.webapp.core.persistence.BaseDao;
 import com.minyisoft.webapp.core.service.BillRelationProcessor;
+import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
 public abstract class BillBaseServiceImpl<T extends BillBaseInfo, C extends BaseCriteria, D extends BaseDao<T, C>>
 		extends BaseServiceImpl<T, C, D> implements BillRelationProcessor<T> {
@@ -28,6 +29,7 @@ public abstract class BillBaseServiceImpl<T extends BillBaseInfo, C extends Base
 
 		if (info.getSourceBill() != null) {
 			BillRelationInfo relation = new BillRelationInfo();
+			relation.setId(ObjectUuidUtils.createObjectID(BillRelationInfo.class));
 			relation.setSourceBill(info.getSourceBill());
 			relation.setTargetBill(info);
 			billRelationDao.insertRelation(relation);
@@ -95,6 +97,7 @@ public abstract class BillBaseServiceImpl<T extends BillBaseInfo, C extends Base
 		// 若未设定表单关联关系，新增相应信息
 		if (relation == null && info.getSourceBill() != null) {
 			relation = new BillRelationInfo();
+			relation.setId(ObjectUuidUtils.createObjectID(BillRelationInfo.class));
 			relation.setSourceBill(info.getSourceBill());
 			relation.setTargetBill(info);
 			billRelationDao.insertRelation(relation);

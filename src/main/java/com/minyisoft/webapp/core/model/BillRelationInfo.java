@@ -3,6 +3,7 @@ package com.minyisoft.webapp.core.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.minyisoft.webapp.core.annotation.ModelKey;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 
 /**
@@ -10,6 +11,7 @@ import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
  */
 @Getter
 @Setter
+@ModelKey(0x14978EA1AE1L)
 public class BillRelationInfo extends CoreBaseInfo {
 	// 源单/上游单
 	private IBillObject sourceBill;
