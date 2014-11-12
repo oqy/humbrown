@@ -33,7 +33,7 @@
 		<junit.version>4.11</junit.version>
 
 		<!-- Plugin的属性定义 -->
-		<jdk.version>1.6</jdk.version>
+		<jdk.version>1.7</jdk.version>
 		<!-- 字符集定义 -->
 		<plugin.encoding>UTF-8</plugin.encoding>
 	</properties>
