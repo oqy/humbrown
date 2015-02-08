@@ -7,6 +7,7 @@ import net.sf.ehcache.CacheManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.Cache;
+import org.springframework.cache.ehcache.EhCacheCache;
 import org.springframework.util.Assert;
 
 import com.minyisoft.webapp.core.model.IModelObject;
@@ -36,7 +37,6 @@ public class EhCacheCacheManager extends org.springframework.cache.ehcache.EhCac
 					getCacheManager().addCache(name);
 					cache = new EhCacheModelCache(getCacheManager().getCache(name), modelClass);
 					addCache(cache);
-					return cache;
 				}
 			} else if (StringUtils.startsWithIgnoreCase(name, ModelCacheTypeEnum.MODEL_QUERY_CACHE.getType())) {
 				Class<? extends IModelObject> modelClass = ObjectUuidUtils.getClassByObjectKey(StringUtils
@@ -45,8 +45,11 @@ public class EhCacheCacheManager extends org.springframework.cache.ehcache.EhCac
 					getCacheManager().addCache(name);
 					cache = new EhCacheModelQueryCache(getCacheManager().getCache(name), modelClass);
 					addCache(cache);
-					return cache;
 				}
+			} else {
+				getCacheManager().addCache(name);
+				cache = new EhCacheCache(getCacheManager().getCache(name));
+				addCache(cache);
 			}
 		}
 		return cache;
