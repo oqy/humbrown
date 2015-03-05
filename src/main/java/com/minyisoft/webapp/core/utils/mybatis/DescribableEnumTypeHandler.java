@@ -17,19 +17,34 @@ import com.minyisoft.webapp.core.model.enumField.DescribableEnumHelper;
 public class DescribableEnumTypeHandler<E extends Enum<? extends DescribableEnum<?>>> extends BaseTypeHandler<E> {
 	private Class<E> classType;
 	// DescribableEnum参数类型
-	private Class<?> describableDetailType;
+	private Class<?> describableDetailType = String.class;
 
 	public DescribableEnumTypeHandler(Class<E> type) {
 		Assert.notNull(type, "Type argument cannot be null");
 		this.classType = type;
-		for (Type interfaceType : classType.getGenericInterfaces()) {
+		this.describableDetailType = findDetailType(type);
+		Assert.notNull(describableDetailType, "DescribableDetailType argument cannot be null");
+	}
+
+	/**
+	 * 递归获取DescribableEnum泛型接口的参数类型
+	 * 
+	 * @param targetClass
+	 * @return
+	 */
+	private Class<?> findDetailType(Class<?> targetClass) {
+		for (Type interfaceType : targetClass.getGenericInterfaces()) {
 			if (interfaceType instanceof ParameterizedType
 					&& ((ParameterizedType) interfaceType).getRawType() == DescribableEnum.class) {
-				describableDetailType = (Class<?>) ((ParameterizedType) interfaceType).getActualTypeArguments()[0];
+				return (Class<?>) ((ParameterizedType) interfaceType).getActualTypeArguments()[0];
+			} else if (interfaceType instanceof Class) {
+				Class<?> clazz = findDetailType((Class<?>) interfaceType);
+				if (clazz != null) {
+					return clazz;
+				}
 			}
-			continue;
 		}
-		Assert.notNull(describableDetailType, "DescribableDetailType argument cannot be null");
+		return null;
 	}
 
 	@Override

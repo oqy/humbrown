@@ -34,17 +34,17 @@ public final class Exceptions {
 	/**
 	 * 判断异常是否由某些底层的异常引起.
 	 */
-	public static boolean isCausedBy(Exception ex,
-			Class<? extends Exception>... causeExceptionClasses) {
-		Throwable cause = ex.getCause();
-		while (cause != null) {
-			for (Class<? extends Exception> causeClass : causeExceptionClasses) {
-				if (causeClass.isInstance(cause)) {
-					return true;
-				}
-			}
-			cause = cause.getCause();
-		}
-		return false;
-	}
+//	public static boolean isCausedBy(Exception ex,
+//			Class<? extends Exception>... causeExceptionClasses) {
+//		Throwable cause = ex.getCause();
+//		while (cause != null) {
+//			for (Class<? extends Exception> causeClass : causeExceptionClasses) {
+//				if (causeClass.isInstance(cause)) {
+//					return true;
+//				}
+//			}
+//			cause = cause.getCause();
+//		}
+//		return false;
+//	}
 }

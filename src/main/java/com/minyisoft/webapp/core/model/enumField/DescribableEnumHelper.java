@@ -5,6 +5,8 @@ import java.util.Locale;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
+import com.google.common.base.Joiner;
+
 /**
  * @author qingyong_ou 枚举帮助类
  */
@@ -28,20 +30,17 @@ public final class DescribableEnumHelper {
 	 * @param target
 	 * @return
 	 */
-	public static String getDescription(
-			Enum<? extends DescribableEnum<?>> target) {
+	public static String getDescription(Enum<? extends DescribableEnum<?>> target) {
 		if (target == null) {
 			return "";
 		} else {
-			return messageSource.getMessage(target.getClass().getName() + "_"
-					+ target.name(), null, "", Locale.getDefault());
+			return messageSource.getMessage(target.getClass().getName() + "_" + target.name(), null, "",
+					Locale.getDefault());
 		}
 	}
 
-	public static <T extends Enum<? extends DescribableEnum<?>>> T getEnum(
-			Class<T> coreEnumClazz, Object value) {
-		if (coreEnumClazz != null
-				&& ArrayUtils.isNotEmpty(coreEnumClazz.getEnumConstants())) {
+	public static <T extends Enum<? extends DescribableEnum<?>>> T getEnum(Class<T> coreEnumClazz, Object value) {
+		if (coreEnumClazz != null && ArrayUtils.isNotEmpty(coreEnumClazz.getEnumConstants())) {
 			for (T e : coreEnumClazz.getEnumConstants()) {
 				if (((DescribableEnum<?>) e).getValue().equals(value)) {
 					return e;
@@ -49,5 +48,11 @@ public final class DescribableEnumHelper {
 			}
 		}
 		return null;
+	}
+
+	public static final char SEPARATOR = '|';
+
+	public static <T extends Enum<? extends DescribableEnum<?>>> String toString(T[] enums) {
+		return ArrayUtils.isEmpty(enums) ? null : SEPARATOR + Joiner.on(SEPARATOR).skipNulls().join(enums) + SEPARATOR;
 	}
 }

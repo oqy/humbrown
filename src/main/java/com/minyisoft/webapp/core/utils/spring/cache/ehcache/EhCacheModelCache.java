@@ -56,8 +56,8 @@ public class EhCacheModelCache implements Cache {
 				if (logger.isDebugEnabled()) {
 					logger.debug("读取EhCache缓存[" + modelClass.getName() + "]:" + cacheValue);
 				}
-				return StringUtils.isBlank(cacheValue) ? null : new SimpleValueWrapper(JsonMapper.MODEL_OBJECT_MAPPER
-						.getMapper().readValue(cacheValue, modelClass));
+				return StringUtils.isBlank(cacheValue) ? null : new SimpleValueWrapper(
+						JsonMapper.MODEL_OBJECT_MAPPER.fromJson(cacheValue, modelClass));
 			} catch (Exception e) {
 				logger.error(e.getMessage(), e);
 
@@ -80,7 +80,7 @@ public class EhCacheModelCache implements Cache {
 			cache.put(new Element(key, model.getId()));
 		}
 		try {
-			cache.put(new Element(model.getId(), JsonMapper.MODEL_OBJECT_MAPPER.getMapper().writeValueAsString(model)));
+			cache.put(new Element(model.getId(), JsonMapper.MODEL_OBJECT_MAPPER.toJson(model)));
 			if (logger.isDebugEnabled()) {
 				logger.debug("写入EhCache缓存[" + modelClass.getName() + "]:" + model.getId());
 			}
@@ -103,5 +103,11 @@ public class EhCacheModelCache implements Cache {
 		if (logger.isDebugEnabled()) {
 			logger.debug("清空EhCache缓存[" + modelClass.getName() + "]");
 		}
+	}
+
+	@Override
+	public ValueWrapper putIfAbsent(Object key, Object value) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

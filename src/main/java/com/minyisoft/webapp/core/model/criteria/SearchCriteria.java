@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.search.facet.AbstractFacetBuilder;
+import org.elasticsearch.search.facet.FacetBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 
 import com.google.common.collect.Lists;
@@ -29,7 +29,7 @@ public class SearchCriteria {
 	// 排序列表
 	private List<SortBuilder> orderList;
 	// 统计列表
-	private List<AbstractFacetBuilder> facetsList;
+	private List<FacetBuilder> facetsList;
 	// script field列表
 	private List<CustomScriptField> scriptFields;
 	// 自定义_score脚本
@@ -55,7 +55,7 @@ public class SearchCriteria {
 		return this;
 	}
 
-	public SearchCriteria addFacet(AbstractFacetBuilder builder) {
+	public SearchCriteria addFacet(FacetBuilder builder) {
 		if (builder != null) {
 			if (facetsList == null) {
 				facetsList = Lists.newArrayList();

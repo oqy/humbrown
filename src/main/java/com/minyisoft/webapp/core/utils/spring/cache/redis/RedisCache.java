@@ -39,30 +39,34 @@ import com.minyisoft.webapp.core.utils.redis.JedisTemplate.JedisAction;
 import com.minyisoft.webapp.core.utils.redis.JedisTemplate.JedisActionNoResult;
 
 /**
- * Cache implementation on top of Redis.
- * base on org.springframework.data.redis.cache.RedisCache
+ * Cache implementation on top of Redis. base on
+ * org.springframework.data.redis.cache.RedisCache
+ * 
  * @author qingyong_ou
  */
 class RedisCache implements Cache {
-	protected final Logger logger=LoggerFactory.getLogger(getClass());
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private static final int PAGE_SIZE = 128;
 	private final String name;
-	private final @Getter JedisTemplate template;
+	@Getter
+	private final JedisTemplate template;
 	private final byte[] prefix;
 	private final byte[] setName;
 	private final byte[] cacheLockName;
 	private long WAIT_FOR_LOCK = 300;
-	private final @Getter int expiration;
-	protected final Charset defaultCharset=Charset.forName("UTF8");
+	@Getter
+	private final int expiration;
+	protected final Charset defaultCharset = Charset.forName("UTF8");
 	protected final Converter<Object, byte[]> serializer = new SerializingConverter();
 	private final Converter<byte[], Object> deserializer = new DeserializingConverter();
-	
+
 	/**
 	 * 
 	 * Constructs a new <code>RedisCache</code> instance.
 	 * 
-	 * @param name cache name
+	 * @param name
+	 *            cache name
 	 * @param template
 	 * @param expiration
 	 */
@@ -99,12 +103,12 @@ class RedisCache implements Cache {
 			@Override
 			public ValueWrapper action(Jedis jedis) throws Exception {
 				waitForLock(jedis);
-				return _get(jedis,key);
+				return _get(jedis, key);
 			}
 		});
 	}
-	
-	protected ValueWrapper _get(Jedis jedis, Object key){
+
+	protected ValueWrapper _get(Jedis jedis, Object key) {
 		byte[] bs = jedis.get(computeKey(key));
 		return bs == null ? null : new SimpleValueWrapper(deserializer.convert(bs));
 	}
@@ -113,7 +117,7 @@ class RedisCache implements Cache {
 		if (!isObjectCacheable(key, value)) {
 			return;
 		}
-		
+
 		template.execute(new JedisActionNoResult() {
 
 			@Override
@@ -132,12 +136,12 @@ class RedisCache implements Cache {
 			}
 		});
 	}
-	
-	protected boolean isObjectCacheable(Object key,Object value){
+
+	protected boolean isObjectCacheable(Object key, Object value) {
 		return true;
 	}
-	
-	protected byte[] _put(Transaction transaction, Object key,Object value) {
+
+	protected byte[] _put(Transaction transaction, Object key, Object value) {
 		byte[] cacheKey = computeKey(key);
 		transaction.set(cacheKey, serializer.convert(value));
 		return cacheKey;
@@ -147,7 +151,7 @@ class RedisCache implements Cache {
 		final byte[] k = computeKey(key);
 
 		template.execute(new JedisActionNoResult() {
-			
+
 			@Override
 			public void action(Jedis jedis) throws Exception {
 				jedis.del(k);
@@ -156,11 +160,11 @@ class RedisCache implements Cache {
 			}
 		});
 	}
-	
+
 	public final void clear() {
 		// need to del each key individually
 		template.execute(new JedisActionNoResult() {
-			
+
 			@Override
 			public void action(Jedis jedis) throws Exception {
 				// another clear is on-going
@@ -176,8 +180,7 @@ class RedisCache implements Cache {
 
 					do {
 						// need to paginate the keys
-						Set<byte[]> keys = jedis.zrange(setName, (offset)
-								* PAGE_SIZE, (offset + 1) * PAGE_SIZE - 1);
+						Set<byte[]> keys = jedis.zrange(setName, (offset) * PAGE_SIZE, (offset + 1) * PAGE_SIZE - 1);
 						finished = keys.size() < PAGE_SIZE;
 						offset++;
 						if (!keys.isEmpty()) {
@@ -193,20 +196,21 @@ class RedisCache implements Cache {
 			}
 		});
 	}
-	
+
 	/**
 	 * 清空缓存的扩展操作，供子类实现
+	 * 
 	 * @param jedis
 	 */
 	protected void _furtherClear(Jedis jedis) {
-		
+
 	}
 
 	protected byte[] computeKey(Object key) {
-		if(key instanceof String){
+		if (key instanceof String) {
 			return (name + ":" + key).getBytes(defaultCharset);
 		}
-		
+
 		byte[] k = serializer.convert(key);
 		byte[] result = Arrays.copyOf(prefix, prefix.length + k.length);
 		System.arraycopy(k, 0, result, prefix.length, k.length);
@@ -236,5 +240,11 @@ class RedisCache implements Cache {
 	public <T> T get(Object key, Class<T> arg1) {
 		ValueWrapper value = get(key);
 		return value == null ? null : (T) value.get();
+	}
+
+	@Override
+	public ValueWrapper putIfAbsent(Object key, Object value) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

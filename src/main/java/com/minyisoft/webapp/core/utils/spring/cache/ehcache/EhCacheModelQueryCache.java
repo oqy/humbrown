@@ -51,7 +51,7 @@ public class EhCacheModelQueryCache implements Cache {
 					String cacheValue = (String) cache.get(cacheKey).getObjectValue();
 					logger.debug("读取EhCache集合缓存[" + modelClass.getName() + "]:" + cacheKey);
 					return StringUtils.isBlank(cacheValue) ? null : new SimpleValueWrapper(
-							JsonMapper.MODEL_OBJECT_MAPPER.getMapper().readValue(cacheValue,
+							JsonMapper.MODEL_OBJECT_MAPPER.fromJson(cacheValue,
 									JsonMapper.MODEL_OBJECT_MAPPER.createCollectionType(Collection.class, modelClass)));
 				} catch (Exception e) {
 					logger.error(e.getMessage(), e);
@@ -75,7 +75,7 @@ public class EhCacheModelQueryCache implements Cache {
 			final Collection<? extends IModelObject> col = (Collection<? extends IModelObject>) value;
 			String cacheKey = (key instanceof String) ? (String) key : BaseCriteria.getKey((BaseCriteria) key);
 			try {
-				cache.put(new Element(cacheKey, JsonMapper.MODEL_OBJECT_MAPPER.getMapper().writeValueAsString(col)));
+				cache.put(new Element(cacheKey, JsonMapper.MODEL_OBJECT_MAPPER.toJson(col)));
 				logger.debug("写入EhCache集合缓存[" + modelClass.getName() + "]:" + cacheKey);
 			} catch (Exception e) {
 				logger.error(e.getMessage(), e);
@@ -97,5 +97,11 @@ public class EhCacheModelQueryCache implements Cache {
 		if (logger.isDebugEnabled()) {
 			logger.debug("清空ehcache缓存[" + modelClass.getName() + "]");
 		}
+	}
+
+	@Override
+	public ValueWrapper putIfAbsent(Object key, Object value) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

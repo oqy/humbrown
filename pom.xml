@@ -9,29 +9,13 @@
 	<version>1.0.0-SNAPSHOT</version>
 	<properties>
 		<!-- 主要依赖库的版本定义 -->
-		<spring.version>4.0.1.RELEASE</spring.version>
+		<spring-io.version>1.1.0.RELEASE</spring-io.version>
 		<javax-servlet.version>2.5</javax-servlet.version>
 		<mybatis.version>3.2.7</mybatis.version>
 		<mybatis-spring.version>1.2.2</mybatis-spring.version>
-		<thymeleaf.version>2.1.2.RELEASE</thymeleaf.version>
-
-		<hibernate-validator.version>4.3.0.Final</hibernate-validator.version>
 		<shiro.version>1.2.1</shiro.version>
 		<jackson-datatype-guava.version>2.3.1</jackson-datatype-guava.version>
-		<slf4j.version>1.7.2</slf4j.version>
 		
-		<lombok.version>0.11.6</lombok.version>
-		<tomcat-dbcp.version>7.0.54</tomcat-dbcp.version>
-		<commons-pool.version>1.6</commons-pool.version>
-		<commons-lang.version>3.3.2</commons-lang.version>
-		<commons-beanutils.version>1.8.3</commons-beanutils.version>
-		<commons-codec.version>1.7</commons-codec.version>
-		<joda-time.version>2.3</joda-time.version>
-		<elasticsearch.version>0.20.6</elasticsearch.version>
-		<jedis.version>2.1.0</jedis.version>
-		
-		<junit.version>4.11</junit.version>
-
 		<!-- Plugin的属性定义 -->
 		<jdk.version>1.7</jdk.version>
 		<!-- 字符集定义 -->
@@ -62,9 +46,9 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-framework-bom</artifactId>
-				<version>${spring.version}</version>
+				<groupId>io.spring.platform</groupId>
+				<artifactId>platform-bom</artifactId>
+				<version>${spring-io.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -76,19 +60,12 @@
 		<dependency> 
 			<groupId>org.aspectj</groupId> 
 			<artifactId>aspectjweaver</artifactId> 
-			<version>1.7.2</version> 
 		</dependency> 
 
 		<!-- spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-jdbc</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>commons-logging</artifactId>
-					<groupId>commons-logging</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -126,13 +103,6 @@
 		<dependency>
 			<groupId>org.thymeleaf</groupId>
 			<artifactId>thymeleaf-spring4</artifactId>
-			<version>${thymeleaf.version}</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>slf4j-api</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<!-- Shiro -->
@@ -140,30 +110,17 @@
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-spring</artifactId>
 			<version>${shiro.version}</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>slf4j-api</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-ehcache</artifactId>
 			<version>${shiro.version}</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>slf4j-api</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<!-- JSR303 BeanValidator -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
-			<version>${hibernate-validator.version}</version>
 		</dependency>
 
 		<!-- JACKSON -->
@@ -177,26 +134,22 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>${slf4j.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<!-- common-logging 实际调用slf4j -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
-			<version>${slf4j.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<!-- java.util.logging 实际调用slf4j -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jul-to-slf4j</artifactId>
-			<version>${slf4j.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -204,64 +157,48 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>${commons-codec.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
     		<artifactId>commons-lang3</artifactId>
-			<version>${commons-lang.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>commons-beanutils</groupId>
 		    <artifactId>commons-beanutils</artifactId>
-		    <version>${commons-beanutils.version}</version>
-		    <exclusions>
-		    	<exclusion>
-		    		<artifactId>commons-logging</artifactId>
-		    		<groupId>commons-logging</groupId>
-		    	</exclusion>
-		    </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
     		<artifactId>tomcat-dbcp</artifactId>
-			<version>${tomcat-dbcp.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 		    <groupId>commons-pool</groupId>
 		    <artifactId>commons-pool</artifactId>
-		    <version>${commons-pool.version}</version>
 		    <scope>runtime</scope>
 		</dependency>
 		<dependency>
 		    <groupId>joda-time</groupId>
 		    <artifactId>joda-time</artifactId>
-		    <version>${joda-time.version}</version>
 		</dependency>
 		
 		<!-- NoSQL -->
 		<dependency>
 		    <groupId>org.elasticsearch</groupId>
 		    <artifactId>elasticsearch</artifactId>
-		    <version>${elasticsearch.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>redis.clients</groupId>
 		    <artifactId>jedis</artifactId>
-		    <version>${jedis.version}</version>
 		</dependency>
 		
 		<!-- TEST -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

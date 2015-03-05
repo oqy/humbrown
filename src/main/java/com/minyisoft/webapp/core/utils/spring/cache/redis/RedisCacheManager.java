@@ -1,28 +1,27 @@
 package com.minyisoft.webapp.core.utils.spring.cache.redis;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import lombok.Setter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
+import org.springframework.cache.transaction.AbstractTransactionSupportingCacheManager;
 import org.springframework.util.Assert;
 
 import redis.clients.jedis.Jedis;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 import com.minyisoft.webapp.core.utils.redis.JedisTemplate;
 import com.minyisoft.webapp.core.utils.redis.JedisTemplate.JedisAction;
 import com.minyisoft.webapp.core.utils.redis.JedisTemplate.JedisActionNoResult;
-import com.minyisoft.webapp.core.utils.spring.cache.ModelCacheManager;
+import com.minyisoft.webapp.core.utils.spring.cache.ModelObjectCacheManager;
 
 /**
  * CacheManager implementation for Redis. base on
@@ -30,10 +29,7 @@ import com.minyisoft.webapp.core.utils.spring.cache.ModelCacheManager;
  * 
  * @author qingyong_ou
  */
-public class RedisCacheManager implements CacheManager, ModelCacheManager {
-
-	// fast lookup by name map
-	private final ConcurrentMap<String, Cache> caches = Maps.newConcurrentMap();
+public class RedisCacheManager extends AbstractTransactionSupportingCacheManager implements ModelObjectCacheManager {
 
 	private final JedisTemplate template;
 	// 缓存redis cache name
@@ -48,27 +44,29 @@ public class RedisCacheManager implements CacheManager, ModelCacheManager {
 		this.template = template;
 	}
 
-	public Cache getCache(final String name) {
-		Cache c = caches.get(name);
+	@Override
+	protected Collection<? extends Cache> loadCaches() {
+		return Collections.emptyList();
+	}
+
+	public Cache getMissingCache(final String name) {
+		Cache c = null;
+		int expiration = computeExpiration(name);
+		if (StringUtils.startsWithIgnoreCase(name, ModelCacheTypeEnum.MODEL_CACHE.getType())) {
+			Class<? extends IModelObject> modelClass = ObjectUuidUtils.getClassByObjectKey(StringUtils
+					.removeStartIgnoreCase(name, ModelCacheTypeEnum.MODEL_CACHE.getType()));
+			if (modelClass != null) {
+				c = new RedisModelCache(modelClass, template, expiration);
+			}
+		} else if (StringUtils.startsWithIgnoreCase(name, ModelCacheTypeEnum.MODEL_QUERY_CACHE.getType())) {
+			Class<? extends IModelObject> modelClass = ObjectUuidUtils.getClassByObjectKey(StringUtils
+					.removeStartIgnoreCase(name, ModelCacheTypeEnum.MODEL_QUERY_CACHE.getType()));
+			if (modelClass != null) {
+				c = new RedisModelQueryCache(modelClass, template, expiration);
+			}
+		}
 		if (c == null) {
-			int expiration = computeExpiration(name);
-			if (StringUtils.startsWithIgnoreCase(name, ModelCacheTypeEnum.MODEL_CACHE.getType())) {
-				Class<? extends IModelObject> modelClass = ObjectUuidUtils.getClassByObjectKey(StringUtils
-						.removeStartIgnoreCase(name, ModelCacheTypeEnum.MODEL_CACHE.getType()));
-				if (modelClass != null) {
-					c = new RedisModelCache(modelClass, template, expiration);
-				}
-			} else if (StringUtils.startsWithIgnoreCase(name, ModelCacheTypeEnum.MODEL_QUERY_CACHE.getType())) {
-				Class<? extends IModelObject> modelClass = ObjectUuidUtils.getClassByObjectKey(StringUtils
-						.removeStartIgnoreCase(name, ModelCacheTypeEnum.MODEL_QUERY_CACHE.getType()));
-				if (modelClass != null) {
-					c = new RedisModelQueryCache(modelClass, template, expiration);
-				}
-			}
-			if (c == null) {
-				c = new RedisCache(name, template, expiration);
-			}
-			caches.put(name, c);
+			c = new RedisCache(name, template, expiration);
 		}
 		template.execute(new JedisActionNoResult() {
 
@@ -124,7 +122,7 @@ public class RedisCacheManager implements CacheManager, ModelCacheManager {
 	public void clearAllCache() {
 		Cache cache;
 		for (String cacheName : getCacheNames()) {
-			cache = caches.get(cacheName);
+			cache = getCache(cacheName);
 			if (cache == null) {
 				cache = getCache(cacheName);
 			}

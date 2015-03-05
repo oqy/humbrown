@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -25,6 +24,7 @@ import com.minyisoft.webapp.core.annotation.Label;
 import com.minyisoft.webapp.core.annotation.ModelKey;
 import com.minyisoft.webapp.core.exception.CoreExceptionType;
 import com.minyisoft.webapp.core.exception.EntityException;
+import com.minyisoft.webapp.core.model.CoreBaseInfo;
 import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.security.utils.EncodeUtils;
 
@@ -63,11 +63,13 @@ public final class ObjectUuidUtils {
 	 */
 	@SuppressWarnings("unchecked")
 	public static void registerModelClass(Class<? extends IModelObject> modelClass) {
-		long classKey = _getModelKey(modelClass);
 		Class<? extends IModelObject> userClass = (Class<? extends IModelObject>) ClassUtils.getUserClass(modelClass);
-		Assert.isTrue(classKey > 0 && !keyClassMap.containsKey(classKey), "[" + userClass.getName()
-				+ "]ModelKey对应Long值需大于0且不能与已注册的键值相同");
-		keyClassMap.put(classKey, userClass);
+		if (!keyClassMap.containsValue(userClass)) {
+			long classKey = _getModelKey(userClass);
+			Assert.isTrue(classKey > 0 && !keyClassMap.containsKey(classKey), "[" + userClass.getName()
+					+ "]ModelKey对应Long值需大于0且不能与已注册的键值相同");
+			keyClassMap.put(classKey, userClass);
+		}
 	}
 
 	public static String createObjectID(Class<? extends IModelObject> clazz) {
@@ -79,8 +81,8 @@ public final class ObjectUuidUtils {
 			out.writeLong(uuid.getMostSignificantBits());
 			out.writeLong(uuid.getLeastSignificantBits());
 		} catch (IOException ioe) {
-			throw new EntityException(CoreExceptionType.ENTITY_ID_GENERATE_ERROR, new Object[] { ClassUtils
-					.getUserClass(clazz).getName() });
+			throw new EntityException(CoreExceptionType.ENTITY_ID_GENERATE_ERROR, ClassUtils.getUserClass(clazz)
+					.getName());
 		}
 		return EncodeUtils.encodeUrlSafeBase64(baos.toByteArray());
 	}
@@ -102,28 +104,29 @@ public final class ObjectUuidUtils {
 	 * @return
 	 */
 	public static IModelObject getObject(String id) {
-		Class<? extends IModelObject> clazz;
-		if (!StringUtils.isBlank(id) && (clazz = getObejctClass(id)) != null) {
-			// 目标对象为枚举类型
-			if (clazz.isEnum()) {
-				for (IModelObject e : clazz.getEnumConstants()) {
-					if (e.getId().equals(id)) {
-						return e;
+		if (!StringUtils.isBlank(id)) {
+			Class<? extends IModelObject> clazz = getObejctClass(id);
+			if (clazz != null) {
+				// 目标对象为枚举类型
+				if (clazz.isEnum()) {
+					for (IModelObject e : clazz.getEnumConstants()) {
+						if (e.getId().equals(id)) {
+							return e;
+						}
 					}
 				}
-				return null;
-			}
-			// 目标对象为CoreBaseInfo对象类型
-			else {
-				try {
-					IModelObject info = (IModelObject) clazz.newInstance();
-					info.setId(id);
+				// 目标对象为CoreBaseInfo对象类型
+				else if (CoreBaseInfo.class.isAssignableFrom(clazz)) {
+					try {
+						CoreBaseInfo info = (CoreBaseInfo) clazz.newInstance();
+						info.setId(id);
 
-					Enhancer enhancer = new Enhancer();
-					enhancer.setSuperclass(info.getClass());
-					enhancer.setCallback(new ModelLazyLoadMethodInterceptor(info));
-					return (IModelObject) enhancer.create();
-				} catch (Exception e) {
+						Enhancer enhancer = new Enhancer();
+						enhancer.setSuperclass(info.getClass());
+						enhancer.setCallback(new ModelLazyLoadMethodInterceptor(info));
+						return (IModelObject) enhancer.create();
+					} catch (Exception e) {
+					}
 				}
 			}
 		}
@@ -151,7 +154,7 @@ public final class ObjectUuidUtils {
 	 * @return
 	 */
 	public static boolean isLegalId(Class<? extends IModelObject> modelClazz, String id) {
-		return modelClazz != null && id != null && Base64.isBase64(id) && (id.length() == 32 || id.length() == 24)
+		return modelClazz != null && StringUtils.isNotBlank(id)
 				&& (ClassUtils.getUserClass(modelClazz) == getObejctClass(id));
 	}
 
@@ -162,8 +165,7 @@ public final class ObjectUuidUtils {
 	 * @return
 	 */
 	public static boolean isLegalId(String id) {
-		return id != null && Base64.isBase64(id) && (id.length() == 32 || id.length() == 24)
-				&& keyClassMap.containsValue(getObejctClass(id));
+		return StringUtils.isNotBlank(id) && keyClassMap.containsValue(getObejctClass(id));
 	}
 
 	/**

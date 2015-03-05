@@ -88,8 +88,7 @@ public final class PermissionUtils {
 			return true;
 		}
 		Subject currentUser = SecurityUtils.getSubject();
-		return currentUser != null && currentUser.isAuthenticated()
-				&& (currentUser.isPermitted(permissionString) || currentUser.hasRole(ADMINISTRATOR_ROLE));
+		return currentUser != null && currentUser.isAuthenticated() && currentUser.isPermitted(permissionString);
 	}
 
 	/**

@@ -39,7 +39,7 @@ import com.minyisoft.webapp.core.security.utils.PermissionUtils;
 import com.minyisoft.webapp.core.service.BaseService;
 import com.minyisoft.webapp.core.service.CUDPostProcessor;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
-import com.minyisoft.webapp.core.utils.spring.cache.ModelCacheManager;
+import com.minyisoft.webapp.core.utils.spring.cache.ModelObjectCacheManager;
 
 public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCriteria, D extends BaseDao<T, C>>
 		implements BaseService<T, C> {
@@ -54,7 +54,7 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 	// 缓存管理器实例
 	@Autowired(required = false)
 	@Getter
-	private ModelCacheManager cacheManager;
+	private ModelObjectCacheManager cacheManager;
 	// 当前服务类对应的Model对象类型
 	private final Class<T> modelClass;
 	// 根据当前业务操作实例（以***Impl形式命名）获取model对象对应的对象别名
@@ -101,10 +101,12 @@ public abstract class BaseServiceImpl<T extends CoreBaseInfo, C extends BaseCrit
 				processors.add(processor);
 			}
 		}
-		if (this.postProcessors == Collections.EMPTY_LIST) {
-			this.postProcessors = postProcessors;
-		} else {
-			this.postProcessors.addAll(postProcessors);
+		if (!processors.isEmpty()) {
+			if (this.postProcessors == Collections.EMPTY_LIST) {
+				this.postProcessors = processors;
+			} else {
+				this.postProcessors.addAll(postProcessors);
+			}
 		}
 	}
 

@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -16,12 +17,12 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
-import org.springframework.util.CollectionUtils;
 
 import com.minyisoft.webapp.core.model.ISystemOrgObject;
 import com.minyisoft.webapp.core.model.ISystemRoleObject;
 import com.minyisoft.webapp.core.model.ISystemUserObject;
 import com.minyisoft.webapp.core.model.PermissionInfo;
+import com.minyisoft.webapp.core.security.utils.PermissionUtils;
 
 /**
  * @author qingyong_ou shiro登录对象
@@ -37,7 +38,7 @@ public abstract class AbstractShiroDbRealm<U extends ISystemUserObject, R extend
 		ISystemUserObject user = getUserByLoginName(token.getUsername());
 		if (user != null) {
 			if (StringUtils.isBlank(user.getUserPasswordSalt()) || !isCredentialsSaltEnabled()) {
-				return new SimpleAuthenticationInfo(createPrincipal(user), user.getUserPassword(), null, getName());
+				return new SimpleAuthenticationInfo(createPrincipal(user), user.getUserPassword(), getName());
 			} else {
 				return new SimpleAuthenticationInfo(createPrincipal(user), user.getUserPassword(),
 						ByteSource.Util.bytes(user.getUserPasswordSalt()), getName());
@@ -53,26 +54,52 @@ public abstract class AbstractShiroDbRealm<U extends ISystemUserObject, R extend
 	@SuppressWarnings("unchecked")
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-		U user = (U) ((BasePrincipal) principals.getPrimaryPrincipal()).getSystemUser();
-		ISystemOrgObject org = getSystemOrg((BasePrincipal) principals.getPrimaryPrincipal());
+		Object principal = principals.getPrimaryPrincipal();
+		if (!(principal instanceof BasePrincipal)) {
+			return null;
+		}
+
 		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+		// 获取用户角色
+		U user = (U) ((BasePrincipal) principal).getSystemUser();
+		ISystemOrgObject org = getSystemOrg((BasePrincipal) principals.getPrimaryPrincipal());
 		List<R> userRoles = getUserRoles(user, org);
-		if (!CollectionUtils.isEmpty(userRoles)) {
+		boolean hasAdministratorRole = false;
+		if (CollectionUtils.isNotEmpty(userRoles)) {
 			for (R role : userRoles) {
 				info.addRole(role.getValue());
+				hasAdministratorRole = hasAdministratorRole
+						|| PermissionUtils.ADMINISTRATOR_ROLE.equals(role.getValue());
 			}
 		}
-		List<PermissionInfo> userPermissions = getUserPermissions(user, org);
-		if (!CollectionUtils.isEmpty(userPermissions)) {
-			for (PermissionInfo permission : userPermissions) {
-				info.addStringPermission(permission.getValue());
+		// 系统管理员默认拥有全部权限
+		if (hasAdministratorRole) {
+			info.addStringPermission("*");
+		}
+		// 获取用户权限
+		else {
+			List<PermissionInfo> userPermissions = getUserPermissions(user, org);
+			if (CollectionUtils.isNotEmpty(userPermissions)) {
+				for (PermissionInfo permission : userPermissions) {
+					info.addStringPermission(permission.getValue());
+				}
 			}
 		}
 		return info;
 	}
 
+	@Override
+	protected Object getAuthorizationCacheKey(PrincipalCollection principals) {
+		Object cacheKey = super.getAuthenticationCacheKey(principals);
+		if (cacheKey instanceof BasePrincipal) {
+			return ((BasePrincipal) cacheKey).toString();
+		}
+		return cacheKey;
+	}
+
 	/**
 	 * 是否启用密码加盐检查
+	 * 
 	 * @return
 	 */
 	protected boolean isCredentialsSaltEnabled() {

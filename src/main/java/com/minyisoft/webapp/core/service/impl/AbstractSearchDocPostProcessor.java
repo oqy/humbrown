@@ -2,19 +2,25 @@ package com.minyisoft.webapp.core.service.impl;
 
 import com.minyisoft.webapp.core.model.assistant.search.ISearchDocObject;
 import com.minyisoft.webapp.core.service.CUDPostProcessor;
-import com.minyisoft.webapp.core.service.SearchBaseService;
+import com.minyisoft.webapp.core.service.ObjectSearcher;
 
 public abstract class AbstractSearchDocPostProcessor implements CUDPostProcessor<ISearchDocObject> {
-	public abstract SearchBaseService getSearchService();
+	public abstract ObjectSearcher getSearchService();
 
 	@Override
 	public void processAferAddNew(ISearchDocObject info) {
-		getSearchService().index(info);
+		if (info.isIndexable()) {
+			getSearchService().index(info);
+		}
 	}
 
 	@Override
 	public void processAfterSave(ISearchDocObject info) {
-		getSearchService().index(info);
+		if (info.isIndexable()) {
+			getSearchService().index(info);
+		} else {
+			getSearchService().delete(info.getSearchType(), info.getId());
+		}
 	}
 
 	@Override

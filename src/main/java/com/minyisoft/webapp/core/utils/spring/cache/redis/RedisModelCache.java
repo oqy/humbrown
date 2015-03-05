@@ -2,6 +2,7 @@ package com.minyisoft.webapp.core.utils.spring.cache.redis;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.support.SimpleValueWrapper;
@@ -14,7 +15,7 @@ import com.minyisoft.webapp.core.model.IModelObject;
 import com.minyisoft.webapp.core.utils.ObjectUuidUtils;
 import com.minyisoft.webapp.core.utils.mapper.json.JsonMapper;
 import com.minyisoft.webapp.core.utils.redis.JedisTemplate;
-import com.minyisoft.webapp.core.utils.spring.cache.ModelCacheManager.ModelCacheTypeEnum;
+import com.minyisoft.webapp.core.utils.spring.cache.ModelObjectCacheManager.ModelCacheTypeEnum;
 
 class RedisModelCache extends RedisCache {
 	private final Class<? extends IModelObject> modelClass;
@@ -53,8 +54,8 @@ class RedisModelCache extends RedisCache {
 			if (logger.isDebugEnabled()) {
 				logger.debug("读取redis缓存[" + modelClass.getName() + "]:" + new String(keyBytes, Charsets.UTF_8));
 			}
-			return (bs == null ? null : new SimpleValueWrapper(JsonMapper.MODEL_OBJECT_MAPPER.getMapper().readValue(bs,
-					modelClass)));
+			return bs == null ? null : new SimpleValueWrapper(JsonMapper.MODEL_OBJECT_MAPPER.getMapper().readValue(bs,
+					modelClass));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return null;
@@ -93,7 +94,7 @@ class RedisModelCache extends RedisCache {
 		if (logger.isDebugEnabled()) {
 			logger.debug("删除redis缓存[" + modelClass.getName() + "]:" + key);
 		}
-		if (key instanceof List<?> && !((List<?>) key).isEmpty()) {
+		if (key instanceof List<?> && CollectionUtils.isNotEmpty((List<?>) key)) {
 			for (Object k : (List<?>) key) {
 				super.evict(k);
 			}
